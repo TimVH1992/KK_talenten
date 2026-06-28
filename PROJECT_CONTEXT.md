@@ -25,7 +25,7 @@ De nadruk ligt op:
 - talenten beheren
 - talentenperiodes beheren
 - ingerichte talenten beheren
-- voorkeuren registreren
+- voorkeuren importeren vanuit excel
 - automatische verdeling uitvoeren
 - manuele wijzigingen uitvoeren
 - historiek bewaren
@@ -72,3 +72,23 @@ Database
 ```
 
 Businesslogica hoort in de servicelaag en het domeinmodel, niet rechtstreeks in de UI of database.
+
+## Succescriteria
+
+Versie 1 is geslaagd wanneer een talentcoördinator:
+
+- een talentenperiode kan aanmaken;
+- talenten en leerlingen kan beheren;
+- voorkeuren kan importeren;
+- een automatische verdeling kan uitvoeren;
+- de verdeling manueel kan aanpassen;
+- de resultaten persistent worden opgeslagen.
+
+## Niet-functionele eisen
+
+- onderhoudbare code
+- duidelijke naamgeving
+- uitbreidbare architectuur
+- scheiding tussen domein, services en persistence
+- businessregels zijn centraal beheerd
+- testbaarheid
