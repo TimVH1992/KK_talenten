@@ -60,7 +60,7 @@ enum ToewijzingsType {
 
 TalentenPeriode "1" -- "0..*" IngerichtTalent : bevat
 Talent "1" -- "0..*" IngerichtTalent : is basis voor
-Leerkracht "0..*" -- "1..*" IngerichtTalent : begeleidt
+Leerkracht "0..2*" -- "0..1*" IngerichtTalent : begeleidt
 
 '-------------------------------
 ' Voorkeuren
