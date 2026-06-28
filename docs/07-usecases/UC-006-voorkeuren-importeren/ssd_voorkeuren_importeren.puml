@@ -1,4 +1,17 @@
 @startuml
-title UC-006 Voorkeuren importeren
+
+title SSD UC-006 Voorkeuren importeren - Hoofdsucces-scenario
+
+actor "Talentcoördinator" as TalentCoordinator
+participant ":Systeem" as Systeem
+
+TalentCoordinator -> Systeem : importeerVoorkeuren(talentenPeriode)
+
+
+Systeem -->> TalentCoordinator : vraagExcelBestand()
+
+TalentCoordinator -> Systeem : selecteerExcelBestand(excelBestand)
+
+Systeem -->> TalentCoordinator : toonImportResultaat(importGelukt)
 
 @enduml

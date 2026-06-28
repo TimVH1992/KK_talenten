@@ -1,4 +1,17 @@
+
 @startuml
-title UC-007 Automatische verdeling uitvoeren
+
+title SSD UC-007 Automatische verdeling uitvoeren - Hoofdsucces-scenario
+
+actor "Talentcoördinator" as TalentCoordinator
+participant ":Systeem" as Systeem
+
+TalentCoordinator -> Systeem : voerAutomatischeVerdelingUit(talentenPeriode)
+activate Systeem
+
+Systeem --> TalentCoordinator : toonVerdelingsResultaat(verdelingsResultaat)
+
+deactivate Systeem
 
 @enduml
+

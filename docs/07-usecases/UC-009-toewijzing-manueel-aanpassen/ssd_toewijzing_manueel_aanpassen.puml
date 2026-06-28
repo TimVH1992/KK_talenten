@@ -1,4 +1,24 @@
 @startuml
-title UC-009 Toewijzing manueel aanpassen
+
+title SSD UC-009 Toewijzing manueel aanpassen - Hoofdsucces-scenario
+
+actor "Talentcoördinator" as TalentCoordinator
+participant ":Systeem" as Systeem
+
+TalentCoordinator -> Systeem : vraagVerdelingOp(talentenPeriode)
+activate Systeem
+
+Systeem --> TalentCoordinator : toonVerdeling(verdeling)
+
+TalentCoordinator -> Systeem : selecteerLeerling(leerling)
+
+Systeem --> TalentCoordinator : toonHuidigeToewijzing(toewijzing)
+
+TalentCoordinator -> Systeem : wijzigToewijzing(leerling, ingerichtTalent)
+
+Systeem --> TalentCoordinator : toonAangepasteVerdeling(verdeling)
+
+deactivate Systeem
 
 @enduml
+```
