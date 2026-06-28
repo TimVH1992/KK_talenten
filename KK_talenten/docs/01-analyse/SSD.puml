@@ -1,0 +1,10 @@
+@startuml
+title SSD - Automatische verdeling starten
+
+actor Talentcoordinator
+participant Systeem
+
+Talentcoordinator -> Systeem : startAutomatischeVerdeling(talentenPeriode)
+Systeem --> Talentcoordinator : toonConceptVerdeling(verdelingsResultaat)
+
+@enduml

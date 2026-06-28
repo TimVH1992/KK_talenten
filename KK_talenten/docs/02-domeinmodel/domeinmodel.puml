@@ -1,0 +1,40 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+left to right direction
+
+title Domeinmodel Talentontwikkeling
+
+class Leerling
+class Leerkracht
+class Talent
+class TalentenPeriode
+class IngerichtTalent
+class VoorkeurFormulier
+class Voorkeur
+class Toewijzing
+
+Leerling "1" -- "0..*" VoorkeurFormulier : dient in >
+VoorkeurFormulier "1" -- "3" Voorkeur : bevat >
+Voorkeur "1" -- "1" IngerichtTalent : verwijst naar >
+
+TalentenPeriode "1" -- "0..*" IngerichtTalent : organiseert >
+Talent "1" -- "0..*" IngerichtTalent : wordt ingericht als >
+Leerkracht "0..*" -- "0..*" IngerichtTalent : begeleidt >
+
+Leerling "1" -- "0..*" Toewijzing : krijgt >
+Toewijzing "1" -- "1" IngerichtTalent : voor >
+TalentenPeriode "1" -- "0..*" Toewijzing : binnen >
+
+note right of Talent
+Algemeen aanbod.
+Voorbeeld: Programmeren, Koken, Voetbal.
+end note
+
+note right of IngerichtTalent
+Concrete inrichting van een talent
+binnen één talentenperiode.
+Bevat o.a. capaciteit.
+end note
+
+@enduml
