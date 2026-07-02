@@ -1,4 +1,69 @@
 @startuml
-title UC-007 Automatische verdeling uitvoeren
+
+title SD UC-007 Automatische verdeling uitvoeren - Hoofdsucces-scenario
+
+control "AutomatischeVerdelingController" as Controller
+control "AutomatischeVerdelingService" as Service
+control "AutomatischeVerdeler" as Verdeler
+
+database "TalentenPeriodeRepository" as TalentenPeriodeRepository
+database "IngerichtTalentRepository" as IngerichtTalentRepository
+database "VoorkeurRepository" as VoorkeurRepository
+database "ToewijzingRepository" as ToewijzingRepository
+
+entity "Toewijzing" as Toewijzing
+
+[-> Controller : voerAutomatischeVerdelingUit(talentenPeriodeId)
+
+Controller -> Service : voerAutomatischeVerdelingUit(talentenPeriodeId)
+
+Service -> TalentenPeriodeRepository : zoekOpId(talentenPeriodeId)
+TalentenPeriodeRepository --> Service : talentenPeriode
+
+Service -> IngerichtTalentRepository : zoekVoorPeriode(talentenPeriode)
+IngerichtTalentRepository --> Service : ingerichteTalenten
+
+Service -> VoorkeurRepository : zoekVoorPeriode(talentenPeriode)
+VoorkeurRepository --> Service : voorkeuren
+
+Service -> ToewijzingRepository : zoekHistorischeToewijzingenVoorLeerlingen(voorkeuren, talentenPeriode)
+ToewijzingRepository --> Service : historischeToewijzingen
+
+Service -> ToewijzingRepository : zoekToewijzingenVoorPeriode(talentenPeriode)
+ToewijzingRepository --> Service : bestaandeToewijzingen
+
+alt bestaande automatische toewijzingen aanwezig
+    Service -> ToewijzingRepository : verwijderAutomatischeToewijzingenVoorPeriode(talentenPeriode)
+end
+
+Service -> Verdeler : verdeel(voorkeuren, ingerichteTalenten, historischeToewijzingen)
+
+loop voor elke leerling met voorkeuren
+    Verdeler -> Verdeler : bepaalBesteMogelijkeVoorkeur(leerling)
+
+    alt ingerichtTalent heeft vrije capaciteit
+        create Toewijzing
+        Verdeler -> Toewijzing : new(leerling, ingerichtTalent, AUTOMATISCH)
+        Toewijzing --> Verdeler : toewijzing
+    else geen geldige plaats beschikbaar
+        Verdeler -> Verdeler : voegToeAanNietToegewezen(leerling)
+    end
+end
+
+Verdeler --> Service : verdelingsResultaat(toewijzingen, nietToegewezenLeerlingen)
+
+Service -> ToewijzingRepository : saveAll(toewijzingen)
+ToewijzingRepository --> Service : opgeslagenToewijzingen
+
+Service --> Controller : verdelingsResultaat
+Controller -->] : toonVerdelingsResultaat(verdelingsResultaat)
+
+note over Service, ToewijzingRepository
+  De automatische verdeling wordt uitgevoerd
+  binnen één transactie.
+
+  Als opslaan faalt, worden eerdere wijzigingen
+  teruggedraaid.
+end note
 
 @enduml
