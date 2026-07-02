@@ -5,12 +5,12 @@ title SSD UC-006 Voorkeuren importeren - Hoofdsucces-scenario
 actor "Talentcoördinator" as TalentCoordinator
 participant ":Systeem" as Systeem
 
-TalentCoordinator -> Systeem : importeerVoorkeuren(talentenPeriode)
+TalentCoordinator -> Systeem : startVoorkeurImport(talentenPeriode)
 
 
 Systeem -->> TalentCoordinator : vraagExcelBestand()
 
-TalentCoordinator -> Systeem : selecteerExcelBestand(excelBestand)
+TalentCoordinator -> Systeem : importeerVoorkeuren(talentenPeriode, excelBestand)
 
 Systeem -->> TalentCoordinator : toonImportResultaat(importGelukt)
 

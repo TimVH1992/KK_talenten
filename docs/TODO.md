@@ -23,3 +23,13 @@
 - [ ] Tabellen ontwerpen
 - [ ] JDBC-connectie maken
 - [ ] Repositories schrijven
+
+
+
+#### Ontwerpkeuzes: 
+- ExcelFormulier is geen domeinklasse.
+- ExcelVoorkeurParser leest alleen het Excelbestand.
+- VoorkeurImportService coördineert de use case.
+- VoorkeurImportValidator valideert de ingelezen data.
+- VoorkeurRepository slaat pas op nadat alles geldig is.
+- De import is alles-of-niets.

@@ -1,4 +1,54 @@
 @startuml
-title UC-006 Voorkeuren importeren
+
+title SD UC-006 Voorkeuren importeren - Hoofdsucces-scenario
+
+control "VoorkeurImportController" as Controller
+control "VoorkeurImportService" as Service
+control "ExcelVoorkeurParser" as Parser
+control "VoorkeurImportValidator" as Validator
+
+database "TalentenPeriodeRepository" as TalentenPeriodeRepository
+database "LeerlingRepository" as LeerlingRepository
+database "IngerichtTalentRepository" as IngerichtTalentRepository
+database "VoorkeurRepository" as VoorkeurRepository
+
+entity "Voorkeur" as Voorkeur
+
+[-> Controller : importeerVoorkeuren(talentenPeriodeId, excelBestand)
+
+Controller -> Service : importeerVoorkeuren(talentenPeriodeId, excelBestand)
+
+Service -> TalentenPeriodeRepository : zoekOpId(talentenPeriodeId)
+TalentenPeriodeRepository --> Service : talentenPeriode
+
+Service -> Parser : leesVoorkeuren(excelBestand)
+Parser --> Service : voorkeurImportRijen
+
+Service -> LeerlingRepository : zoekLeerlingen(voorkeurImportRijen)
+LeerlingRepository --> Service : leerlingen
+
+Service -> IngerichtTalentRepository : zoekIngerichteTalenten(talentenPeriode)
+IngerichtTalentRepository --> Service : ingerichteTalenten
+
+Service -> Validator : valideer(voorkeurImportRijen, leerlingen, ingerichteTalenten, talentenPeriode)
+Validator --> Service : validatieResultaat
+
+alt validatieResultaat bevat fouten
+    Service --> Controller : importResultaat(fouten)
+else validatieResultaat is geldig
+    loop voor elke voorkeurImportRij
+        loop voor voorkeur 1 t.e.m. 3
+            create Voorkeur
+            Service -> Voorkeur : new(leerling, talentenPeriode, ingerichtTalent, voorkeurNummer)
+        end
+    end
+
+    Service -> VoorkeurRepository : saveAll(voorkeuren)
+    VoorkeurRepository --> Service : opgeslagenVoorkeuren
+
+    Service --> Controller : importResultaat(geslaagd)
+end
+
+Controller -->] : toonImportResultaat(importResultaat)
 
 @enduml
