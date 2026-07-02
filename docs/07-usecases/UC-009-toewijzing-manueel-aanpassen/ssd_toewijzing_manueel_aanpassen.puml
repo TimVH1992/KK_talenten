@@ -21,4 +21,3 @@ Systeem --> TalentCoordinator : toonAangepasteVerdeling(verdeling)
 deactivate Systeem
 
 @enduml
-```

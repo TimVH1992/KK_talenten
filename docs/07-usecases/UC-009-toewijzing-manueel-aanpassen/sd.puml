@@ -1,4 +1,72 @@
+```plantuml
 @startuml
-title UC-009 Toewijzing manueel aanpassen
+
+title SD UC-009 Toewijzing manueel aanpassen - Hoofdsucces-scenario
+
+control "ManueleToewijzingController" as Controller
+control "ManueleToewijzingService" as Service
+
+database "TalentenPeriodeRepository" as TalentenPeriodeRepository
+database "LeerlingRepository" as LeerlingRepository
+database "IngerichtTalentRepository" as IngerichtTalentRepository
+database "ToewijzingRepository" as ToewijzingRepository
+
+entity "doelIngerichtTalent:IngerichtTalent" as DoelIngerichtTalent
+entity "bestaandeToewijzing:Toewijzing" as BestaandeToewijzing
+entity "nieuweToewijzing:Toewijzing" as NieuweToewijzing
+
+[-> Controller : wijzigToewijzing(talentenPeriodeId, leerlingId, ingerichtTalentId)
+
+Controller -> Service : wijzigToewijzing(talentenPeriodeId, leerlingId, ingerichtTalentId)
+
+Service -> TalentenPeriodeRepository : zoekOpId(talentenPeriodeId)
+TalentenPeriodeRepository --> Service : talentenPeriode
+
+Service -> LeerlingRepository : zoekOpId(leerlingId)
+LeerlingRepository --> Service : leerling
+
+Service -> IngerichtTalentRepository : zoekOpId(ingerichtTalentId)
+IngerichtTalentRepository --> Service : doelIngerichtTalent
+
+Service -> DoelIngerichtTalent : behoortTot(talentenPeriode)
+DoelIngerichtTalent --> Service : true
+
+Service -> ToewijzingRepository : zoekToewijzingVoorLeerlingEnPeriode(leerling, talentenPeriode)
+ToewijzingRepository --> Service : bestaandeToewijzing
+
+Service -> ToewijzingRepository : telToewijzingenVoorIngerichtTalent(doelIngerichtTalent)
+ToewijzingRepository --> Service : aantalToewijzingen
+
+Service -> DoelIngerichtTalent : heeftVrijePlaats(aantalToewijzingen)
+DoelIngerichtTalent --> Service : true
+
+alt bestaande toewijzing gevonden
+    Service -> BestaandeToewijzing : wijzigNaar(doelIngerichtTalent, MANUEEL)
+    Service -> ToewijzingRepository : update(bestaandeToewijzing)
+    ToewijzingRepository --> Service : opgeslagenToewijzing
+else geen bestaande toewijzing gevonden
+    create NieuweToewijzing
+    Service -> NieuweToewijzing : new(leerling, doelIngerichtTalent, MANUEEL)
+    NieuweToewijzing --> Service : nieuweToewijzing
+
+    Service -> ToewijzingRepository : save(nieuweToewijzing)
+    ToewijzingRepository --> Service : opgeslagenToewijzing
+end
+
+Service -> ToewijzingRepository : zoekToewijzingenVoorPeriode(talentenPeriode)
+ToewijzingRepository --> Service : aangepasteVerdeling
+
+Service --> Controller : aangepasteVerdeling
+
+Controller -->] : toonAangepasteVerdeling(aangepasteVerdeling)
+
+note over Service, ToewijzingRepository
+  De manuele wijziging wordt uitgevoerd
+  binnen één transactie.
+
+  Als opslaan faalt, wordt de wijziging
+  teruggedraaid.
+end note
 
 @enduml
+```
