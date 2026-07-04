@@ -1,18 +1,19 @@
 # TODO
 
 ## Stap 1: Analyse
-- [ ] Domeinmodel uitschrijven
-- [ ] Businessregels bepalen
-- [ ] Voorbeelddata maken
+- [x] Domeinmodel uitschrijven
+- [x] Businessregels bepalen
+- [x] Voorbeelddata maken
 
 ## Stap 2: Java model
-- [ ] Leerling
-- [ ] Talent
-- [ ] TalentenPeriode
-- [ ] IngerichtTalent
-- [ ] VoorkeurFormulier
-- [ ] Voorkeur
-- [ ] Toewijzing
+- [x]  Leerling
+- [x] Talent
+- [x] TalentenPeriode
+- [x] IngerichtTalent
+- [x] VoorkeurFormulier
+- [x] Voorkeur
+- [x] Toewijzing
+- [ ] Testen of de klassen werken! 
 
 ## Stap 3: Verdelingslogica
 - [ ] Eerste eenvoudige verdeling maken
