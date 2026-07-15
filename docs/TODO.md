@@ -13,7 +13,7 @@
 - [x] VoorkeurFormulier
 - [x] Voorkeur
 - [x] Toewijzing
-- [ ] Testen of de klassen werken! 
+- [x] Testen of de klassen werken! 
 
 ## Stap 3: Verdelingslogica
 - [ ] Eerste eenvoudige verdeling maken
