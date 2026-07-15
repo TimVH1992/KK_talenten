@@ -6,7 +6,7 @@ public class Klas {
     private String schooljaar;
 
     public Klas(long id, String naam, String schooljaar){
-        if (naam == null || naam.isEmpty()){
+        if (naam == null || naam.isBlank()){
             throw new IllegalArgumentException("Naam van de klas mag niet leeg zijn");
         }
         if (schooljaar == null || schooljaar.isEmpty()){

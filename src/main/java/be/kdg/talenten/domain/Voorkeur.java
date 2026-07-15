@@ -28,6 +28,7 @@ public class Voorkeur {
         if (!ingerichtTalent.behoortTot(talentenPeriode)) {
             throw new IllegalArgumentException("Het ingericht talent behoort niet tot deze talentenperiode.");
         }
+        this.id = volgendeId++;
         this.leerling = leerling;
         this.talentenPeriode = talentenPeriode;
         this.ingerichtTalent = ingerichtTalent;

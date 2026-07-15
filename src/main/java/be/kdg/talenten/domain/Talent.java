@@ -25,4 +25,13 @@ public class Talent {
     public long getId() {
         return id;
     }
+
+    @Override
+    public String toString() {
+        return "Talent{" +
+                "id=" + id +
+                ", naam='" + naam + '\'' +
+                ", beschrijving='" + beschrijving + '\'' +
+                '}';
+    }
 }

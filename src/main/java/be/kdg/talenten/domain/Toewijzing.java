@@ -6,12 +6,25 @@ public class Toewijzing {
     private static long volgendeId =1;
 
     private long id;
+    private Leerling leerling;
+    private IngerichtTalent ingerichtTalent;
     private ToewijzingsType toewijzingsType;
     private LocalDateTime toegewezenOp;
     private LocalDateTime gewijzigdOp;
 
-    public Toewijzing(ToewijzingsType toewijzingsType) {
+    public Toewijzing(Leerling leerling, IngerichtTalent ingerichtTalent, ToewijzingsType toewijzingsType) {
+        if (leerling == null){
+            throw new IllegalArgumentException("Leerling mag niet null zijn");
+        }
+        if (ingerichtTalent == null){
+            throw new IllegalArgumentException("Ingericht talent mag niet null zijn");
+        }
+        if (toewijzingsType == null){
+            throw new IllegalArgumentException("toewijzingstype mag niet null zijn");
+        }
         this.id = volgendeId++;
+        this.leerling = leerling;
+        this.ingerichtTalent = ingerichtTalent;
         this.toewijzingsType = toewijzingsType;
         this.toegewezenOp = LocalDateTime.now();
         this.gewijzigdOp = null;
@@ -35,5 +48,17 @@ public class Toewijzing {
 
     public void setGewijzigdOp(LocalDateTime gewijzigdOp) {
         this.gewijzigdOp = gewijzigdOp;
+    }
+
+    @Override
+    public String toString() {
+        return "Toewijzing{" +
+                "id=" + id +
+                ", leerling=" + leerling +
+                ", ingerichtTalent=" + ingerichtTalent +
+                ", toewijzingsType=" + toewijzingsType +
+                ", toegewezenOp=" + toegewezenOp +
+                ", gewijzigdOp=" + gewijzigdOp +
+                '}';
     }
 }

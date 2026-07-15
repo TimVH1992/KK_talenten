@@ -1,7 +1,9 @@
 package be.kdg.talenten.testPackage;
 
-import be.kdg.talenten.domain.Klas;
-import be.kdg.talenten.domain.Leerling;
+import be.kdg.talenten.domain.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Test1 {
     public static void main(String[] args) {
@@ -17,7 +19,18 @@ public class Test1 {
 
         tim.wijsKlasToe(klas1AA);
 
-        System.out.println(tim.getAchternaam());
-        System.out.println(tim.getKlas());
+
+        Talent schaken = new Talent("Schaken", "Schaken is een denksport waarbij je met verschillende strategieen je tegenstander leert verslaan.");
+        Talent voetbal = new Talent("Voetbal", "Voetbal is een fantastische teamsport met een bal.");
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2026,9,1), LocalDate.of(2026,10,31));
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, herfst, 20);
+
+        System.out.println(schakenHerfst);
+
+        Toewijzing toewijzingTim = new Toewijzing(tim, schakenHerfst, ToewijzingsType.MANUEEL);
+        System.out.println(toewijzingTim);
     }
 }

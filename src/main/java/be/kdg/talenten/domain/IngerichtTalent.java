@@ -1,5 +1,6 @@
 package be.kdg.talenten.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IngerichtTalent {
@@ -13,6 +14,7 @@ public class IngerichtTalent {
         this.talent = talent;
         this.talentenPeriode = talentenPeriode;
         this.maxCapaciteit = maxCapaciteit;
+        this.leerkrachten = new ArrayList<>();
     }
 
     public Talent getTalent() {
@@ -27,12 +29,18 @@ public class IngerichtTalent {
         return maxCapaciteit;
     }
 
-    public List<Leerkracht> getLeerkrachten() {
-        return leerkrachten;
+    public void voegLeerkrachtToe(Leerkracht leerkracht) {
+        if (leerkracht == null) {
+            throw new IllegalArgumentException("Leerkracht mag niet null zijn.");
+        }
+
+        if (!leerkrachten.contains(leerkracht)) {
+            leerkrachten.add(leerkracht);
+        }
     }
 
-    public void setLeerkrachten(List<Leerkracht> leerkrachten) {
-        this.leerkrachten = leerkrachten;
+    public List<Leerkracht> getLeerkrachten() {
+        return new ArrayList<>(leerkrachten);
     }
 
     public void setMaxCapaciteit(int maxCapaciteit) {
@@ -45,5 +53,16 @@ public class IngerichtTalent {
 
     public boolean heeftVrijePlaats(int aantalToewijzingen){
         return aantalToewijzingen < maxCapaciteit;
+    }
+
+    @Override
+    public String toString() {
+        return "IngerichtTalent{" +
+                "id=" + id +
+                ", talent=" + talent +
+                ", talentenPeriode=" + talentenPeriode +
+                ", maxCapaciteit=" + maxCapaciteit +
+                ", leerkrachten=" + leerkrachten +
+                '}';
     }
 }

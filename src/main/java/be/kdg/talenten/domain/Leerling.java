@@ -40,4 +40,14 @@ public class Leerling {
     public String getAchternaam() {
         return achternaam;
     }
+
+    @Override
+    public String toString() {
+        return "Leerling{" +
+                "id=" + id +
+                ", voornaam='" + voornaam + '\'' +
+                ", achternaam='" + achternaam + '\'' +
+                ", klas=" + klas +
+                '}';
+    }
 }
