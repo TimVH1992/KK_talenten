@@ -50,6 +50,14 @@ public class Toewijzing {
         this.gewijzigdOp = gewijzigdOp;
     }
 
+    public Leerling getLeerling() {
+        return leerling;
+    }
+
+    public IngerichtTalent getIngerichtTalent() {
+        return ingerichtTalent;
+    }
+
     @Override
     public String toString() {
         return leerling + " -> " + ingerichtTalent + " [" + toewijzingsType + "]";
