@@ -194,5 +194,92 @@ public class AutomatischeVerdelerTest {
 
         assertEquals(1, aantalToegewezenAanSchaken);
     }
+
+    @Test
+    void leerlingKrijgtLieverTalentDatHijNogNietGevolgdHeeft() {
+        // Arrange
+        Klas klas = new Klas("1AA", "2026");
+
+        Leerling jan = new Leerling("Jan", "Peeters");
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2025, 11,22), LocalDate.of(2026,02,21));
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10);
+
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
+        historischeToewijzingen.add(new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH));
+
+        List<Voorkeur> voorkeuren = new ArrayList<>();
+        voorkeuren.add(new Voorkeur(jan, winter, schakenWinter, 1));
+        voorkeuren.add(new Voorkeur(jan, winter, voetbalWinter, 2));
+        voorkeuren.add(new Voorkeur(jan, winter, kokenWinter, 3));
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren, historischeToewijzingen);
+
+        // Act
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // Assert
+        Toewijzing toewijzingJan = zoekToewijzingVoorLeerling(resultaat, jan);
+
+        assertSame(voetbalWinter, toewijzingJan.getIngerichtTalent());
+    }
+
+    @Test
+    void alsNieuweTalentenVolZittenMagLeerlingGevolgdTalentOpnieuwVolgen(){
+        Klas klas = new Klas("1AA", "2026");
+
+        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jos = new Leerling("Jos", "Jacobs");
+        Leerling tim = new Leerling("Tim", "VH");
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2025, 11,22), LocalDate.of(2026,2,21));
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 1);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 1);
+
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
+        historischeToewijzingen.add(new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH));
+
+        List<Voorkeur> voorkeuren = new ArrayList<>();
+        voorkeuren.add(new Voorkeur(jos, winter, voetbalWinter, 1));
+        voorkeuren.add(new Voorkeur(jos, winter, schakenWinter, 2));
+        voorkeuren.add(new Voorkeur(jos, winter, kokenWinter, 3));
+
+        // Tim vult Koken op
+        voorkeuren.add(new Voorkeur(tim, winter, kokenWinter, 1));
+        voorkeuren.add(new Voorkeur(tim, winter, schakenWinter, 2));
+        voorkeuren.add(new Voorkeur(tim, winter, voetbalWinter, 3));
+
+        // Jan heeft Schaken al gevolgd, maar Voetbal en Koken zullen vol zitten
+        voorkeuren.add(new Voorkeur(jan, winter, schakenWinter, 1));
+        voorkeuren.add(new Voorkeur(jan, winter, voetbalWinter, 2));
+        voorkeuren.add(new Voorkeur(jan, winter, kokenWinter, 3));
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren, historischeToewijzingen);
+
+        // Act
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // Assert
+        Toewijzing toewijzingJan = zoekToewijzingVoorLeerling(resultaat, jan);
+
+        assertSame(schakenWinter, toewijzingJan.getIngerichtTalent());
+    }
 }
 
