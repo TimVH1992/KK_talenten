@@ -43,11 +43,6 @@ public class Leerling {
 
     @Override
     public String toString() {
-        return "Leerling{" +
-                "id=" + id +
-                ", voornaam='" + voornaam + '\'' +
-                ", achternaam='" + achternaam + '\'' +
-                ", klas=" + klas +
-                '}';
+        return voornaam + " " + achternaam;
     }
 }

@@ -57,12 +57,6 @@ public class IngerichtTalent {
 
     @Override
     public String toString() {
-        return "IngerichtTalent{" +
-                "id=" + id +
-                ", talent=" + talent +
-                ", talentenPeriode=" + talentenPeriode +
-                ", maxCapaciteit=" + maxCapaciteit +
-                ", leerkrachten=" + leerkrachten +
-                '}';
+        return talent.getNaam() + " (" + talentenPeriode.getNaam() + ")";
     }
 }

@@ -52,13 +52,6 @@ public class Toewijzing {
 
     @Override
     public String toString() {
-        return "Toewijzing{" +
-                "id=" + id +
-                ", leerling=" + leerling +
-                ", ingerichtTalent=" + ingerichtTalent +
-                ", toewijzingsType=" + toewijzingsType +
-                ", toegewezenOp=" + toegewezenOp +
-                ", gewijzigdOp=" + gewijzigdOp +
-                '}';
+        return leerling + " -> " + ingerichtTalent + " [" + toewijzingsType + "]";
     }
 }

@@ -28,10 +28,6 @@ public class Talent {
 
     @Override
     public String toString() {
-        return "Talent{" +
-                "id=" + id +
-                ", naam='" + naam + '\'' +
-                ", beschrijving='" + beschrijving + '\'' +
-                '}';
+        return naam;
     }
 }
