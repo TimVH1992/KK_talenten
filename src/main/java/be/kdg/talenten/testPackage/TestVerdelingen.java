@@ -27,7 +27,7 @@ public class TestVerdelingen {
                 LocalDate.of(2026, 10, 31)
         );
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1);
         IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1);
         IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1);
 
