@@ -61,4 +61,64 @@ public class AutomatischeVerdelingServiceTest {
         assertSame(jan, opgeslagenToewijzing.getLeerling());
         assertSame(schakenWinter, opgeslagenToewijzing.getIngerichtTalent());
     }
+    @Test
+    void serviceGebruiktHistorischeToewijzingenBijAutomatischeVerdeling() {
+        // Arrange
+        Leerling jan = new Leerling("Jan", "Peeters");
+
+        TalentenPeriode herfst = new TalentenPeriode(
+                "Herfst",
+                LocalDate.of(2025, 9, 21),
+                LocalDate.of(2025, 11, 21)
+        );
+
+        TalentenPeriode winter = new TalentenPeriode(
+                "Winter",
+                LocalDate.of(2025, 11, 22),
+                LocalDate.of(2026, 2, 21)
+        );
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10);
+
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
+        historischeToewijzingen.add(
+                new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH)
+        );
+
+        List<Voorkeur> voorkeuren = new ArrayList<>();
+        voorkeuren.add(new Voorkeur(jan, winter, schakenWinter, 1));
+        voorkeuren.add(new Voorkeur(jan, winter, voetbalWinter, 2));
+        voorkeuren.add(new Voorkeur(jan, winter, kokenWinter, 3));
+
+        InMemoryVoorkeurRepository voorkeurRepository =
+                new InMemoryVoorkeurRepository(voorkeuren);
+
+        InMemoryToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(historischeToewijzingen);
+
+        AutomatischeVerdelingService service =
+                new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository);
+
+        // Act
+        VerdelingsResultaat resultaat = service.voerAutomatischeVerdelingUit(winter);
+
+        // Assert
+        assertEquals(1, resultaat.getAantalToewijzingen());
+        assertEquals(1, toewijzingRepository.getOpgeslagenToewijzingen().size());
+
+        Toewijzing opgeslagenToewijzing =
+                toewijzingRepository.getOpgeslagenToewijzingen().get(0);
+
+        assertSame(jan, opgeslagenToewijzing.getLeerling());
+        assertSame(voetbalWinter, opgeslagenToewijzing.getIngerichtTalent());
+        assertSame(ToewijzingsType.AUTOMATISCH, opgeslagenToewijzing.getToewijzingsType());
+    }
 }
