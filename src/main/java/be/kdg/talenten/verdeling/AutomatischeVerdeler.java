@@ -68,7 +68,7 @@ public class AutomatischeVerdeler {
             }
 
             if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)) {
-                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH);
+                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
             }
         }
 
@@ -84,7 +84,7 @@ public class AutomatischeVerdeler {
             IngerichtTalent ingerichtTalent = voorkeur.getIngerichtTalent();
 
             if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)) {
-                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH);
+                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
             }
         }
 

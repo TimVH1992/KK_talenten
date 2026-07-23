@@ -231,6 +231,7 @@ public class AutomatischeVerdelerTest {
         Toewijzing toewijzingJan = zoekToewijzingVoorLeerling(resultaat, jan);
 
         assertSame(voetbalWinter, toewijzingJan.getIngerichtTalent());
+        assertEquals(2, toewijzingJan.getVoorkeurNummer());
     }
 
     @Test

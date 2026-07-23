@@ -1,0 +1,492 @@
+@startuml
+
+title Design Class Diagram v2 - Talentontwikkeling
+
+hide circle
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+' =====================================================
+' CONTROLLERS
+' =====================================================
+
+package "controller" {
+
+class VoorkeurImportController {
+  - voorkeurImportService: VoorkeurImportService
+
+  + importeerVoorkeuren(talentenPeriodeId: Long, excelBestand: File): ImportResultaat
+}
+
+class AutomatischeVerdelingController {
+  - automatischeVerdelingService: AutomatischeVerdelingService
+
+  + voerAutomatischeVerdelingUit(talentenPeriodeId: Long): VerdelingsResultaat
+}
+
+class ManueleToewijzingController {
+  - manueleToewijzingService: ManueleToewijzingService
+
+  + wijzigToewijzing(talentenPeriodeId: Long, leerlingId: Long, ingerichtTalentId: Long): VerdelingsResultaat
+}
+
+class OverzichtController {
+  - overzichtService: OverzichtService
+
+  + maakOverzichtPerKlas(talentenPeriodeId: Long): Map<Klas, List<Toewijzing>>
+  + maakOverzichtPerIngerichtTalent(talentenPeriodeId: Long): Map<IngerichtTalent, List<Toewijzing>>
+}
+
+}
+
+' =====================================================
+' SERVICES
+' =====================================================
+
+package "service" {
+
+class VoorkeurImportService {
+  - talentenPeriodeRepository: TalentenPeriodeRepository
+  - klasRepository: KlasRepository
+  - leerlingRepository: LeerlingRepository
+  - ingerichtTalentRepository: IngerichtTalentRepository
+  - voorkeurRepository: VoorkeurRepository
+  - excelVoorkeurParser: ExcelVoorkeurParser
+  - voorkeurImportValidator: VoorkeurImportValidator
+
+  + importeerVoorkeuren(talentenPeriodeId: Long, excelBestand: File): ImportResultaat
+}
+
+class AutomatischeVerdelingService {
+  - talentenPeriodeRepository: TalentenPeriodeRepository
+  - voorkeurRepository: VoorkeurRepository
+  - toewijzingRepository: ToewijzingRepository
+
+  + AutomatischeVerdelingService(voorkeurRepository: VoorkeurRepository, toewijzingRepository: ToewijzingRepository)
+  + voerAutomatischeVerdelingUit(talentenPeriode: TalentenPeriode): VerdelingsResultaat
+  + voerAutomatischeVerdelingUit(talentenPeriodeId: Long): VerdelingsResultaat
+}
+
+class ManueleToewijzingService {
+  - talentenPeriodeRepository: TalentenPeriodeRepository
+  - leerlingRepository: LeerlingRepository
+  - ingerichtTalentRepository: IngerichtTalentRepository
+  - voorkeurRepository: VoorkeurRepository
+  - toewijzingRepository: ToewijzingRepository
+
+  + wijzigToewijzing(talentenPeriodeId: Long, leerlingId: Long, ingerichtTalentId: Long): VerdelingsResultaat
+  - bepaalVoorkeurNummer(leerling: Leerling, talentenPeriode: TalentenPeriode, ingerichtTalent: IngerichtTalent): Integer
+}
+
+class OverzichtService {
+  - talentenPeriodeRepository: TalentenPeriodeRepository
+  - toewijzingRepository: ToewijzingRepository
+
+  + maakOverzichtPerKlas(talentenPeriodeId: Long): Map<Klas, List<Toewijzing>>
+  + maakOverzichtPerIngerichtTalent(talentenPeriodeId: Long): Map<IngerichtTalent, List<Toewijzing>>
+}
+
+}
+
+' =====================================================
+' IMPORT
+' =====================================================
+
+package "import" {
+
+class ExcelVoorkeurParser {
+  + leesVoorkeuren(excelBestand: File): List<VoorkeurImportRij>
+}
+
+class VoorkeurImportValidator {
+  + valideer(voorkeurImportRijen: List<VoorkeurImportRij>, leerlingen: List<Leerling>, ingerichteTalenten: List<IngerichtTalent>, talentenPeriode: TalentenPeriode): ValidatieResultaat
+}
+
+class VoorkeurImportRij {
+  - klasNaam: String
+  - leerlingVoornaam: String
+  - leerlingAchternaam: String
+  - keuze1: String
+  - keuze2: String
+  - keuze3: String
+
+  + getKlasNaam(): String
+  + getLeerlingVoornaam(): String
+  + getLeerlingAchternaam(): String
+  + getKeuze1(): String
+  + getKeuze2(): String
+  + getKeuze3(): String
+}
+
+class ImportResultaat {
+  - gelukt: boolean
+  - berichten: List<String>
+
+  + isGelukt(): boolean
+  + getBerichten(): List<String>
+}
+
+class ValidatieResultaat {
+  - geldig: boolean
+  - fouten: List<String>
+
+  + isGeldig(): boolean
+  + heeftFouten(): boolean
+  + getFouten(): List<String>
+}
+
+}
+
+' =====================================================
+' VERDELING
+' =====================================================
+
+package "verdeling" {
+
+class AutomatischeVerdeler {
+  - voorkeuren: List<Voorkeur>
+  - historischeToewijzingen: List<Toewijzing>
+  - verdelingsResultaat: VerdelingsResultaat
+
+  + AutomatischeVerdeler(voorkeuren: List<Voorkeur>)
+  + AutomatischeVerdeler(voorkeuren: List<Voorkeur>, historischeToewijzingen: List<Toewijzing>)
+  + verdeel(): VerdelingsResultaat
+
+  - zoekToewijzingZonderHistoriek(leerling: Leerling, voorkeurenVanLeerling: List<Voorkeur>, bezetting: Map<IngerichtTalent, Integer>): Toewijzing
+  - zoekToewijzingMetHistoriekToegestaan(leerling: Leerling, voorkeurenVanLeerling: List<Voorkeur>, bezetting: Map<IngerichtTalent, Integer>): Toewijzing
+  - heeftIngerichtTalentVrijePlaats(ingerichtTalent: IngerichtTalent, bezetting: Map<IngerichtTalent, Integer>): boolean
+  - heeftLeerlingTalentAlGevolgd(leerling: Leerling, talent: Talent): boolean
+  - groepeerVoorkeurenPerLeerling(): Map<Leerling, List<Voorkeur>>
+}
+
+class VerdelingsResultaat {
+  - toewijzingen: List<Toewijzing>
+  - nietToegewezenLeerlingen: List<Leerling>
+
+  + VerdelingsResultaat()
+  + voegToewijzingToe(toewijzing: Toewijzing): void
+  + voegNietToegewezenLeerlingToe(leerling: Leerling): void
+  + getToewijzingen(): List<Toewijzing>
+  + getNietToegewezenLeerlingen(): List<Leerling>
+  + getAantalToewijzingen(): int
+  + heeftNietToegewezenLeerlingen(): boolean
+}
+
+}
+
+' =====================================================
+' DOMAIN
+' =====================================================
+
+package "domain" {
+
+class Klas {
+  - id: Long
+  - naam: String
+  - schooljaar: String
+
+  + Klas(naam: String, schooljaar: String)
+  + getId(): Long
+  + getNaam(): String
+  + getSchooljaar(): String
+}
+
+class Leerling {
+  - id: Long
+  - voornaam: String
+  - achternaam: String
+  - klas: Klas
+
+  + Leerling(voornaam: String, achternaam: String)
+  + Leerling(voornaam: String, achternaam: String, klas: Klas)
+  + wijsKlasToe(klas: Klas): void
+  + getId(): Long
+  + getVoornaam(): String
+  + getAchternaam(): String
+  + getKlas(): Klas
+  + getVolledigeNaam(): String
+}
+
+class Leerkracht {
+  - id: Long
+  - voornaam: String
+  - achternaam: String
+  - email: String
+
+  + Leerkracht(voornaam: String, achternaam: String)
+  + Leerkracht(voornaam: String, achternaam: String, email: String)
+  + getId(): Long
+  + getVoornaam(): String
+  + getAchternaam(): String
+  + getEmail(): String
+  + getVolledigeNaam(): String
+}
+
+class Talent {
+  - id: Long
+  - naam: String
+  - beschrijving: String
+
+  + Talent(naam: String, beschrijving: String)
+  + getId(): Long
+  + getNaam(): String
+  + getBeschrijving(): String
+}
+
+class TalentenPeriode {
+  - id: Long
+  - naam: String
+  - startDatum: LocalDate
+  - eindDatum: LocalDate
+
+  + TalentenPeriode(naam: String, startDatum: LocalDate, eindDatum: LocalDate)
+  + getId(): Long
+  + getNaam(): String
+  + getStartDatum(): LocalDate
+  + getEindDatum(): LocalDate
+  + isVoor(anderePeriode: TalentenPeriode): boolean
+}
+
+class IngerichtTalent {
+  - id: Long
+  - talent: Talent
+  - talentenPeriode: TalentenPeriode
+  - maxCapaciteit: int
+  - leerkrachten: List<Leerkracht>
+
+  + IngerichtTalent(talent: Talent, talentenPeriode: TalentenPeriode, maxCapaciteit: int)
+  + voegLeerkrachtToe(leerkracht: Leerkracht): void
+  + behoortTot(talentenPeriode: TalentenPeriode): boolean
+  + heeftVrijePlaats(aantalToewijzingen: int): boolean
+  + getId(): Long
+  + getTalent(): Talent
+  + getTalentenPeriode(): TalentenPeriode
+  + getMaxCapaciteit(): int
+  + getLeerkrachten(): List<Leerkracht>
+}
+
+class Voorkeur {
+  - id: Long
+  - leerling: Leerling
+  - talentenPeriode: TalentenPeriode
+  - ingerichtTalent: IngerichtTalent
+  - voorkeurNummer: int
+
+  + Voorkeur(leerling: Leerling, talentenPeriode: TalentenPeriode, ingerichtTalent: IngerichtTalent, voorkeurNummer: int)
+  + getId(): Long
+  + getLeerling(): Leerling
+  + getTalentenPeriode(): TalentenPeriode
+  + getIngerichtTalent(): IngerichtTalent
+  + getVoorkeurNummer(): int
+}
+
+class Toewijzing {
+  - id: Long
+  - leerling: Leerling
+  - ingerichtTalent: IngerichtTalent
+  - type: ToewijzingsType
+  - voorkeurNummer: Integer
+  - toegewezenOp: LocalDateTime
+  - gewijzigdOp: LocalDateTime
+
+  + Toewijzing(leerling: Leerling, ingerichtTalent: IngerichtTalent, type: ToewijzingsType)
+  + Toewijzing(leerling: Leerling, ingerichtTalent: IngerichtTalent, type: ToewijzingsType, voorkeurNummer: Integer)
+  + wijzigNaar(ingerichtTalent: IngerichtTalent, type: ToewijzingsType, voorkeurNummer: Integer): void
+  + getId(): Long
+  + getLeerling(): Leerling
+  + getIngerichtTalent(): IngerichtTalent
+  + getType(): ToewijzingsType
+  + getToewijzingsType(): ToewijzingsType
+  + getVoorkeurNummer(): Integer
+  + getToegewezenOp(): LocalDateTime
+  + getGewijzigdOp(): LocalDateTime
+}
+
+enum ToewijzingsType {
+  AUTOMATISCH
+  MANUEEL
+}
+
+}
+
+' =====================================================
+' REPOSITORIES
+' =====================================================
+
+package "repository" {
+
+interface KlasRepository {
+  + zoekOpId(id: Long): Klas
+  + zoekOpNaamEnSchooljaar(naam: String, schooljaar: String): Klas
+  + save(klas: Klas): void
+}
+
+interface TalentenPeriodeRepository {
+  + zoekOpId(id: Long): TalentenPeriode
+  + save(talentenPeriode: TalentenPeriode): void
+}
+
+interface LeerlingRepository {
+  + zoekOpId(id: Long): Leerling
+  + zoekLeerlingen(voorkeurImportRijen: List<VoorkeurImportRij>): List<Leerling>
+  + zoekVoorKlas(klas: Klas): List<Leerling>
+  + save(leerling: Leerling): void
+  + saveAll(leerlingen: List<Leerling>): void
+}
+
+interface LeerkrachtRepository {
+  + zoekOpId(id: Long): Leerkracht
+  + save(leerkracht: Leerkracht): void
+}
+
+interface TalentRepository {
+  + zoekOpId(id: Long): Talent
+  + zoekOpNaam(naam: String): Talent
+  + save(talent: Talent): void
+}
+
+interface IngerichtTalentRepository {
+  + zoekOpId(id: Long): IngerichtTalent
+  + zoekVoorPeriode(talentenPeriode: TalentenPeriode): List<IngerichtTalent>
+  + save(ingerichtTalent: IngerichtTalent): void
+}
+
+interface VoorkeurRepository {
+  + zoekVoorPeriode(talentenPeriode: TalentenPeriode): List<Voorkeur>
+  + zoekVoorLeerlingEnPeriode(leerling: Leerling, talentenPeriode: TalentenPeriode): List<Voorkeur>
+  + zoekVoorkeurNummer(leerling: Leerling, talentenPeriode: TalentenPeriode, ingerichtTalent: IngerichtTalent): Integer
+  + saveAll(voorkeuren: List<Voorkeur>): void
+}
+
+interface ToewijzingRepository {
+  + zoekHistorischeToewijzingen(): List<Toewijzing>
+  + zoekHistorischeToewijzingenVoorLeerlingen(voorkeuren: List<Voorkeur>, talentenPeriode: TalentenPeriode): List<Toewijzing>
+  + zoekToewijzingenVoorPeriode(talentenPeriode: TalentenPeriode): List<Toewijzing>
+  + zoekToewijzingVoorLeerlingEnPeriode(leerling: Leerling, talentenPeriode: TalentenPeriode): Toewijzing
+  + telToewijzingenVoorIngerichtTalent(ingerichtTalent: IngerichtTalent): int
+  + verwijderAutomatischeToewijzingenVoorPeriode(talentenPeriode: TalentenPeriode): void
+  + save(toewijzing: Toewijzing): void
+  + saveAll(toewijzingen: List<Toewijzing>): void
+  + update(toewijzing: Toewijzing): void
+}
+
+}
+
+' =====================================================
+' DOMAIN RELATIONS
+' =====================================================
+
+Klas "1" <-- "0..*" Leerling : zit in
+
+TalentenPeriode "1" <-- "0..*" IngerichtTalent : bevat
+Talent "1" <-- "0..*" IngerichtTalent : basis van
+Leerkracht "0..*" -- "1..*" IngerichtTalent : begeleidt
+
+Leerling "1" <-- "0..*" Voorkeur : geeft op
+TalentenPeriode "1" <-- "0..*" Voorkeur : hoort bij
+Voorkeur "0..*" --> "1" IngerichtTalent : verwijst naar
+
+Leerling "1" <-- "0..*" Toewijzing : krijgt
+Toewijzing "0..*" --> "1" IngerichtTalent : wijst toe aan
+Toewijzing --> ToewijzingsType
+
+' =====================================================
+' CONTROLLER -> SERVICE
+' =====================================================
+
+VoorkeurImportController --> VoorkeurImportService
+AutomatischeVerdelingController --> AutomatischeVerdelingService
+ManueleToewijzingController --> ManueleToewijzingService
+OverzichtController --> OverzichtService
+
+' =====================================================
+' SERVICE DEPENDENCIES
+' =====================================================
+
+VoorkeurImportService --> TalentenPeriodeRepository
+VoorkeurImportService --> KlasRepository
+VoorkeurImportService --> LeerlingRepository
+VoorkeurImportService --> IngerichtTalentRepository
+VoorkeurImportService --> VoorkeurRepository
+VoorkeurImportService --> ExcelVoorkeurParser
+VoorkeurImportService --> VoorkeurImportValidator
+VoorkeurImportService --> ImportResultaat
+
+AutomatischeVerdelingService --> TalentenPeriodeRepository
+AutomatischeVerdelingService --> VoorkeurRepository
+AutomatischeVerdelingService --> ToewijzingRepository
+AutomatischeVerdelingService --> AutomatischeVerdeler
+AutomatischeVerdelingService --> VerdelingsResultaat
+
+ManueleToewijzingService --> TalentenPeriodeRepository
+ManueleToewijzingService --> LeerlingRepository
+ManueleToewijzingService --> IngerichtTalentRepository
+ManueleToewijzingService --> VoorkeurRepository
+ManueleToewijzingService --> ToewijzingRepository
+ManueleToewijzingService --> VerdelingsResultaat
+
+OverzichtService --> TalentenPeriodeRepository
+OverzichtService --> ToewijzingRepository
+
+' =====================================================
+' HELPER DEPENDENCIES
+' =====================================================
+
+ExcelVoorkeurParser --> VoorkeurImportRij
+VoorkeurImportValidator --> ValidatieResultaat
+AutomatischeVerdeler --> VerdelingsResultaat
+AutomatischeVerdeler --> Toewijzing
+AutomatischeVerdeler --> Voorkeur
+
+' =====================================================
+' NOTES
+' =====================================================
+
+note bottom of Toewijzing
+  voorkeurNummer bewaart op basis van
+  welke voorkeur de leerling werd toegewezen.
+
+  1, 2 of 3 = voorkeur van de leerling.
+  null = manuele toewijzing zonder passende voorkeur.
+end note
+
+note bottom of Klas
+  Klas is een aparte domeinklasse.
+  Hierdoor kunnen later overzichten
+  per klas gemaakt worden.
+end note
+
+note bottom of OverzichtService
+  Voorziene rapportagefunctionaliteit.
+
+  Overzichten kunnen worden afgeleid via:
+  Toewijzing -> Leerling -> Klas
+  Toewijzing -> IngerichtTalent
+  Toewijzing -> voorkeurNummer
+end note
+
+note bottom of VoorkeurImportService
+  Coördineert UC-006.
+  Leest niet zelf Excel.
+  Valideert niet zelf alle regels.
+  Slaat enkel op via repositories.
+end note
+
+note bottom of AutomatischeVerdelingService
+  Coördineert UC-007.
+  Haalt voorkeuren en historiek op,
+  delegeert het algoritme aan
+  AutomatischeVerdeler en slaat
+  de gemaakte toewijzingen op.
+end note
+
+note bottom of ManueleToewijzingService
+  Coördineert UC-009.
+  Controleert periode, leerling,
+  doel-talent en capaciteit.
+  Bepaalt indien mogelijk ook het
+  voorkeurNummer van de manuele keuze.
+end note
+
+@enduml
