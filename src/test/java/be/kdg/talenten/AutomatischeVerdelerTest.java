@@ -282,5 +282,55 @@ public class AutomatischeVerdelerTest {
 
         assertSame(schakenWinter, toewijzingJan.getIngerichtTalent());
     }
+
+    @Test
+    public void tweeLeerlingenWillenDezelfdeKeuzeMetAndereHistorischeVoorkeurNummer(){
+        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jos = new Leerling("Jos", "Jacobs");
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2025, 11,22), LocalDate.of(2026,2,21));
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
+        Talent muziek = new Talent("Muziek", "Muziek leren spelen op een instrument");
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 1);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 1);
+        IngerichtTalent muziekHerfst = new IngerichtTalent(muziek, herfst, 1);
+
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 1);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 1);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 1);
+        IngerichtTalent muziekWinter = new IngerichtTalent(muziek, winter, 1);
+
+
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
+        historischeToewijzingen.add(new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH, 1));
+        historischeToewijzingen.add(new Toewijzing(jos, kokenHerfst, ToewijzingsType.AUTOMATISCH, 2));
+
+//        Jan heeft prio 1 gehad en Jos prio 2 dus wanneer ze beiden hetzelfde willen en er slechts plaats is voor 1 iemand zou jos nu zijn eerste keuze moeten krijgen
+        List<Voorkeur> voorkeuren = new ArrayList<>();
+        voorkeuren.add(new Voorkeur(jan, winter, voetbalWinter, 1));
+        voorkeuren.add(new Voorkeur(jan, winter, muziekWinter, 2));
+        voorkeuren.add(new Voorkeur(jan, winter, kokenWinter, 3));
+
+        voorkeuren.add(new Voorkeur(jos, winter, voetbalWinter, 1));
+        voorkeuren.add(new Voorkeur(jos, winter, schakenWinter, 2));
+        voorkeuren.add(new Voorkeur(jos, winter, kokenWinter, 3));
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren, historischeToewijzingen);
+
+        // Act
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // Assert
+        Toewijzing toewijzingJan = zoekToewijzingVoorLeerling(resultaat, jan);
+        Toewijzing toewijzingJos = zoekToewijzingVoorLeerling(resultaat, jos);
+
+        assertSame(muziekWinter, toewijzingJan.getIngerichtTalent());
+        assertSame(voetbalWinter, toewijzingJos.getIngerichtTalent());
+    }
 }
 

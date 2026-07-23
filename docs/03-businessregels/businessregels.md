@@ -99,9 +99,15 @@ Een manuele wijziging vervangt de automatische toewijzing.
 
 ### BR-021
 
-### BR-021
-
 Historische toewijzingen worden niet aangepast wanneer een nieuwe verdeling wordt uitgevoerd.
+
+#### BR-022
+
+Bij een nieuwe automatische verdeling krijgen leerlingen die in de vorige talentenperiode een lagere voorkeur kregen, een hogere verdelingsprioriteit.
+
+#### BR-023
+
+Een leerling die in de vorige talentenperiode niet toegewezen kon worden, krijgt de hoogste verdelingsprioriteit.
 
 ---
 

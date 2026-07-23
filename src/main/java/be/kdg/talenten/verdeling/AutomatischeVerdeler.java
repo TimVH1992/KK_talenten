@@ -31,7 +31,9 @@ public class AutomatischeVerdeler {
         Map<Leerling, List<Voorkeur>> voorkeurenPerLeerling = groepeerVoorkeurenPerLeerling();
         Map<IngerichtTalent, Integer> bezetting = new HashMap<>();
 
-        for (Leerling leerling : voorkeurenPerLeerling.keySet()) {
+        List<Leerling> leerlingenInVolgorde = bepaalLeerlingVolgorde(voorkeurenPerLeerling);
+
+        for (Leerling leerling : leerlingenInVolgorde) {
             List<Voorkeur> voorkeurenVanLeerling = voorkeurenPerLeerling.get(leerling);
             voorkeurenVanLeerling.sort(Comparator.comparingInt(Voorkeur::getVoorkeurNummer));
 
@@ -124,5 +126,74 @@ public class AutomatischeVerdeler {
         }
 
         return voorkeurenPerLeerling;
+    }
+    private List<Leerling> bepaalLeerlingVolgorde(Map<Leerling, List<Voorkeur>> voorkeurenPerLeerling) {
+        List<Leerling> leerlingen = new ArrayList<>(voorkeurenPerLeerling.keySet());
+
+        leerlingen.sort(new Comparator<Leerling>() {
+            @Override
+            public int compare(Leerling leerling1, Leerling leerling2) {
+                int prioriteit1 = berekenVerdelingsPrioriteit(leerling1);
+                int prioriteit2 = berekenVerdelingsPrioriteit(leerling2);
+
+                return Integer.compare(prioriteit2, prioriteit1);
+            }
+        });
+
+        return leerlingen;
+    }
+    private int berekenVerdelingsPrioriteit(Leerling leerling) {
+        Toewijzing laatsteToewijzing = zoekLaatsteHistorischeToewijzing(leerling);
+
+        if (laatsteToewijzing == null) {
+            return 2;
+        }
+
+        Integer voorkeurNummer = laatsteToewijzing.getVoorkeurNummer();
+
+        if (voorkeurNummer == null) {
+            return 2;
+        }
+
+        if (voorkeurNummer == 1) {
+            return 1;
+        }
+
+        if (voorkeurNummer == 2) {
+            return 2;
+        }
+
+        if (voorkeurNummer == 3) {
+            return 3;
+        }
+
+        return 2;
+    }
+    private Toewijzing zoekLaatsteHistorischeToewijzing(Leerling leerling) {
+        Toewijzing laatsteToewijzing = null;
+
+        for (Toewijzing historischeToewijzing : historischeToewijzingen) {
+            boolean zelfdeLeerling = historischeToewijzing.getLeerling() == leerling;
+
+            if (zelfdeLeerling) {
+                if (laatsteToewijzing == null) {
+                    laatsteToewijzing = historischeToewijzing;
+                } else if (isNieuwerDan(historischeToewijzing, laatsteToewijzing)) {
+                    laatsteToewijzing = historischeToewijzing;
+                }
+            }
+        }
+
+        return laatsteToewijzing;
+    }
+    private boolean isNieuwerDan(Toewijzing kandidaat, Toewijzing huidigeLaatste) {
+        return kandidaat.getIngerichtTalent()
+                .getTalentenPeriode()
+                .getEindDatum()
+                .isAfter(
+                        huidigeLaatste.getIngerichtTalent()
+                                .getTalentenPeriode()
+                                .getEindDatum()
+                );
     }
 }
