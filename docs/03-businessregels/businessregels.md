@@ -109,6 +109,12 @@ Bij een nieuwe automatische verdeling krijgen leerlingen die in de vorige talent
 
 Een leerling die in de vorige talentenperiode niet toegewezen kon worden, krijgt de hoogste verdelingsprioriteit.
 
+### BR-024
+Bij een automatisch verdeelde groep mogen maximaal twee leerlingen uit dezelfde klas aan hetzelfde ingericht talent toegewezen worden.
+
+### BR-025
+Wanneer de klaslimiet voor een ingericht talent bereikt is, probeert de automatische verdeling de volgende voorkeur van de leerling.
+
 ---
 
 # Toekomstige uitbreidingen

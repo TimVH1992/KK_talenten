@@ -22,6 +22,19 @@ public class Leerling {
         this.achternaam = achternaam;
     }
 
+    public Leerling(String voornaam, String achternaam, Klas klas) {
+        if (voornaam == null || voornaam.isBlank()) {
+            throw new IllegalArgumentException("Voornaam mag niet leeg zijn.");
+        }
+
+        if (achternaam == null || achternaam.isBlank()) {
+            throw new IllegalArgumentException("Achternaam mag niet leeg zijn.");
+        }
+        this.voornaam = voornaam;
+        this.achternaam = achternaam;
+        this.klas = klas;
+    }
+
     public void wijsKlasToe(Klas klas) {
         if (klas == null) {
             throw new IllegalArgumentException("Klas mag niet null zijn.");

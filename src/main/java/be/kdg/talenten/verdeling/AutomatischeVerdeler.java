@@ -8,6 +8,7 @@ public class AutomatischeVerdeler {
     private List<Voorkeur> voorkeuren;
     private List<Toewijzing> historischeToewijzingen;
     private VerdelingsResultaat verdelingsResultaat;
+    private static final int MAX_LEERLINGEN_PER_KLAS_PER_TALENT = 2;
 
     public AutomatischeVerdeler(List<Voorkeur> voorkeuren) {
         this(voorkeuren, new ArrayList<>());
@@ -30,6 +31,7 @@ public class AutomatischeVerdeler {
     public VerdelingsResultaat verdeel() {
         Map<Leerling, List<Voorkeur>> voorkeurenPerLeerling = groepeerVoorkeurenPerLeerling();
         Map<IngerichtTalent, Integer> bezetting = new HashMap<>();
+        Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas = new HashMap<>();
 
         List<Leerling> leerlingenInVolgorde = bepaalLeerlingVolgorde(voorkeurenPerLeerling);
 
@@ -37,10 +39,10 @@ public class AutomatischeVerdeler {
             List<Voorkeur> voorkeurenVanLeerling = voorkeurenPerLeerling.get(leerling);
             voorkeurenVanLeerling.sort(Comparator.comparingInt(Voorkeur::getVoorkeurNummer));
 
-            Toewijzing toewijzing = zoekToewijzingZonderHistoriek(leerling, voorkeurenVanLeerling, bezetting);
+            Toewijzing toewijzing = zoekToewijzingZonderHistoriek(leerling, voorkeurenVanLeerling, bezetting, bezettingPerKlas);
 
             if (toewijzing == null) {
-                toewijzing = zoekToewijzingMetHistoriekToegestaan(leerling, voorkeurenVanLeerling, bezetting);
+                toewijzing = zoekToewijzingMetHistoriekToegestaan(leerling, voorkeurenVanLeerling, bezetting, bezettingPerKlas);
             }
 
             if (toewijzing != null) {
@@ -49,6 +51,7 @@ public class AutomatischeVerdeler {
                 IngerichtTalent ingerichtTalent = toewijzing.getIngerichtTalent();
                 int huidigAantal = bezetting.getOrDefault(ingerichtTalent, 0);
                 bezetting.put(ingerichtTalent, huidigAantal + 1);
+                verhoogKlasBezetting(ingerichtTalent, leerling.getKlas(), bezettingPerKlas);
             } else {
                 verdelingsResultaat.voegNietToegewezenLeerlingToe(leerling);
             }
@@ -60,8 +63,8 @@ public class AutomatischeVerdeler {
     private Toewijzing zoekToewijzingZonderHistoriek(
             Leerling leerling,
             List<Voorkeur> voorkeurenVanLeerling,
-            Map<IngerichtTalent, Integer> bezetting
-    ) {
+            Map<IngerichtTalent, Integer> bezetting,
+            Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas) {
         for (Voorkeur voorkeur : voorkeurenVanLeerling) {
             IngerichtTalent ingerichtTalent = voorkeur.getIngerichtTalent();
 
@@ -69,8 +72,14 @@ public class AutomatischeVerdeler {
                 continue;
             }
 
-            if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)) {
-                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
+            if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)
+                    && heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent, leerling.getKlas(), bezettingPerKlas)) {
+                return new Toewijzing(
+                        leerling,
+                        ingerichtTalent,
+                        ToewijzingsType.AUTOMATISCH,
+                        voorkeur.getVoorkeurNummer()
+                );
             }
         }
 
@@ -80,16 +89,21 @@ public class AutomatischeVerdeler {
     private Toewijzing zoekToewijzingMetHistoriekToegestaan(
             Leerling leerling,
             List<Voorkeur> voorkeurenVanLeerling,
-            Map<IngerichtTalent, Integer> bezetting
-    ) {
+            Map<IngerichtTalent, Integer> bezetting,
+            Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas) {
         for (Voorkeur voorkeur : voorkeurenVanLeerling) {
             IngerichtTalent ingerichtTalent = voorkeur.getIngerichtTalent();
 
-            if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)) {
-                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
+            if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)
+                    && heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent, leerling.getKlas(), bezettingPerKlas)) {
+                return new Toewijzing(
+                        leerling,
+                        ingerichtTalent,
+                        ToewijzingsType.AUTOMATISCH,
+                        voorkeur.getVoorkeurNummer()
+                );
             }
         }
-
         return null;
     }
 
@@ -195,5 +209,35 @@ public class AutomatischeVerdeler {
                                 .getTalentenPeriode()
                                 .getEindDatum()
                 );
+    }
+    private boolean heeftKlasNogPlaatsVoorIngerichtTalent(
+            IngerichtTalent ingerichtTalent,
+            Klas klas,
+            Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas
+    ) {
+        Map<Klas, Integer> klasBezetting = bezettingPerKlas.get(ingerichtTalent);
+
+        if (klasBezetting == null) {
+            return true;
+        }
+
+        int huidigAantalVanKlas = klasBezetting.getOrDefault(klas, 0);
+
+        return huidigAantalVanKlas < MAX_LEERLINGEN_PER_KLAS_PER_TALENT;
+    }
+    private void verhoogKlasBezetting(
+            IngerichtTalent ingerichtTalent,
+            Klas klas,
+            Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas
+    ) {
+        Map<Klas, Integer> klasBezetting = bezettingPerKlas.get(ingerichtTalent);
+
+        if (klasBezetting == null) {
+            klasBezetting = new HashMap<>();
+            bezettingPerKlas.put(ingerichtTalent, klasBezetting);
+        }
+
+        int huidigAantalVanKlas = klasBezetting.getOrDefault(klas, 0);
+        klasBezetting.put(klas, huidigAantalVanKlas + 1);
     }
 }

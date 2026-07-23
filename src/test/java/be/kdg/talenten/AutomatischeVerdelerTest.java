@@ -332,5 +332,52 @@ public class AutomatischeVerdelerTest {
         assertSame(muziekWinter, toewijzingJan.getIngerichtTalent());
         assertSame(voetbalWinter, toewijzingJos.getIngerichtTalent());
     }
+
+    @Test
+    public void drieLeerlingenUitDezelfdeKlasKiezenVoetbal(){
+        Klas klas1AA = new Klas("1AA", "2026-2027");
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling jos = new Leerling("Jos", "Jacobs", klas1AA);
+        Leerling tim = new Leerling("Tim", "Van Herreweghe", klas1AA);
+
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 10);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, herfst, 10);
+
+        List<Voorkeur> voorkeuren = new ArrayList<>();
+        voorkeuren.add(new Voorkeur(jan, herfst, schakenHerfst, 1));
+        voorkeuren.add(new Voorkeur(jan, herfst, kokenHerfst, 2));
+        voorkeuren.add(new Voorkeur(jan, herfst, voetbalHerfst, 3));
+
+        voorkeuren.add(new Voorkeur(jos, herfst, schakenHerfst, 1));
+        voorkeuren.add(new Voorkeur(jos, herfst, kokenHerfst, 2));
+        voorkeuren.add(new Voorkeur(jos, herfst, voetbalHerfst, 3));
+
+        voorkeuren.add(new Voorkeur(tim, herfst, schakenHerfst, 1));
+        voorkeuren.add(new Voorkeur(tim, herfst, kokenHerfst, 2));
+        voorkeuren.add(new Voorkeur(tim, herfst, voetbalHerfst, 3));
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
+
+//        ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+//        ASSERT
+        Toewijzing toewijzingJan = zoekToewijzingVoorLeerling(resultaat, jan);
+        Toewijzing toewijzingJos = zoekToewijzingVoorLeerling(resultaat, jos);
+        Toewijzing toewijzingTim = zoekToewijzingVoorLeerling(resultaat, tim);
+
+        assertSame(schakenHerfst, toewijzingJan.getIngerichtTalent());
+        assertSame(schakenHerfst, toewijzingJos.getIngerichtTalent());
+        assertSame(kokenHerfst, toewijzingTim.getIngerichtTalent());
+    }
 }
 
