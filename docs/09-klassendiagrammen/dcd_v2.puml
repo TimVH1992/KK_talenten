@@ -158,6 +158,10 @@ class AutomatischeVerdeler {
   - heeftIngerichtTalentVrijePlaats(ingerichtTalent: IngerichtTalent, bezetting: Map<IngerichtTalent, Integer>): boolean
   - heeftLeerlingTalentAlGevolgd(leerling: Leerling, talent: Talent): boolean
   - groepeerVoorkeurenPerLeerling(): Map<Leerling, List<Voorkeur>>
+  - bepaalLeerlingVolgorde(voorkeurenPerLeerling: Map<Leerling, List<Voorkeur>>): List<Leerling>
+  - berekenVerdelingsPrioriteit(leerling: Leerling): int
+  - zoekLaatsteHistorischeToewijzing(leerling: Leerling): Toewijzing
+  - isNieuwerDan(kandidaat: Toewijzing, huidigeLaatste: Toewijzing): boolean
 }
 
 class VerdelingsResultaat {
