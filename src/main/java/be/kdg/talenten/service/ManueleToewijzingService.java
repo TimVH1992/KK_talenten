@@ -51,7 +51,7 @@ public class ManueleToewijzingService {
                     toewijzingRepository.telToewijzingenVoorIngerichtTalent(nieuwIngerichtTalent);
 
             if (!nieuwIngerichtTalent.heeftVrijePlaats(huidigAantal)) {
-                throw new IllegalArgumentException("Het ingericht talent heeft geen vrije plaatsen meer.");
+                throw new IllegalStateException("Het ingericht talent heeft geen vrije plaatsen meer.");
             }
         }
 

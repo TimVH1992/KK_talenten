@@ -16,9 +16,9 @@
 - [x] Testen of de klassen werken! 
 
 ## Stap 3: Verdelingslogica
-- [ ] Eerste eenvoudige verdeling maken
-- [ ] Capaciteit controleren
-- [ ] Historiek meenemen
+- [x] Eerste eenvoudige verdeling maken
+- [x] Capaciteit controleren
+- [x] Historiek meenemen
 
 ## Stap 4: Database
 - [ ] Tabellen ontwerpen
