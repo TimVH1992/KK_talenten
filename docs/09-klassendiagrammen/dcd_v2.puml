@@ -152,6 +152,7 @@ class AutomatischeVerdeler {
   + AutomatischeVerdeler(voorkeuren: List<Voorkeur>)
   + AutomatischeVerdeler(voorkeuren: List<Voorkeur>, historischeToewijzingen: List<Toewijzing>)
   + verdeel(): VerdelingsResultaat
+  * MAX_LEERLINGEN_PER_KLAS_PER_TALENT: int
 
   - zoekToewijzingZonderHistoriek(leerling: Leerling, voorkeurenVanLeerling: List<Voorkeur>, bezetting: Map<IngerichtTalent, Integer>): Toewijzing
   - zoekToewijzingMetHistoriekToegestaan(leerling: Leerling, voorkeurenVanLeerling: List<Voorkeur>, bezetting: Map<IngerichtTalent, Integer>): Toewijzing
@@ -162,6 +163,8 @@ class AutomatischeVerdeler {
   - berekenVerdelingsPrioriteit(leerling: Leerling): int
   - zoekLaatsteHistorischeToewijzing(leerling: Leerling): Toewijzing
   - isNieuwerDan(kandidaat: Toewijzing, huidigeLaatste: Toewijzing): boolean
+  - heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent: IngerichtTalent, klas: Klas, bezettingPerKlas: Map<IngerichtTalent, Map<Klas, Integer>>): boolean
+  - verhoogKlasBezetting(ingerichtTalent: IngerichtTalent, klas: Klas, bezettingPerKlas: Map<IngerichtTalent, Map<Klas, Integer>>): void
 }
 
 class VerdelingsResultaat {
