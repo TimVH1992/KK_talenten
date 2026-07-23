@@ -115,6 +115,24 @@ Bij een automatisch verdeelde groep mogen maximaal twee leerlingen uit dezelfde 
 ### BR-025
 Wanneer de klaslimiet voor een ingericht talent bereikt is, probeert de automatische verdeling de volgende voorkeur van de leerling.
 
+### BR-027
+Een manuele toewijzing mag afwijken van de opgegeven voorkeuren van de leerling.
+
+### BR-028
+Een manuele toewijzing mag een leerling toewijzen aan een talent dat hij eerder gevolgd heeft.
+
+### BR-029
+Een manuele toewijzing mag de automatische klaslimiet van maximaal twee leerlingen per klas per ingericht talent overschrijden.
+
+### BR-030
+Bij een manuele toewijzing moet de maximumcapaciteit van het ingericht talent gerespecteerd blijven.
+
+### BR-031
+Een leerling mag per talentenperiode maximaal één toewijzing hebben.
+
+### BR-032
+Een manuele toewijzing krijgt het type MANUEEL en heeft geen automatisch voorkeurNummer.
+
 ---
 
 # Toekomstige uitbreidingen

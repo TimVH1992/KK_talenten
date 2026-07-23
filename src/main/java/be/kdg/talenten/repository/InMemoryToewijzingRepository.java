@@ -1,5 +1,8 @@
 package be.kdg.talenten.repository;
 
+import be.kdg.talenten.domain.IngerichtTalent;
+import be.kdg.talenten.domain.Leerling;
+import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
 
 import java.util.ArrayList;
@@ -26,5 +29,76 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
 
     public List<Toewijzing> getOpgeslagenToewijzingen() {
         return opgeslagenToewijzingen;
+    }
+
+    @Override
+    public Toewijzing zoekToewijzingVoorLeerlingEnPeriode(
+            Leerling leerling,
+            TalentenPeriode talentenPeriode
+    ) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn.");
+        }
+
+        if (talentenPeriode == null) {
+            throw new IllegalArgumentException("De talentenperiode mag niet null zijn.");
+        }
+
+        for (Toewijzing toewijzing : opgeslagenToewijzingen) {
+            boolean zelfdeLeerling = toewijzing.getLeerling() == leerling;
+
+            boolean zelfdeTalentenPeriode =
+                    toewijzing.getIngerichtTalent()
+                            .getTalentenPeriode() == talentenPeriode;
+
+            if (zelfdeLeerling && zelfdeTalentenPeriode) {
+                return toewijzing;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public int telToewijzingenVoorIngerichtTalent(IngerichtTalent ingerichtTalent) {
+        if (ingerichtTalent == null) {
+            throw new IllegalArgumentException("Het ingerichtTalent mag niet null zijn");
+        }
+        int aantalToewijzingen = 0;
+
+        for (Toewijzing toewijzing : opgeslagenToewijzingen) {
+            if (toewijzing.getIngerichtTalent() == ingerichtTalent) {
+                aantalToewijzingen++;
+            }
+        }
+        return aantalToewijzingen;
+    }
+
+    @Override
+    public void save(Toewijzing toewijzing) {
+        if (toewijzing == null){
+            throw new IllegalArgumentException("Toewijzing die je wilt opslaan mag niet null zijn");
+        }
+        opgeslagenToewijzingen.add(toewijzing);
+    }
+
+    @Override
+    public void update(Toewijzing toewijzing) {
+        if (toewijzing == null) {
+            throw new IllegalArgumentException("Toewijzing die je wilt updaten mag niet null zijn.");
+        }
+
+        boolean gevonden = false;
+
+        for (Toewijzing opgeslagenToewijzing : opgeslagenToewijzingen) {
+            if (opgeslagenToewijzing == toewijzing) {
+                gevonden = true;
+                break;
+            }
+        }
+
+        if (!gevonden) {
+            throw new IllegalArgumentException("De toewijzing die je wilt updaten bestaat niet.");
+        }
     }
 }
