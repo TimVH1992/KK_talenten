@@ -39,8 +39,7 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent voetbalHerfst =
                 new IngerichtTalent(voetbal, herfst, 10);
 
-        InMemoryToewijzingRepository repository =
-                maakLegeRepository();
+        InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
         repository.save(new Toewijzing(
                 jan,
@@ -94,8 +93,7 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent schakenHerfst =
                 new IngerichtTalent(schaken, herfst, 1);
 
-        InMemoryToewijzingRepository repository =
-                maakLegeRepository();
+        InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
         repository.save(new Toewijzing(
                 jan,
@@ -229,8 +227,7 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent voetbalHerfst =
                 new IngerichtTalent(voetbal, herfst, 1);
 
-        InMemoryToewijzingRepository repository =
-                maakLegeRepository();
+        InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
         repository.save(new Toewijzing(
                 jan,
@@ -306,8 +303,7 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent voetbalKerst =
                 new IngerichtTalent(voetbal, kerst, 10);
 
-        InMemoryToewijzingRepository repository =
-                maakLegeRepository();
+        InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
         repository.save(new Toewijzing(
                 jan,
@@ -365,8 +361,7 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent voetbalHerfst =
                 new IngerichtTalent(voetbal, herfst, 10);
 
-        InMemoryToewijzingRepository repository =
-                maakLegeRepository();
+        InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
         ManueleToewijzingService service =
                 new ManueleToewijzingService(repository);
@@ -415,8 +410,7 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent voetbalHerfst =
                 new IngerichtTalent(voetbal, herfst, 10);
 
-        InMemoryToewijzingRepository repository =
-                maakLegeRepository();
+        InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
         ManueleToewijzingService service =
                 new ManueleToewijzingService(repository);
@@ -634,8 +628,5 @@ class ManueleToewijzingServiceTest {
         );
     }
 
-    private InMemoryToewijzingRepository maakLegeRepository() {
-        return new InMemoryToewijzingRepository(new ArrayList<>());
-    }
 
 }
