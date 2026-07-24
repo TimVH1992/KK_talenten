@@ -1,0 +1,32 @@
+package be.kdg.talenten.repository;
+
+import be.kdg.talenten.domain.IngerichtTalent;
+import be.kdg.talenten.domain.TalentenPeriode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class InMemoryIngerichtTalentRepository implements IngerichtTalentRepository{
+    private List<IngerichtTalent> ingerichteTalenten;
+
+    public InMemoryIngerichtTalentRepository(List<IngerichtTalent> ingerichteTalenten){
+        if (ingerichteTalenten == null){
+            throw new IllegalArgumentException("De ingerichteTalenten mag niet null zijn");
+        }
+        this.ingerichteTalenten = new ArrayList<>(ingerichteTalenten);
+    }
+
+    @Override
+    public List<IngerichtTalent> zoekVoorPeriode(TalentenPeriode periode){
+        if (periode == null){
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
+        List<IngerichtTalent> ingerichteTalentenVoorPeriode = new ArrayList<>();
+        for (IngerichtTalent ingerichtTalent : ingerichteTalenten){
+            if (ingerichtTalent.getTalentenPeriode() == periode){
+                ingerichteTalentenVoorPeriode.add(ingerichtTalent);
+            }
+        }
+        return ingerichteTalentenVoorPeriode;
+    }
+}

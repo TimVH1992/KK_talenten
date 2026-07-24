@@ -1,0 +1,10 @@
+package be.kdg.talenten.repository;
+
+import be.kdg.talenten.domain.IngerichtTalent;
+import be.kdg.talenten.domain.TalentenPeriode;
+
+import java.util.List;
+
+public interface IngerichtTalentRepository {
+    List<IngerichtTalent> zoekVoorPeriode(TalentenPeriode periode);
+}

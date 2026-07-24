@@ -17,10 +17,15 @@ public class InMemoryVoorkeurRepository implements VoorkeurRepository{
     }
     @Override
     public List<Voorkeur> zoekVoorPeriode(TalentenPeriode periode) {
+        if (periode == null){
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
         List<Voorkeur> resultaat = new ArrayList<>();
 
         for (Voorkeur voorkeur : voorkeuren){
-            resultaat.add(voorkeur);
+            if (voorkeur.getTalentenPeriode() == periode) {
+                resultaat.add(voorkeur);
+            }
         }
         return resultaat;
     }

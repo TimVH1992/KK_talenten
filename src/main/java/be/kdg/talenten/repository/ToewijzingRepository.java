@@ -21,4 +21,6 @@ public interface ToewijzingRepository {
     void save(Toewijzing toewijzing);
 
     void update(Toewijzing toewijzing);
+
+    List<Toewijzing> zoekVoorPeriode(TalentenPeriode periode);
 }

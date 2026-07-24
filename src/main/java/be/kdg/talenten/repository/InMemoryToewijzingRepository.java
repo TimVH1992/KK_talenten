@@ -101,4 +101,18 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
             throw new IllegalArgumentException("De toewijzing die je wilt updaten bestaat niet.");
         }
     }
+
+    @Override
+    public List<Toewijzing> zoekVoorPeriode(TalentenPeriode periode) {
+        if (periode == null){
+            throw new IllegalArgumentException("Periode mag niet null zijn");
+        }
+        List<Toewijzing> toewijzingenVoorPeriode = new ArrayList<>();
+        for (Toewijzing toewijzing : opgeslagenToewijzingen){
+            if (toewijzing.getIngerichtTalent().getTalentenPeriode() == periode){
+                toewijzingenVoorPeriode.add(toewijzing);
+            }
+        }
+        return toewijzingenVoorPeriode;
+    }
 }
