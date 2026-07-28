@@ -30,6 +30,10 @@ public class Leerling {
         if (achternaam == null || achternaam.isBlank()) {
             throw new IllegalArgumentException("Achternaam mag niet leeg zijn.");
         }
+        if (klas == null){
+            throw new IllegalArgumentException("Klas mag niet null zijn");
+        }
+        this.id = volgendId++;
         this.voornaam = voornaam;
         this.achternaam = achternaam;
         this.klas = klas;

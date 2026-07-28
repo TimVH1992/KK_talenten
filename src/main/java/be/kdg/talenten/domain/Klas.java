@@ -1,6 +1,8 @@
 package be.kdg.talenten.domain;
 
 public class Klas {
+    private static long volgendId = 1;
+
     private long id;
     private String naam;
     private String schooljaar;
@@ -12,7 +14,7 @@ public class Klas {
         if (schooljaar == null || schooljaar.isEmpty()){
             throw new IllegalArgumentException("Schooljaar is ongeldig");
         }
-        this.id = id;
+        this.id = volgendId++;
         this.naam = naam;
         this.schooljaar = schooljaar;
     }

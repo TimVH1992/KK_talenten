@@ -1,4 +1,11 @@
 package be.kdg.talenten.repository;
 
-public class LeerlingRepository {
+import be.kdg.talenten.domain.Klas;
+import be.kdg.talenten.domain.Leerling;
+
+import java.util.List;
+
+
+public interface LeerlingRepository {
+    List<Leerling> zoekVoorKlas(Klas klas);
 }
