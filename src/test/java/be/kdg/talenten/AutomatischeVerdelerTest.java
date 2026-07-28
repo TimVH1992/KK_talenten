@@ -16,9 +16,9 @@ public class AutomatischeVerdelerTest {
     @Test
     void leerlingKrijgtEersteKeuzeAlsErPlaatsIs() {
         // Arrange
-        Klas klas = new Klas("1AA", "2026");
+        Klas klas = new Klas("1AA", "2026",1);
 
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
@@ -30,9 +30,9 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1);
-        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
         voorkeuren.add(new Voorkeur(jan, periode, schakenHerfst, 1));
@@ -57,10 +57,10 @@ public class AutomatischeVerdelerTest {
 
     @Test
     void leerlingKrijgtTweedeKeuzeAlsEersteKeuzeVolZit(){
-        Klas klas = new Klas("1AA", "2026");
+        Klas klas = new Klas("1AA", "2026",1);
 
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling sara = new Leerling("Sara", "Janssens");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling sara = new Leerling("Sara", "Janssens", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
@@ -72,9 +72,9 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1);
-        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
 
@@ -105,12 +105,12 @@ public class AutomatischeVerdelerTest {
 
     @Test
     void leerlingWordtNietToegewezenAlsAlleVoorkeurenVolZitten() {
-        Klas klas = new Klas("1AA", "2026");
+        Klas klas = new Klas("1AA", "2026",1);
 
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling sara = new Leerling("Sara", "Janssens");
-        Leerling tom = new Leerling("Tom", "Mertens");
-        Leerling emma = new Leerling("Emma", "Vermeulen");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling sara = new Leerling("Sara", "Janssens", new Klas("1AA", "2026-2027", 1));
+        Leerling tom = new Leerling("Tom", "Mertens", new Klas("1AA", "2026-2027", 1));
+        Leerling emma = new Leerling("Emma", "Vermeulen", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
@@ -122,9 +122,9 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1);
-        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
 
@@ -157,11 +157,11 @@ public class AutomatischeVerdelerTest {
 
     @Test
     void capaciteitVanIngerichtTalentWordtNietOverschreden() {
-        Klas klas = new Klas("1AA", "2026");
+        Klas klas = new Klas("1AA", "2026",1);
 
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling sara = new Leerling("Sara", "Janssens");
-        Leerling tom = new Leerling("Tom", "Mertens");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling sara = new Leerling("Sara", "Janssens", new Klas("1AA", "2026-2027", 1));
+        Leerling tom = new Leerling("Tom", "Mertens", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
@@ -173,9 +173,9 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1);
-        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 10);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
 
@@ -198,9 +198,9 @@ public class AutomatischeVerdelerTest {
     @Test
     void leerlingKrijgtLieverTalentDatHijNogNietGevolgdHeeft() {
         // Arrange
-        Klas klas = new Klas("1AA", "2026");
+        Klas klas = new Klas("1AA", "2026",1);
 
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
         TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2025, 11,22), LocalDate.of(2026,02,21));
@@ -209,10 +209,10 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10,Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Toewijzing> historischeToewijzingen = new ArrayList<>();
         historischeToewijzingen.add(new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH));
@@ -236,11 +236,11 @@ public class AutomatischeVerdelerTest {
 
     @Test
     void alsNieuweTalentenVolZittenMagLeerlingGevolgdTalentOpnieuwVolgen(){
-        Klas klas = new Klas("1AA", "2026");
+        Klas klas = new Klas("1AA", "2026",1);
 
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling jos = new Leerling("Jos", "Jacobs");
-        Leerling tim = new Leerling("Tim", "VH");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling jos = new Leerling("Jos", "Jacobs", new Klas("1AA", "2026-2027", 1));
+        Leerling tim = new Leerling("Tim", "VH", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
         TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2025, 11,22), LocalDate.of(2026,2,21));
@@ -249,10 +249,10 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 1);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 1);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Toewijzing> historischeToewijzingen = new ArrayList<>();
         historischeToewijzingen.add(new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH));
@@ -285,8 +285,8 @@ public class AutomatischeVerdelerTest {
 
     @Test
     public void tweeLeerlingenWillenDezelfdeKeuzeMetAndereHistorischeVoorkeurNummer(){
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling jos = new Leerling("Jos", "Jacobs");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling jos = new Leerling("Jos", "Jacobs", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2025, 9,21), LocalDate.of(2025,11,21));
         TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2025, 11,22), LocalDate.of(2026,2,21));
@@ -296,14 +296,14 @@ public class AutomatischeVerdelerTest {
         Talent koken = new Talent("Koken", "Leren koken");
         Talent muziek = new Talent("Muziek", "Muziek leren spelen op een instrument");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 1);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 1);
-        IngerichtTalent muziekHerfst = new IngerichtTalent(muziek, herfst, 1);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent muziekHerfst = new IngerichtTalent(muziek, herfst, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 1);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 1);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 1);
-        IngerichtTalent muziekWinter = new IngerichtTalent(muziek, winter, 1);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent muziekWinter = new IngerichtTalent(muziek, winter, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
 
         List<Toewijzing> historischeToewijzingen = new ArrayList<>();
@@ -335,7 +335,7 @@ public class AutomatischeVerdelerTest {
 
     @Test
     public void drieLeerlingenUitDezelfdeKlasKiezenVoetbal(){
-        Klas klas1AA = new Klas("1AA", "2026-2027");
+        Klas klas1AA = new Klas("1AA", "2026-2027",1);
 
         Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
         Leerling jos = new Leerling("Jos", "Jacobs", klas1AA);
@@ -348,9 +348,9 @@ public class AutomatischeVerdelerTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 10);
-        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, herfst, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
         voorkeuren.add(new Voorkeur(jan, herfst, schakenHerfst, 1));
@@ -378,6 +378,86 @@ public class AutomatischeVerdelerTest {
         assertSame(schakenHerfst, toewijzingJan.getIngerichtTalent());
         assertSame(schakenHerfst, toewijzingJos.getIngerichtTalent());
         assertSame(kokenHerfst, toewijzingTim.getIngerichtTalent());
+    }
+    @Test
+    public void automatischeVerdelingWijstLeerlingenToeAanHunEigenDoelgroep() {
+        // ARRANGE
+        Klas klas2AA = new Klas("2AA", "2026-2027", 2);
+        Klas klas5AA = new Klas("5AA", "2026-2027", 5);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas2AA);
+        Leerling sara = new Leerling("Sara", "Janssens", klas5AA);
+
+        TalentenPeriode herfst = new TalentenPeriode(
+                "Herfst",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 10, 31)
+        );
+
+        Talent schaken = new Talent(
+                "Schaken",
+                "Leren schaken"
+        );
+
+        IngerichtTalent schakenOnderbouw = new IngerichtTalent(
+                schaken,
+                herfst,
+                10,
+                Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR
+        );
+
+        IngerichtTalent schakenBovenbouw = new IngerichtTalent(
+                schaken,
+                herfst,
+                10,
+                Doelgroep.VANAF_VIERDE_JAAR
+        );
+
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(
+                        jan,
+                        herfst,
+                        schakenOnderbouw,
+                        1
+                ),
+                new Voorkeur(
+                        sara,
+                        herfst,
+                        schakenBovenbouw,
+                        1
+                )
+        );
+
+        AutomatischeVerdeler verdeler =
+                new AutomatischeVerdeler(voorkeuren);
+
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // ASSERT
+        assertEquals(2, resultaat.getAantalToewijzingen());
+
+        Toewijzing toewijzingJan = resultaat.getToewijzingen()
+                .stream()
+                .filter(toewijzing -> toewijzing.getLeerling() == jan)
+                .findFirst()
+                .orElseThrow();
+
+        Toewijzing toewijzingSara = resultaat.getToewijzingen()
+                .stream()
+                .filter(toewijzing -> toewijzing.getLeerling() == sara)
+                .findFirst()
+                .orElseThrow();
+
+        assertSame(
+                schakenOnderbouw,
+                toewijzingJan.getIngerichtTalent()
+        );
+
+        assertSame(
+                schakenBovenbouw,
+                toewijzingSara.getIngerichtTalent()
+        );
     }
 }
 

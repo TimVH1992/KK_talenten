@@ -38,6 +38,11 @@ public class ManueleToewijzingService {
         if (nieuwIngerichtTalent.getTalentenPeriode() != talentenPeriode) {
             throw new IllegalArgumentException("Het ingericht talent behoort niet tot deze talentenperiode.");
         }
+        if (!nieuwIngerichtTalent.isGeschiktVoor(leerling)) {
+            throw new IllegalArgumentException(
+                    "De leerling behoort niet tot de doelgroep van het ingericht talent."
+            );
+        }
 
         Toewijzing bestaandeToewijzing =
                 toewijzingRepository.zoekToewijzingVoorLeerlingEnPeriode(leerling, talentenPeriode);

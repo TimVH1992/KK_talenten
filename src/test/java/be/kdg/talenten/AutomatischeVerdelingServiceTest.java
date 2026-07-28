@@ -18,7 +18,7 @@ public class AutomatischeVerdelingServiceTest {
     @Test
     void serviceVoertAutomatischeVerdelingUitEnSlaatToewijzingenOp() {
         // Arrange
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
@@ -30,9 +30,9 @@ public class AutomatischeVerdelingServiceTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
         voorkeuren.add(new Voorkeur(jan, winter, schakenWinter, 1));
@@ -64,7 +64,7 @@ public class AutomatischeVerdelingServiceTest {
     @Test
     void serviceGebruiktHistorischeToewijzingenBijAutomatischeVerdeling() {
         // Arrange
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -82,11 +82,11 @@ public class AutomatischeVerdelingServiceTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Toewijzing> historischeToewijzingen = new ArrayList<>();
         historischeToewijzingen.add(

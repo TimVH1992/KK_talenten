@@ -9,12 +9,14 @@ public class IngerichtTalent {
     private TalentenPeriode talentenPeriode;
     private int maxCapaciteit;
     private List<Leerkracht> leerkrachten;
+    private Doelgroep doelgroep;
 
-    public IngerichtTalent(Talent talent, TalentenPeriode talentenPeriode, int maxCapaciteit) {
+    public IngerichtTalent(Talent talent, TalentenPeriode talentenPeriode, int maxCapaciteit, Doelgroep doelgroep) {
         this.talent = talent;
         this.talentenPeriode = talentenPeriode;
         this.maxCapaciteit = maxCapaciteit;
         this.leerkrachten = new ArrayList<>();
+        this.doelgroep = doelgroep;
     }
 
     public Talent getTalent() {
@@ -58,5 +60,15 @@ public class IngerichtTalent {
     @Override
     public String toString() {
         return talent.getNaam() + " (" + talentenPeriode.getNaam() + ")";
+    }
+
+    public boolean isGeschiktVoor(Leerling leerling) {
+        if (leerling == null) {
+            throw new IllegalArgumentException(
+                    "Leerling mag niet null zijn."
+            );
+        }
+
+        return doelgroep == leerling.getKlas().bepaalDoelgroep();
     }
 }

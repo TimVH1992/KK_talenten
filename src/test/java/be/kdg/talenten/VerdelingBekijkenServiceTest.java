@@ -17,9 +17,9 @@ public class VerdelingBekijkenServiceTest {
     @Test
     public void bekijkPerIngerichtTalentGroepeertToewijzingenCorrect() {
 //        ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling julie = new Leerling("Julie", "Martens");
-        Leerling eveline = new Leerling("Eveline", "Van Oevelen");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling julie = new Leerling("Julie", "Martens", new Klas("1AA", "2026-2027", 1));
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -30,8 +30,8 @@ public class VerdelingBekijkenServiceTest {
         Talent schaken = new Talent("Schaken", "Leren schaken");
         Talent dansen = new Talent("Dansen", "shake shake shake");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
-        IngerichtTalent dansenHerfst = new IngerichtTalent(dansen, herfst, 6);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent dansenHerfst = new IngerichtTalent(dansen, herfst, 6, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
         ingerichteTalenten.add(schakenHerfst);
@@ -65,9 +65,9 @@ public class VerdelingBekijkenServiceTest {
     @Test
     public void bekijkPerIngerichtTalentToontOokTalentZonderToewijzingen() {
         //        ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling julie = new Leerling("Julie", "Martens");
-        Leerling eveline = new Leerling("Eveline", "Van Oevelen");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling julie = new Leerling("Julie", "Martens", new Klas("1AA", "2026-2027", 1));
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -79,9 +79,9 @@ public class VerdelingBekijkenServiceTest {
         Talent dansen = new Talent("Dansen", "shake shake shake");
         Talent koken = new Talent("Koken", "Een warme keuken is vaak lekker");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
-        IngerichtTalent dansenHerfst = new IngerichtTalent(dansen, herfst, 6);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 5);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent dansenHerfst = new IngerichtTalent(dansen, herfst, 6, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 5, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
         ingerichteTalenten.add(schakenHerfst);
@@ -116,9 +116,9 @@ public class VerdelingBekijkenServiceTest {
     @Test
     public void bekijkPerIngerichtTalentToontAlleenGevraagdePeriode() {
         //        ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling julie = new Leerling("Julie", "Martens");
-        Leerling eveline = new Leerling("Eveline", "Van Oevelen");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling julie = new Leerling("Julie", "Martens", new Klas("1AA", "2026-2027", 1));
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -136,12 +136,12 @@ public class VerdelingBekijkenServiceTest {
         Talent dansen = new Talent("Dansen", "shake shake shake");
         Talent koken = new Talent("Koken", "Een warme keuken is vaak lekker");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
-        IngerichtTalent dansenHerfst = new IngerichtTalent(dansen, herfst, 6);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 5);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent dansenHerfst = new IngerichtTalent(dansen, herfst, 6, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, herfst, 5, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
-        IngerichtTalent schakenKerst = new IngerichtTalent(schaken, kerst, 10);
-        IngerichtTalent dansenKerst = new IngerichtTalent(dansen, kerst, 2);
+        IngerichtTalent schakenKerst = new IngerichtTalent(schaken, kerst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent dansenKerst = new IngerichtTalent(dansen, kerst, 2, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
         ingerichteTalenten.add(schakenHerfst);
@@ -213,7 +213,7 @@ public class VerdelingBekijkenServiceTest {
     @Test
     public void bekijkVoorKlasToontElkeLeerlingMetEventueleToewijzing() {
 //        ARRANGE
-        Klas klas1A = new Klas("1AA", "2026-2027");
+        Klas klas1A = new Klas("1AA", "2026-2027",1);
 
         Leerling jan = new Leerling("Jan", "Peeters", klas1A);
         Leerling julie = new Leerling("Julie", "Martens", klas1A);
@@ -229,7 +229,7 @@ public class VerdelingBekijkenServiceTest {
         Talent schaken = new Talent("Schaken", "Leren schaken");
         ;
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
         ingerichteTalenten.add(schakenHerfst);
@@ -265,7 +265,7 @@ public class VerdelingBekijkenServiceTest {
     @Test
     public void bekijkVoorKlasMetNullPeriodeWordtGeweigerd() {
         // ARRANGE
-        Klas klas1A = new Klas("1AA", "2026-2027");
+        Klas klas1A = new Klas("1AA", "2026-2027",1);
 
         VerdelingBekijkenService service =
                 maakLegeVerdelingBekijkenService();
@@ -314,8 +314,8 @@ public class VerdelingBekijkenServiceTest {
     @Test
     public void bekijkVoorKlasToontAlleenLeerlingenVanGevraagdeKlas() {
         // ARRANGE
-        Klas klas1AA = new Klas("1AA", "2026-2027");
-        Klas klas1AB = new Klas("1AB", "2026-2027");
+        Klas klas1AA = new Klas("1AA", "2026-2027",1);
+        Klas klas1AB = new Klas("1AB", "2026-2027",1);
 
         Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
         Leerling julie = new Leerling("Julie", "Martens", klas1AA);
@@ -337,7 +337,7 @@ public class VerdelingBekijkenServiceTest {
         );
 
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 10);
+                new IngerichtTalent(schaken, herfst, 10,Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         Toewijzing toewijzingJan = new Toewijzing(
                 jan,

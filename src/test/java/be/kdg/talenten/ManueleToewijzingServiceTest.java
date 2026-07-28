@@ -22,7 +22,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingNaarAnderTalentWijzigtTalentEnType() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -34,10 +34,10 @@ class ManueleToewijzingServiceTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
 
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 10);
+                new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 10);
+                new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
@@ -75,7 +75,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingNaarZelfdeTalentVerandertTypeNaarManueel() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -91,7 +91,7 @@ class ManueleToewijzingServiceTest {
          * naar hetzelfde talent gewijzigd kunnen worden.
          */
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 1);
+                new IngerichtTalent(schaken, herfst, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
@@ -129,7 +129,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingNegeertHistoriek() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -147,13 +147,13 @@ class ManueleToewijzingServiceTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
 
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 10);
+                new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         IngerichtTalent schakenKerst =
-                new IngerichtTalent(schaken, kerst, 10);
+                new IngerichtTalent(schaken, kerst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         IngerichtTalent voetbalKerst =
-                new IngerichtTalent(voetbal, kerst, 10);
+                new IngerichtTalent(voetbal, kerst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         Toewijzing historischeToewijzing = new Toewijzing(
                 jan,
@@ -209,8 +209,8 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingNaarVolTalentWordtGeweigerd() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
-        Leerling tim = new Leerling("Tim", "Janssens");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
+        Leerling tim = new Leerling("Tim", "Janssens", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -222,10 +222,10 @@ class ManueleToewijzingServiceTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
 
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 10);
+                new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 1);
+                new IngerichtTalent(voetbal, herfst, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
@@ -280,7 +280,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingNaarTalentUitAnderePeriodeWordtGeweigerd() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -298,10 +298,10 @@ class ManueleToewijzingServiceTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
 
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 10);
+                new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         IngerichtTalent voetbalKerst =
-                new IngerichtTalent(voetbal, kerst, 10);
+                new IngerichtTalent(voetbal, kerst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
@@ -345,7 +345,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingZonderBestaandeToewijzingMaaktNieuweToewijzing() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -359,7 +359,7 @@ class ManueleToewijzingServiceTest {
         );
 
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 10);
+                new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
@@ -394,7 +394,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingMetNullArgumentWordtGeweigerd() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -408,7 +408,7 @@ class ManueleToewijzingServiceTest {
         );
 
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 10);
+                new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository = new InMemoryToewijzingRepository(new ArrayList<>());
 
@@ -446,7 +446,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingMagKlaslimietOverschrijden() {
         // ARRANGE
-        Klas klas1AA = new Klas("1AA", "2026");
+        Klas klas1AA = new Klas("1AA", "2026",1);
 
         Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
         Leerling tim = new Leerling("Tim", "Janssens", klas1AA);
@@ -469,14 +469,14 @@ class ManueleToewijzingServiceTest {
         );
 
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 10);
+                new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         /*
          * De capaciteit is ruim genoeg voor drie leerlingen.
          * Alleen de klaslimiet van twee leerlingen wordt overschreden.
          */
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 10);
+                new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryToewijzingRepository repository =
                 new InMemoryToewijzingRepository(new ArrayList<>());
@@ -539,7 +539,7 @@ class ManueleToewijzingServiceTest {
     @Test
     void manueleToewijzingHeeftGeenVoorkeurNummer() {
         // ARRANGE
-        Leerling jan = new Leerling("Jan", "Peeters");
+        Leerling jan = new Leerling("Jan", "Peeters", new Klas("1AA", "2026-2027", 1));
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
@@ -558,10 +558,10 @@ class ManueleToewijzingServiceTest {
         );
 
         IngerichtTalent schakenHerfst =
-                new IngerichtTalent(schaken, herfst, 10);
+                new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         IngerichtTalent voetbalHerfst =
-                new IngerichtTalent(voetbal, herfst, 10);
+                new IngerichtTalent(voetbal, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
 
@@ -628,5 +628,86 @@ class ManueleToewijzingServiceTest {
         );
     }
 
+    @Test
+    public void manueleToewijzingNaarVerkeerdeDoelgroepWordtGeweigerd() {
+        // ARRANGE
+        Klas klas2AA = new Klas("2AA", "2026-2027", 2);
+
+        Leerling jan = new Leerling(
+                "Jan",
+                "Peeters",
+                klas2AA
+        );
+
+        TalentenPeriode herfst = new TalentenPeriode(
+                "Herfst",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 10, 31)
+        );
+
+        Talent schaken = new Talent(
+                "Schaken",
+                "Leren schaken"
+        );
+
+        Talent voetbal = new Talent(
+                "Voetbal",
+                "Voetbaltraining"
+        );
+
+        IngerichtTalent schakenOnderbouw = new IngerichtTalent(
+                schaken,
+                herfst,
+                10,
+                Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR
+        );
+
+        IngerichtTalent voetbalBovenbouw = new IngerichtTalent(
+                voetbal,
+                herfst,
+                10,
+                Doelgroep.VANAF_VIERDE_JAAR
+        );
+
+        InMemoryToewijzingRepository repository =
+                new InMemoryToewijzingRepository(new ArrayList<>());
+
+        repository.save(
+                new Toewijzing(
+                        jan,
+                        schakenOnderbouw,
+                        ToewijzingsType.AUTOMATISCH
+                )
+        );
+
+        ManueleToewijzingService service =
+                new ManueleToewijzingService(repository);
+
+        // ACT + ASSERT
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.wijzigToewijzing(
+                        herfst,
+                        jan,
+                        voetbalBovenbouw
+                )
+        );
+
+        Toewijzing oorspronkelijkeToewijzing =
+                repository.zoekToewijzingVoorLeerlingEnPeriode(
+                        jan,
+                        herfst
+                );
+
+        assertSame(
+                schakenOnderbouw,
+                oorspronkelijkeToewijzing.getIngerichtTalent()
+        );
+
+        assertEquals(
+                ToewijzingsType.AUTOMATISCH,
+                oorspronkelijkeToewijzing.getToewijzingsType()
+        );
+    }
 
 }

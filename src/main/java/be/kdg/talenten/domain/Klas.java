@@ -3,11 +3,12 @@ package be.kdg.talenten.domain;
 public class Klas {
     private static long volgendId = 1;
 
-    private long id;
-    private String naam;
-    private String schooljaar;
+    private final long id;
+    private final String naam;
+    private final String schooljaar;
+    private final int leerjaar;
 
-    public Klas(String naam, String schooljaar){
+    public Klas(String naam, String schooljaar, int leerjaar){
         if (naam == null || naam.isBlank()){
             throw new IllegalArgumentException("Naam van de klas mag niet leeg zijn");
         }
@@ -17,6 +18,15 @@ public class Klas {
         this.id = volgendId++;
         this.naam = naam;
         this.schooljaar = schooljaar;
+        this.leerjaar = leerjaar;
+    }
+
+    public Doelgroep bepaalDoelgroep() {
+        if (leerjaar <= 3) {
+            return Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR;
+        }
+
+        return Doelgroep.VANAF_VIERDE_JAAR;
     }
 
     @Override

@@ -12,8 +12,8 @@ public class InMemoryLeerlingRepositoryTest {
     @Test
     public void zoekVoorKlasGeeftAlleenLeerlingenVanGevraagdeKlas() {
         // ARRANGE
-        Klas klas1AA = new Klas("1AA", "2026-2027");
-        Klas klas1AB = new Klas("1AB", "2026-2027");
+        Klas klas1AA = new Klas("1AA", "2026-2027",1);
+        Klas klas1AB = new Klas("1AB", "2026-2027",1);
 
         Leerling jan = new Leerling(
                 "Jan",

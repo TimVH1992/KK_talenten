@@ -1,9 +1,6 @@
 package be.kdg.talenten;
 
-import be.kdg.talenten.domain.IngerichtTalent;
-import be.kdg.talenten.domain.Leerling;
-import be.kdg.talenten.domain.Talent;
-import be.kdg.talenten.domain.TalentenPeriode;
+import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.InMemoryIngerichtTalentRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,11 +28,11 @@ public class IngerichtTalentRepositoryTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         InMemoryIngerichtTalentRepository inMemoryIngerichtTalentRepository = new InMemoryIngerichtTalentRepository(List.of(schakenHerfst, schakenWinter, voetbalWinter, kokenWinter));
 

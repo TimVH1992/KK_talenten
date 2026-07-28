@@ -10,12 +10,12 @@ import java.util.List;
 
 public class TestVerdelingen {
     public static void main(String[] args) {
-        Klas klas1AA = new Klas("1AA", "2026");
+        Klas klas1AA = new Klas("1AA", "2026",1);
 
-        Leerling leerling1 = new Leerling("Jan", "Peeters");
-        Leerling leerling2 = new Leerling("Sara", "Janssens");
-        Leerling leerling3 = new Leerling("Tom", "Mertens");
-        Leerling leerling4 = new Leerling("Joris", "VH");
+        Leerling leerling1 = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling leerling2 = new Leerling("Sara", "Janssens", klas1AA);
+        Leerling leerling3 = new Leerling("Tom", "Mertens", klas1AA);
+        Leerling leerling4 = new Leerling("Joris", "VH", klas1AA);
 
         Talent schaken = new Talent("Schaken", "Leren schaken");
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
@@ -27,9 +27,9 @@ public class TestVerdelingen {
                 LocalDate.of(2026, 10, 31)
         );
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1);
-        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1);
-        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(voetbal, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent kokenHerfst = new IngerichtTalent(koken, periode, 1, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
 

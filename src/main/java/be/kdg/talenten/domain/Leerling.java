@@ -8,20 +8,6 @@ public class Leerling {
     private String achternaam;
     private Klas klas;
 
-    public Leerling(String voornaam, String achternaam) {
-        if (voornaam == null || voornaam.isBlank()) {
-            throw new IllegalArgumentException("Voornaam mag niet leeg zijn.");
-        }
-
-        if (achternaam == null || achternaam.isBlank()) {
-            throw new IllegalArgumentException("Achternaam mag niet leeg zijn.");
-        }
-
-        this.id = volgendId++;
-        this.voornaam = voornaam;
-        this.achternaam = achternaam;
-    }
-
     public Leerling(String voornaam, String achternaam, Klas klas) {
         if (voornaam == null || voornaam.isBlank()) {
             throw new IllegalArgumentException("Voornaam mag niet leeg zijn.");
