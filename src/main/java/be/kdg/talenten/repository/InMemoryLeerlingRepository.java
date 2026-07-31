@@ -29,4 +29,13 @@ public class InMemoryLeerlingRepository implements  LeerlingRepository{
         }
         return leerlingenPerKlas;
     }
+
+    @Override
+    public Leerling save(Leerling leerling) {
+        if (leerling == null){
+            throw new IllegalArgumentException("Leerling mag niet null zijn");
+        }
+        leerlingen.add(leerling);
+        return leerling;
+    }
 }
