@@ -1,4 +1,4 @@
-package be.kdg.talenten;
+package be.kdg.talenten.repository;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
 import org.junit.jupiter.api.Test;

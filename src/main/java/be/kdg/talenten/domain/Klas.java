@@ -1,5 +1,7 @@
 package be.kdg.talenten.domain;
 
+import java.util.Objects;
+
 public class Klas {
     private static long volgendId = 1;
 
@@ -62,6 +64,18 @@ public class Klas {
 
     public static long getVolgendId() {
         return volgendId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Klas klas = (Klas) o;
+        return Objects.equals(naam, klas.naam) && Objects.equals(schooljaar, klas.schooljaar);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(naam, schooljaar);
     }
 
     @Override

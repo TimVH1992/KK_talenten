@@ -1,8 +1,8 @@
-package be.kdg.talenten;
+package be.kdg.talenten.repository;
 
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
-import be.kdg.talenten.repository.InMemoryLeerlingRepository;
+import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

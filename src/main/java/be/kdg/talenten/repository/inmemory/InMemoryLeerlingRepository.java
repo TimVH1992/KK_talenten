@@ -1,12 +1,13 @@
-package be.kdg.talenten.repository;
+package be.kdg.talenten.repository.inmemory;
 
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
+import be.kdg.talenten.repository.LeerlingRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class InMemoryLeerlingRepository implements  LeerlingRepository{
+public class InMemoryLeerlingRepository implements LeerlingRepository {
     private List<Leerling> leerlingen;
 
     public InMemoryLeerlingRepository(List<Leerling> leerlingen) {

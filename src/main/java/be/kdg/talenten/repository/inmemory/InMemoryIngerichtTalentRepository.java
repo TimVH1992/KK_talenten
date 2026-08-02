@@ -1,12 +1,13 @@
-package be.kdg.talenten.repository;
+package be.kdg.talenten.repository.inmemory;
 
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.TalentenPeriode;
+import be.kdg.talenten.repository.IngerichtTalentRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class InMemoryIngerichtTalentRepository implements IngerichtTalentRepository{
+public class InMemoryIngerichtTalentRepository implements IngerichtTalentRepository {
     private List<IngerichtTalent> ingerichteTalenten;
 
     public InMemoryIngerichtTalentRepository(List<IngerichtTalent> ingerichteTalenten){

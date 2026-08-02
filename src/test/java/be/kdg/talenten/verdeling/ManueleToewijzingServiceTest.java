@@ -1,10 +1,8 @@
-package be.kdg.talenten;
+package be.kdg.talenten.verdeling;
 
 import be.kdg.talenten.domain.*;
-import be.kdg.talenten.repository.InMemoryToewijzingRepository;
+import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.service.ManueleToewijzingService;
-import be.kdg.talenten.verdeling.AutomatischeVerdeler;
-import be.kdg.talenten.verdeling.VerdelingsResultaat;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

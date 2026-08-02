@@ -1,9 +1,10 @@
-package be.kdg.talenten.repository;
+package be.kdg.talenten.repository.inmemory;
 
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
+import be.kdg.talenten.repository.ToewijzingRepository;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -125,3 +125,6 @@ UPDATE voorkeuren
 SET voorkeur_nummer = 4
 WHERE leerling_id = 2;
 
+SELECT voornaam, achternaam, klas_id, leerling_id
+FROM leerlingen
+WHERE klas_id = 1;

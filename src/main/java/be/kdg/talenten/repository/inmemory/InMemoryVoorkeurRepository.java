@@ -1,12 +1,13 @@
-package be.kdg.talenten.repository;
+package be.kdg.talenten.repository.inmemory;
 
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Voorkeur;
+import be.kdg.talenten.repository.VoorkeurRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class InMemoryVoorkeurRepository implements VoorkeurRepository{
+public class InMemoryVoorkeurRepository implements VoorkeurRepository {
     private List<Voorkeur> voorkeuren;
 
     public InMemoryVoorkeurRepository(List<Voorkeur> voorkeuren) {
