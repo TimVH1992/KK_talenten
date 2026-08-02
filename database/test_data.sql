@@ -120,3 +120,8 @@ INSERT INTO voorkeuren (
 )
 VALUES
     (4, 2, 1, 1);
+
+UPDATE voorkeuren
+SET voorkeur_nummer = 4
+WHERE leerling_id = 2;
+
