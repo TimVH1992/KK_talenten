@@ -3,7 +3,6 @@ package be.kdg.talenten.domain;
 import java.util.Objects;
 
 public class Klas {
-    private static long volgendId = 1;
 
     private final Long id;
     private final String naam;
@@ -11,11 +10,11 @@ public class Klas {
     private final int leerjaar;
 
     public Klas(String naam, String schooljaar, int leerjaar) {
-        this(volgendId++, naam, schooljaar, leerjaar);
+        this(null, naam, schooljaar, leerjaar);
     }
 
-    public Klas(long id, String naam, String schooljaar, int leerjaar) {
-        if (id < 1) {
+    public Klas(Long id, String naam, String schooljaar, int leerjaar) {
+        if (id != null && id < 1) {
             throw new IllegalArgumentException("ID moet groter zijn dan 0");
         }
         if (naam == null || naam.isBlank()) {
@@ -46,7 +45,7 @@ public class Klas {
         return Doelgroep.VANAF_VIERDE_JAAR;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -62,9 +61,6 @@ public class Klas {
         return leerjaar;
     }
 
-    public static long getVolgendId() {
-        return volgendId;
-    }
 
     @Override
     public boolean equals(Object o) {

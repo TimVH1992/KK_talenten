@@ -40,6 +40,7 @@ public class VoorkeurTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> new Voorkeur(
+                        null,
                         jan,
                         herfst,
                         schakenBovenbouw,

@@ -1,19 +1,17 @@
 package be.kdg.talenten.domain;
 
 public class Leerling {
-    private static long volgendId = 1;
-
     private final Long id;
     private final String voornaam;
     private final String achternaam;
     private Klas klas;
 
     public Leerling(String voornaam, String achternaam, Klas klas) {
-        this(volgendId++,voornaam, achternaam, klas);
+        this(null ,voornaam, achternaam, klas);
     }
 
-    public Leerling(long id, String voornaam, String achternaam, Klas klas) {
-        if (id < 1) {
+    public Leerling(Long id, String voornaam, String achternaam, Klas klas) {
+        if (id != null && id < 1) {
             throw new IllegalArgumentException("ID moet groter zijn dan 0.");
         }
         if (voornaam == null || voornaam.isBlank()) {
@@ -39,7 +37,7 @@ public class Leerling {
         this.klas = klas;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

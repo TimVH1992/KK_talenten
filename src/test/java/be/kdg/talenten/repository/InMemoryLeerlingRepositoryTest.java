@@ -43,10 +43,14 @@ public class InMemoryLeerlingRepositoryTest {
                 repository.zoekVoorKlas(klas1AA);
 
         // ASSERT
+        Assertions.assertNotEquals(klas1AA, klas1AB);
+        Assertions.assertEquals(klas1AA, jan.getKlas());
         Assertions.assertEquals(
                 List.of(jan, julie),
                 resultaat
+
         );
+
     }
 
     @Test

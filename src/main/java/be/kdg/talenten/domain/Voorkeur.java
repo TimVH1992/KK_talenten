@@ -1,15 +1,20 @@
 package be.kdg.talenten.domain;
 
 public class Voorkeur {
-    private static long volgendeId = 1;
-
-    private long id;
+    private Long id;
     private Leerling leerling;
     private TalentenPeriode talentenPeriode;
     private IngerichtTalent ingerichtTalent;
     private int voorkeurNummer;
 
-    public Voorkeur(Leerling leerling, TalentenPeriode talentenPeriode, IngerichtTalent ingerichtTalent, int voorkeurNummer) {
+    public Voorkeur(Leerling leerling, TalentenPeriode talentenPeriode,IngerichtTalent ingerichtTalent, int voorkeurNummer) {
+        this(null, leerling, talentenPeriode, ingerichtTalent, voorkeurNummer);
+    }
+
+    public Voorkeur(Long id, Leerling leerling, TalentenPeriode talentenPeriode,IngerichtTalent ingerichtTalent, int voorkeurNummer) {
+        if (id != null && id < 1){
+            throw new IllegalArgumentException("Id mag niet kleiner zijn dan 1");
+        }
         if (leerling == null){
             throw new IllegalArgumentException("Leerling mag niet null zijn.");
         }
@@ -33,7 +38,7 @@ public class Voorkeur {
                     "De leerling behoort niet tot de doelgroep van het ingericht talent."
             );
         }
-        this.id = volgendeId++;
+        this.id =id;
         this.leerling = leerling;
         this.talentenPeriode = talentenPeriode;
         this.ingerichtTalent = ingerichtTalent;

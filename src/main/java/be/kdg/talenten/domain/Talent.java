@@ -1,15 +1,24 @@
 package be.kdg.talenten.domain;
 
-public class Talent {
-    private static int volgendeId = 1;
+import java.util.Objects;
 
-    private long id;
+public class Talent {
+    private Long id;
     private String naam;
     private String beschrijving;
 
     public Talent(String naam, String beschrijving) {
-        this.id = volgendeId++;
+        this(null, naam, beschrijving);
+    }
 
+    public Talent(Long id, String naam, String beschrijving) {
+        if (naam == null){
+            throw new IllegalArgumentException("Naam mag niet null zijn");
+        }
+        if (beschrijving == null){
+            throw new IllegalArgumentException("beschrijving mag niet null zijn");
+        }
+        this.id = id;
         this.naam = naam;
         this.beschrijving = beschrijving;
     }
@@ -22,8 +31,20 @@ public class Talent {
         return beschrijving;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Talent talent = (Talent) o;
+        return Objects.equals(naam, talent.naam) && Objects.equals(beschrijving, talent.beschrijving);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(naam, beschrijving);
     }
 
     @Override
