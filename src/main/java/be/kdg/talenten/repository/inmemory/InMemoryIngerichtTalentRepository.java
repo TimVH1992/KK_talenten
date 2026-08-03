@@ -18,6 +18,18 @@ public class InMemoryIngerichtTalentRepository implements IngerichtTalentReposit
     }
 
     @Override
+    public IngerichtTalent save(IngerichtTalent ingerichtTalent) {
+        if (ingerichtTalent == null) {
+            throw new IllegalArgumentException(
+                    "Ingericht talent mag niet null zijn"
+            );
+        }
+
+        ingerichteTalenten.add(ingerichtTalent);
+        return ingerichtTalent;
+    }
+
+    @Override
     public List<IngerichtTalent> zoekVoorPeriode(TalentenPeriode periode){
         if (periode == null){
             throw new IllegalArgumentException("De periode mag niet null zijn");

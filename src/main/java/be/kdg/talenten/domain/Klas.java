@@ -1,5 +1,6 @@
 package be.kdg.talenten.domain;
 
+import java.nio.file.FileStore;
 import java.util.Objects;
 
 public class Klas {
@@ -8,12 +9,17 @@ public class Klas {
     private final String naam;
     private final String schooljaar;
     private final int leerjaar;
+    private final Doelgroep doelgroep;
 
-    public Klas(String naam, String schooljaar, int leerjaar) {
-        this(null, naam, schooljaar, leerjaar);
+    public Klas(String naam, String schooljaar, int leerjaar, Doelgroep doelgroep) {
+        this(null, naam, schooljaar, leerjaar, doelgroep);
     }
 
-    public Klas(Long id, String naam, String schooljaar, int leerjaar) {
+    public Doelgroep getDoelgroep() {
+        return doelgroep;
+    }
+
+    public Klas(Long id, String naam, String schooljaar, int leerjaar, Doelgroep doelgroep) {
         if (id != null && id < 1) {
             throw new IllegalArgumentException("ID moet groter zijn dan 0");
         }
@@ -30,20 +36,19 @@ public class Klas {
                     "Het leerjaar moet tussen 1 en 7 liggen"
             );
         }
+        if (doelgroep == null) {
+            throw new IllegalArgumentException(
+                    "Doelgroep mag niet null zijn"
+            );
+        }
 
         this.id = id;
         this.naam = naam;
         this.schooljaar = schooljaar;
         this.leerjaar = leerjaar;
+        this.doelgroep = doelgroep;
     }
 
-    public Doelgroep bepaalDoelgroep() {
-        if (leerjaar <= 3) {
-            return Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR;
-        }
-
-        return Doelgroep.VANAF_VIERDE_JAAR;
-    }
 
     public Long getId() {
         return id;
@@ -82,4 +87,5 @@ public class Klas {
                 ", schooljaar='" + schooljaar + '\'' +
                 '}';
     }
+
 }

@@ -1,8 +1,8 @@
 package be.kdg.talenten.repository.postgres;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
-import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.repository.KlasRepository;
 
 import java.sql.Connection;
@@ -23,9 +23,10 @@ public class PostgresKlasRepository implements KlasRepository {
                 INSERT INTO klassen(
                 klas_naam,
                 schooljaar,
-                leerjaar
+                leerjaar,
+                doelgroep
                 )
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?, ?)
                 RETURNING klas_id
                 """;
 
@@ -35,6 +36,10 @@ public class PostgresKlasRepository implements KlasRepository {
             statement.setString(1, klas.getNaam());
             statement.setString(2, klas.getSchooljaar());
             statement.setInt(3, klas.getLeerjaar());
+            statement.setString(
+                    4,
+                    klas.getDoelgroep().name()
+            );
 
             try (ResultSet resultSet = statement.executeQuery()){
                 if (!resultSet.next()){
@@ -45,7 +50,8 @@ public class PostgresKlasRepository implements KlasRepository {
                         gegenereerdId,
                         klas.getNaam(),
                         klas.getSchooljaar(),
-                        klas.getLeerjaar()
+                        klas.getLeerjaar(),
+                        klas.getDoelgroep()
                 );
             }
         } catch (SQLException e){
@@ -59,7 +65,8 @@ public class PostgresKlasRepository implements KlasRepository {
                 SELECT klas_id, 
                 klas_naam, 
                 schooljaar, 
-                leerjaar
+                leerjaar,
+                doelgroep
                 FROM klassen
                 ORDER BY leerjaar, klas_naam
                 """;
@@ -76,7 +83,8 @@ public class PostgresKlasRepository implements KlasRepository {
                             resultSet.getLong("klas_id"),
                             resultSet.getString("klas_naam"),
                             resultSet.getString("schooljaar"),
-                            resultSet.getInt("leerjaar")
+                            resultSet.getInt("leerjaar"),
+                            Doelgroep.valueOf(resultSet.getString("doelgroep"))
                     );
 
                     klassen.add(klas);

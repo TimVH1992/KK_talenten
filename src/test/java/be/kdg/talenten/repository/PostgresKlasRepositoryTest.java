@@ -1,24 +1,31 @@
 package be.kdg.talenten.repository;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.repository.postgres.PostgresKlasRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
-public class PostgresKlasRepositoryTest {
+class PostgresKlasRepositoryTest {
+
     private KlasRepository repository;
 
     @BeforeEach
-    public void setup() throws SQLException {
-        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
-             Statement statement = connection.createStatement();
-        ) {
+    void setup() throws SQLException {
+        try (Connection connection =
+                     DatabaseConnectionFactory.maakVerbinding();
+             Statement statement =
+                     connection.createStatement()) {
+
             statement.executeUpdate("""
                     TRUNCATE TABLE
                         ingericht_talent_leerkrachten,
@@ -40,29 +47,49 @@ public class PostgresKlasRepositoryTest {
     @Test
     void saveKlasSlaatKlasOpInDatabank() throws SQLException {
         // Arrange
-        Klas klas1AA = new Klas("1AA", "2026-2027", 1);
+        Klas klas1AA = new Klas(
+                "1AA",
+                "2026-2027",
+                1,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
 
         // Act
         Klas opgeslagenKlas = repository.save(klas1AA);
 
         // Assert op het teruggegeven object
         Assertions.assertNotNull(opgeslagenKlas);
+        Assertions.assertNotNull(opgeslagenKlas.getId());
         Assertions.assertTrue(opgeslagenKlas.getId() > 0);
 
+        Assertions.assertEquals(
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                opgeslagenKlas.getDoelgroep()
+        );
+
         String sql = """
-            SELECT klas_naam, schooljaar, leerjaar
-            FROM klassen
-            WHERE klas_id = ?
-            """;
+                SELECT
+                    klas_naam,
+                    schooljaar,
+                    leerjaar,
+                    doelgroep
+                FROM klassen
+                WHERE klas_id = ?
+                """;
 
         try (Connection connection =
                      DatabaseConnectionFactory.maakVerbinding();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            statement.setLong(1, opgeslagenKlas.getId());
+            statement.setLong(
+                    1,
+                    opgeslagenKlas.getId()
+            );
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try (ResultSet resultSet =
+                         statement.executeQuery()) {
+
                 Assertions.assertTrue(
                         resultSet.next(),
                         "De klas werd niet teruggevonden in de databank"
@@ -72,13 +99,20 @@ public class PostgresKlasRepositoryTest {
                         "1AA",
                         resultSet.getString("klas_naam")
                 );
+
                 Assertions.assertEquals(
                         "2026-2027",
                         resultSet.getString("schooljaar")
                 );
+
                 Assertions.assertEquals(
                         1,
                         resultSet.getInt("leerjaar")
+                );
+
+                Assertions.assertEquals(
+                        "OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB",
+                        resultSet.getString("doelgroep")
                 );
 
                 Assertions.assertFalse(
@@ -88,34 +122,87 @@ public class PostgresKlasRepositoryTest {
             }
         }
     }
-    @Test
-    void zoekAlleKlassen(){
-        // Arrange
-        Klas klas1AA = new Klas("1AA", "2026-2027", 1);
-        Klas klas2AA = new Klas("2AA", "2026-2027", 2);
-        Klas klas3AA = new Klas("3AA", "2026-2027", 3);
 
-        // Act
+    @Test
+    void zoekAlleKlassenGeeftAlleKlassenGesorteerdTerug() {
+        // Arrange
+        Klas klas1AA = new Klas(
+                "1AA",
+                "2026-2027",
+                1,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        Klas klas2AA = new Klas(
+                "2AA",
+                "2026-2027",
+                2,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        Klas klas3AA = new Klas(
+                "3AA",
+                "2026-2027",
+                3,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        Klas klas5AA = new Klas(
+                "5AA",
+                "2026-2027",
+                5,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+        );
+
         Klas opgeslagenKlas1AA = repository.save(klas1AA);
         Klas opgeslagenKlas2AA = repository.save(klas2AA);
         Klas opgeslagenKlas3AA = repository.save(klas3AA);
+        Klas opgeslagenKlas5AA = repository.save(klas5AA);
 
-        List<Klas> resultaat = new ArrayList<>();
-        resultaat.add(opgeslagenKlas1AA);
-        resultaat.add(opgeslagenKlas2AA);
-        resultaat.add(opgeslagenKlas3AA);
+        List<Klas> verwacht = List.of(
+                opgeslagenKlas1AA,
+                opgeslagenKlas2AA,
+                opgeslagenKlas3AA,
+                opgeslagenKlas5AA
+        );
 
-        // Assert op het teruggegeven object
-        Assertions.assertNotNull(opgeslagenKlas1AA);
-        Assertions.assertNotNull(opgeslagenKlas2AA);
-        Assertions.assertNotNull(opgeslagenKlas3AA);
-        Assertions.assertEquals(1, opgeslagenKlas1AA.getId());
-        Assertions.assertEquals(2, opgeslagenKlas2AA.getId());
-        Assertions.assertEquals(3, opgeslagenKlas3AA.getId());
+        // Act
+        List<Klas> werkelijk = repository.zoekAlle();
 
-        Assertions.assertEquals(resultaat, repository.zoekAlle());
+        // Assert
+        Assertions.assertEquals(
+                1L,
+                opgeslagenKlas1AA.getId()
+        );
 
+        Assertions.assertEquals(
+                2L,
+                opgeslagenKlas2AA.getId()
+        );
 
+        Assertions.assertEquals(
+                3L,
+                opgeslagenKlas3AA.getId()
+        );
+
+        Assertions.assertEquals(
+                4L,
+                opgeslagenKlas5AA.getId()
+        );
+
+        Assertions.assertEquals(
+                verwacht,
+                werkelijk
+        );
+
+        Assertions.assertEquals(
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                werkelijk.getFirst().getDoelgroep()
+        );
+
+        Assertions.assertEquals(
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                werkelijk.get(3).getDoelgroep()
+        );
     }
 }
-

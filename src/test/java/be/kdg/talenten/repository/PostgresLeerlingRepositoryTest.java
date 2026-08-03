@@ -1,6 +1,7 @@
 package be.kdg.talenten.repository;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.repository.postgres.PostgresKlasRepository;
@@ -44,7 +45,7 @@ public class PostgresLeerlingRepositoryTest {
 
         repository = new PostgresLeerlingRepository();
         klasRepository = new PostgresKlasRepository();
-        klas = klasRepository.save(new Klas( "2AA", "2026-2027", 2));
+        klas = klasRepository.save(new Klas( "2AA", "2026-2027", 2, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB));
     }
 
     @Test

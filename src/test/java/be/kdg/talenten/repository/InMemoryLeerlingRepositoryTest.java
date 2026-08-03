@@ -1,5 +1,6 @@
 package be.kdg.talenten.repository;
 
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
@@ -12,8 +13,8 @@ public class InMemoryLeerlingRepositoryTest {
     @Test
     public void zoekVoorKlasGeeftAlleenLeerlingenVanGevraagdeKlas() {
         // ARRANGE
-        Klas klas1AA = new Klas("1AA", "2026-2027",1);
-        Klas klas1AB = new Klas("1AB", "2026-2027",1);
+        Klas klas1AA = new Klas("1AA", "2026-2027",1, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB);
+        Klas klas1AB = new Klas("1AB", "2026-2027",1, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB);
 
         Leerling jan = new Leerling(
                 "Jan",

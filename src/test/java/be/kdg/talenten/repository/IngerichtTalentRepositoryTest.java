@@ -12,6 +12,9 @@ import java.util.List;
 public class IngerichtTalentRepositoryTest {
     @Test
     public void zoekVoorPeriodeGeeftAlleenIngerichteTalentenVanGevraagdePeriode(){
+        Leerkracht leerkracht =
+                new Leerkracht("Test", "Leerkracht");
+
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
                 LocalDate.of(2025, 9, 21),
@@ -28,11 +31,11 @@ public class IngerichtTalentRepositoryTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
 
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.EERSTE_TOT_EN_MET_DERDE_JAAR);
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
 
         InMemoryIngerichtTalentRepository inMemoryIngerichtTalentRepository = new InMemoryIngerichtTalentRepository(List.of(schakenHerfst, schakenWinter, voetbalWinter, kokenWinter));
 

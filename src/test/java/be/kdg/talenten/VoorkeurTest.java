@@ -5,12 +5,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class VoorkeurTest {
     @Test
     public void voorkeurVoorVerkeerdeDoelgroepWordtGeweigerd() {
         // ARRANGE
-        Klas klas2AA = new Klas("2AA", "2026-2027", 2);
+        Klas klas2AA = new Klas("2AA", "2026-2027", 2, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB);
 
         Leerling jan = new Leerling(
                 "Jan",
@@ -29,13 +30,16 @@ public class VoorkeurTest {
                 "Leren schaken"
         );
 
+        Leerkracht leerkracht =
+                new Leerkracht("Tim", "Van Herreweghe");
+
         IngerichtTalent schakenBovenbouw = new IngerichtTalent(
                 schaken,
                 herfst,
                 10,
-                Doelgroep.VANAF_VIERDE_JAAR
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                List.of(leerkracht)
         );
-
         // ACT + ASSERT
         Assertions.assertThrows(
                 IllegalArgumentException.class,
