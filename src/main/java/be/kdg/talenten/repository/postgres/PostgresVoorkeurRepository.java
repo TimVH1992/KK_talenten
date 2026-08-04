@@ -3,7 +3,6 @@ package be.kdg.talenten.repository.postgres;
 import be.kdg.talenten.database.DatabaseConnectionFactory;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.IngerichtTalentRepository;
-import be.kdg.talenten.repository.KlasRepository;
 import be.kdg.talenten.repository.LeerlingRepository;
 import be.kdg.talenten.repository.VoorkeurRepository;
 
@@ -15,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostgresVoorkeurRepository implements VoorkeurRepository {
-    private LeerlingRepository leerlingRepository;
-    private IngerichtTalentRepository ingerichtTalentRepository;
+    private final LeerlingRepository leerlingRepository;
+    private final IngerichtTalentRepository ingerichtTalentRepository;
 
     public PostgresVoorkeurRepository(){
         leerlingRepository = new PostgresLeerlingRepository();
@@ -25,6 +24,22 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
 
     @Override
     public Voorkeur save(Voorkeur voorkeur) {
+        if (voorkeur == null) {
+            throw new IllegalArgumentException("Voorkeur mag niet null zijn");
+        }
+
+        if (voorkeur.getLeerling().getId() == null) {
+            throw new IllegalArgumentException("De leerling moet eerst opgeslagen zijn");
+        }
+
+        if (voorkeur.getTalentenPeriode().getId() == null) {
+            throw new IllegalArgumentException("De talentenperiode moet eerst opgeslagen zijn");
+        }
+
+        if (voorkeur.getIngerichtTalent().getId() == null) {
+            throw new IllegalArgumentException("Het ingerichte talent moet eerst opgeslagen zijn");
+        }
+
         String sql = """
                 INSERT INTO voorkeuren(
                 voorkeur_nummer,
@@ -39,7 +54,7 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setLong(1, voorkeur.getVoorkeurNummer());
+            statement.setInt(1, voorkeur.getVoorkeurNummer());
             statement.setLong(2, voorkeur.getLeerling().getId());
             statement.setLong(3, voorkeur.getTalentenPeriode().getId());
             statement.setLong(4, voorkeur.getIngerichtTalent().getId());
@@ -62,7 +77,9 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
         if (periode == null) {
             throw new IllegalArgumentException("De periode mag niet null zijn");
         }
-
+        if (periode.getId() == null) {
+            throw new IllegalArgumentException("De periode moet eerst opgeslagen zijn");
+        }
 
         String sql = """
                 SELECT voorkeur_id, voorkeur_nummer,leerling_id, talenten_periode_id, ingericht_talent_id
@@ -80,6 +97,7 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                 List<Voorkeur> voorkeuren = new ArrayList<>();
                 while (resultSet.next()) {
                     Voorkeur voorkeur = new Voorkeur(
+                            resultSet.getLong("voorkeur_id"),
                             leerlingRepository.zoekOpId(resultSet.getLong("leerling_id")),
                             periode,
                             ingerichtTalentRepository.zoekOpId(resultSet.getLong("ingericht_talent_id")),
