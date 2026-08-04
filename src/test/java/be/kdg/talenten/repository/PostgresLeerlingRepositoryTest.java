@@ -75,4 +75,19 @@ public class PostgresLeerlingRepositoryTest {
         Assertions.assertEquals("Tim", resultaat.get(0).getVoornaam());
         Assertions.assertEquals("Eveline", resultaat.get(1).getVoornaam());
     }
+
+    @Test
+    void zoekLeerlingOpIdTest(){
+        Leerling test = new Leerling("Test", "Leerling", klas);
+
+        Leerling opgeslagenLeerling = repository.save(test);
+        Leerling gevondenLeerling = repository.zoekOpId(opgeslagenLeerling.getId());
+
+        Assertions.assertNotNull(gevondenLeerling);
+        Assertions.assertEquals(opgeslagenLeerling, gevondenLeerling);
+        Assertions.assertEquals(opgeslagenLeerling.getId(), gevondenLeerling.getId());
+        Assertions.assertEquals("Test", gevondenLeerling.getVoornaam());
+        Assertions.assertEquals("Leerling", gevondenLeerling.getAchternaam());
+        Assertions.assertEquals(klas, gevondenLeerling.getKlas());
+    }
 }

@@ -1,6 +1,7 @@
 package be.kdg.talenten.repository.postgres;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.repository.LeerlingRepository;
@@ -47,8 +48,7 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
 
                 return leerlingenPerKlas;
             }
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new IllegalStateException(
                     "De leerlingen voor deze klas konden niet opgehaald worden.",
                     e
@@ -107,6 +107,48 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                     "De leerling kon niet opgeslagen worden.",
                     e
             );
+        }
+    }
+
+    @Override
+    public Leerling zoekOpId(long id) {
+        if (id < 1){
+            throw new IllegalArgumentException("id moet groter zijn dan 0");
+        }
+
+        String sql = """
+                SELECT voornaam, achternaam, l.klas_id, k.klas_naam, k.schooljaar, k.leerjaar, k.doelgroep
+                FROM leerlingen l 
+                JOIN klassen k ON (l.klas_id = k.klas_id)
+                WHERE l.leerling_id = ?
+                """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new IllegalStateException("Geen leerling gevonden met id: " + id);
+                }
+                Klas klas = new Klas(
+                        resultSet.getLong("klas_id"),
+                        resultSet.getString("klas_naam"),
+                        resultSet.getString("schooljaar"),
+                        resultSet.getInt("leerjaar"),
+                        Doelgroep.valueOf(resultSet.getString("doelgroep")));
+                Leerling huidigeLeerling = new Leerling(
+                        id,
+                        resultSet.getString("voornaam"),
+                        resultSet.getString("achternaam"),
+                        klas);
+                return huidigeLeerling;
+            }
+
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("De leerling kan niet op id gevonden worden", e);
         }
     }
 }

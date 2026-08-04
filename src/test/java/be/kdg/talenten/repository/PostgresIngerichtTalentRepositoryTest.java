@@ -125,6 +125,43 @@ class PostgresIngerichtTalentRepositoryTest {
         assertFalse(resultaat.stream().anyMatch(ingerichtTalent -> ingerichtTalent.getTalentenPeriode().getId().equals(winter.getId())));
     }
 
+    @Test
+    void zoekOpIdGeeftVolledigIngerichtTalentTerug() {
+        // ARRANGE
+        Talent schaken = talentRepository.save(new Talent("Schaken", "Leren schaken"));
+        TalentenPeriode herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+        Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
+        Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
+
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
+        IngerichtTalent opgeslagenIngerichtTalent = ingerichtTalentRepository.save(schakenHerfst);
+
+        // ACT
+        IngerichtTalent gevondenIngerichtTalent = ingerichtTalentRepository.zoekOpId(opgeslagenIngerichtTalent.getId());
+
+        // ASSERT
+        assertNotNull(gevondenIngerichtTalent);
+        assertEquals(opgeslagenIngerichtTalent.getId(), gevondenIngerichtTalent.getId());
+
+        assertEquals(schaken.getId(), gevondenIngerichtTalent.getTalent().getId());
+        assertEquals("Schaken", gevondenIngerichtTalent.getTalent().getNaam());
+        assertEquals("Leren schaken", gevondenIngerichtTalent.getTalent().getBeschrijving());
+
+        assertEquals(herfst.getId(), gevondenIngerichtTalent.getTalentenPeriode().getId());
+        assertEquals("Herfst", gevondenIngerichtTalent.getTalentenPeriode().getNaam());
+        assertEquals(LocalDate.of(2026, 9, 1), gevondenIngerichtTalent.getTalentenPeriode().getStartDatum());
+        assertEquals(LocalDate.of(2026, 10, 31), gevondenIngerichtTalent.getTalentenPeriode().getEindDatum());
+
+        assertEquals(10, gevondenIngerichtTalent.getMaxCapaciteit());
+        assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, gevondenIngerichtTalent.getDoelgroep());
+
+        List<Long> gevondenLeerkrachtIds = gevondenIngerichtTalent.getLeerkrachten().stream().map(Leerkracht::getId).toList();
+
+        assertEquals(2, gevondenLeerkrachtIds.size());
+        assertTrue(gevondenLeerkrachtIds.contains(tim.getId()));
+        assertTrue(gevondenLeerkrachtIds.contains(sara.getId()));
+    }
+
     private void controleerIngerichtTalentInDatabank(IngerichtTalent ingerichtTalent) throws SQLException {
         String sql = """
                 SELECT maximum_capaciteit, doelgroep, talent_id, talenten_periode_id

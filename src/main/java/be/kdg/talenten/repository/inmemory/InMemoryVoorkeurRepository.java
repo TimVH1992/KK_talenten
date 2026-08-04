@@ -8,14 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InMemoryVoorkeurRepository implements VoorkeurRepository {
-    private List<Voorkeur> voorkeuren;
+    private final List<Voorkeur> voorkeuren;
 
     public InMemoryVoorkeurRepository(List<Voorkeur> voorkeuren) {
         if(voorkeuren == null){
             throw new IllegalArgumentException("Voorkeuren mag niet null zijn");
         }
-        this.voorkeuren = voorkeuren;
+        this.voorkeuren = new ArrayList<>(voorkeuren);
     }
+
+    @Override
+    public Voorkeur save(Voorkeur voorkeur) {
+        if (voorkeur == null){
+            throw new IllegalArgumentException("Voorkeur mag niet null zijn");
+        }
+        voorkeuren.add(voorkeur);
+        return voorkeur;
+    }
+
+
     @Override
     public List<Voorkeur> zoekVoorPeriode(TalentenPeriode periode) {
         if (periode == null){

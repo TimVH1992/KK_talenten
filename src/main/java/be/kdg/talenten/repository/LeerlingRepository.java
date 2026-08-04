@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface LeerlingRepository {
     List<Leerling> zoekVoorKlas(Klas klas);
-
     Leerling save(Leerling leerling);
+    Leerling zoekOpId(long id);
 }

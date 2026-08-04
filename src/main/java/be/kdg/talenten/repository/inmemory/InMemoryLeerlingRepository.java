@@ -39,4 +39,15 @@ public class InMemoryLeerlingRepository implements LeerlingRepository {
         leerlingen.add(leerling);
         return leerling;
     }
+
+    @Override
+    public Leerling zoekOpId(long id) {
+        for (Leerling leerling : leerlingen) {
+            if (leerling.getId() != null && leerling.getId() == id) {
+                return leerling;
+            }
+        }
+
+        throw new IllegalStateException("Geen leerling gevonden met ID " + id);
+    }
 }

@@ -42,4 +42,17 @@ public class InMemoryIngerichtTalentRepository implements IngerichtTalentReposit
         }
         return ingerichteTalentenVoorPeriode;
     }
+
+    @Override
+    public IngerichtTalent zoekOpId(long id) {
+        if (id < 1){
+            throw new IllegalArgumentException("id mag niet kleiner zijn dan 1");
+        }
+        for (IngerichtTalent ingerichtTalent : ingerichteTalenten){
+            if (ingerichtTalent.getId() != null && ingerichtTalent.getId().equals(id)){
+                return ingerichtTalent;
+            }
+        }
+        throw new IllegalStateException("Geen ingericht talent gevonden met id: " + id);
+    }
 }

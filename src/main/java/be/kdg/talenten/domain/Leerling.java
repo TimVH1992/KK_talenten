@@ -1,5 +1,7 @@
 package be.kdg.talenten.domain;
 
+import java.util.Objects;
+
 public class Leerling {
     private final Long id;
     private final String voornaam;
@@ -51,6 +53,18 @@ public class Leerling {
 
     public String getAchternaam() {
         return achternaam;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Leerling leerling = (Leerling) o;
+        return Objects.equals(id, leerling.id) && Objects.equals(voornaam, leerling.voornaam) && Objects.equals(achternaam, leerling.achternaam);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, voornaam, achternaam);
     }
 
     @Override
