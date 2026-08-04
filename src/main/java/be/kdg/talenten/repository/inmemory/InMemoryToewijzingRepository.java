@@ -76,15 +76,16 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
     }
 
     @Override
-    public void save(Toewijzing toewijzing) {
+    public Toewijzing save(Toewijzing toewijzing) {
         if (toewijzing == null){
             throw new IllegalArgumentException("Toewijzing die je wilt opslaan mag niet null zijn");
         }
         opgeslagenToewijzingen.add(toewijzing);
+        return toewijzing;
     }
 
     @Override
-    public void update(Toewijzing toewijzing) {
+    public Toewijzing update(Toewijzing toewijzing) {
         if (toewijzing == null) {
             throw new IllegalArgumentException("Toewijzing die je wilt updaten mag niet null zijn.");
         }
@@ -101,6 +102,7 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
         if (!gevonden) {
             throw new IllegalArgumentException("De toewijzing die je wilt updaten bestaat niet.");
         }
+        return toewijzing;
     }
 
     @Override

@@ -298,6 +298,8 @@ CREATE TABLE toewijzingen (
                               leerling_id BIGINT NOT NULL,
                               talenten_periode_id BIGINT NOT NULL,
                               ingericht_talent_id BIGINT NOT NULL,
+                              toegewezen_op TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                              gewijzigd_op TIMESTAMP,
 
                               CONSTRAINT pk_toewijzingen
                                   PRIMARY KEY (toewijzing_id),

@@ -18,9 +18,9 @@ public interface ToewijzingRepository {
 
     int telToewijzingenVoorIngerichtTalent(IngerichtTalent ingerichtTalent);
 
-    void save(Toewijzing toewijzing);
+    Toewijzing save(Toewijzing toewijzing);
 
-    void update(Toewijzing toewijzing);
+    Toewijzing update(Toewijzing toewijzing);
 
     List<Toewijzing> zoekVoorPeriode(TalentenPeriode periode);
 }
