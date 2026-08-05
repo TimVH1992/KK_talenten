@@ -117,8 +117,8 @@ public class AutomatischeVerdeler {
 
     private boolean heeftLeerlingTalentAlGevolgd(Leerling leerling, Talent talent) {
         for (Toewijzing historischeToewijzing : historischeToewijzingen) {
-            boolean zelfdeLeerling = historischeToewijzing.getLeerling() == leerling;
-            boolean zelfdeTalent = historischeToewijzing.getIngerichtTalent().getTalent() == talent;
+            boolean zelfdeLeerling = historischeToewijzing.getLeerling().equals(leerling);
+            boolean zelfdeTalent = historischeToewijzing.getIngerichtTalent().getTalent().equals(talent);
 
             if (zelfdeLeerling && zelfdeTalent) {
                 return true;
@@ -187,7 +187,7 @@ public class AutomatischeVerdeler {
         Toewijzing laatsteToewijzing = null;
 
         for (Toewijzing historischeToewijzing : historischeToewijzingen) {
-            boolean zelfdeLeerling = historischeToewijzing.getLeerling() == leerling;
+            boolean zelfdeLeerling = historischeToewijzing.getLeerling().equals(leerling);
 
             if (zelfdeLeerling) {
                 if (laatsteToewijzing == null) {

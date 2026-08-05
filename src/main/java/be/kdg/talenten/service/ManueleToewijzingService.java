@@ -8,7 +8,7 @@ import be.kdg.talenten.domain.ToewijzingsType;
 import be.kdg.talenten.repository.ToewijzingRepository;
 
 public class ManueleToewijzingService {
-    private ToewijzingRepository toewijzingRepository;
+    private final ToewijzingRepository toewijzingRepository;
 
     public ManueleToewijzingService(ToewijzingRepository toewijzingRepository) {
         if (toewijzingRepository == null) {
@@ -35,7 +35,7 @@ public class ManueleToewijzingService {
             throw new IllegalArgumentException("Nieuw ingericht talent mag niet null zijn.");
         }
 
-        if (nieuwIngerichtTalent.getTalentenPeriode() != talentenPeriode) {
+        if (!nieuwIngerichtTalent.getTalentenPeriode().equals(talentenPeriode)) {
             throw new IllegalArgumentException("Het ingericht talent behoort niet tot deze talentenperiode.");
         }
         if (!nieuwIngerichtTalent.isGeschiktVoor(leerling)) {
