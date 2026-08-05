@@ -38,3 +38,21 @@ JOIN ingerichte_talenten it ON it.ingericht_talent_id = tw.ingericht_talent_id
 JOIN talenten t ON t.talent_id = it.talent_id
 WHERE tp.naam = 'Lente 2026'
 ORDER BY l.achternaam;
+
+SELECT
+    l.leerling_id,
+    l.voornaam,
+    l.achternaam,
+    t.naam AS talent,
+    tw.toewijzings_type,
+    tw.voorkeur_nummer,
+    tw.toegewezen_op,
+    tw.gewijzigd_op
+FROM toewijzingen tw
+         JOIN leerlingen l ON l.leerling_id = tw.leerling_id
+         JOIN ingerichte_talenten it ON it.ingericht_talent_id = tw.ingericht_talent_id
+         JOIN talenten t ON t.talent_id = it.talent_id
+         JOIN talenten_periodes tp ON tp.talenten_periode_id = tw.talenten_periode_id
+WHERE tp.naam = 'Lente 2026'
+  AND tw.toewijzings_type = 'MANUEEL'
+ORDER BY l.achternaam;

@@ -133,6 +133,9 @@ Een leerling mag per talentenperiode maximaal één toewijzing hebben.
 ### BR-032
 Een manuele toewijzing krijgt het type MANUEEL en heeft geen automatisch voorkeurNummer.
 
+### BR-033
+Een afgelopen talentenperiode mag worden bekeken, maar de toewijzingen mogen niet meer automatisch of manueel gewijzigd worden.
+
 ---
 
 # Toekomstige uitbreidingen

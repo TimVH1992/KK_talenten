@@ -352,6 +352,67 @@ class AutomatischeVerdelingServiceTest {
         assertEquals(1, resultaat.getAantalToewijzingen());
     }
 
+    @Test
+    void herverdelingWijzigtToewijzingenVanAnderePeriodeNiet() {
+        // ARRANGE
+        Klas klas1AA = maakObservatieKlas();
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31));
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20));
+
+        IngerichtTalent schakenHerfst = richtTalentIn(new Talent("Schaken", "Leren schaken"), herfst, 10);
+
+        IngerichtTalent schakenWinter = richtTalentIn(new Talent("Schaken", "Leren schaken"), winter, 10);
+        IngerichtTalent voetbalWinter = richtTalentIn(new Talent("Voetbal", "Voetbaltraining"), winter, 10);
+        IngerichtTalent kokenWinter = richtTalentIn(new Talent("Koken", "Leren koken"), winter, 10);
+
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(julie, winter, voetbalWinter, 1),
+                new Voorkeur(julie, winter, kokenWinter, 2),
+                new Voorkeur(julie, winter, schakenWinter, 3)
+        );
+
+        InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
+        InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+
+        Toewijzing herfstToewijzing = toewijzingRepository.save(
+                new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH, 1)
+        );
+
+        Toewijzing oudeWinterToewijzing = toewijzingRepository.save(
+                new Toewijzing(julie, schakenWinter, ToewijzingsType.AUTOMATISCH, 3)
+        );
+
+        AutomatischeVerdelingService service = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository);
+
+        // ACT
+        service.voerAutomatischeVerdelingUit(winter);
+
+        // ASSERT
+        List<Toewijzing> opgeslagenToewijzingen = toewijzingRepository.getOpgeslagenToewijzingen();
+
+        assertEquals(2, opgeslagenToewijzingen.size());
+
+        assertTrue(opgeslagenToewijzingen.contains(herfstToewijzing));
+        assertFalse(opgeslagenToewijzingen.contains(oudeWinterToewijzing));
+
+        List<Toewijzing> herfstToewijzingen = toewijzingRepository.zoekVoorPeriode(herfst);
+        assertEquals(1, herfstToewijzingen.size());
+        assertSame(herfstToewijzing, herfstToewijzingen.getFirst());
+        assertSame(schakenHerfst, herfstToewijzingen.getFirst().getIngerichtTalent());
+
+        List<Toewijzing> winterToewijzingen = toewijzingRepository.zoekVoorPeriode(winter);
+        assertEquals(1, winterToewijzingen.size());
+
+        Toewijzing nieuweWinterToewijzing = winterToewijzingen.getFirst();
+        assertSame(julie, nieuweWinterToewijzing.getLeerling());
+        assertSame(voetbalWinter, nieuweWinterToewijzing.getIngerichtTalent());
+        assertEquals(ToewijzingsType.AUTOMATISCH, nieuweWinterToewijzing.getToewijzingsType());
+        assertEquals(1, nieuweWinterToewijzing.getVoorkeurNummer());
+    }
+
     private Klas maakObservatieKlas() {
         return new Klas(
                 "1AA",

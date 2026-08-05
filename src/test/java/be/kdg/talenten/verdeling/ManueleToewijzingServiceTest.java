@@ -789,6 +789,45 @@ class ManueleToewijzingServiceTest {
         );
     }
 
+    @Test
+    void manueleToewijzingVoorAfgelopenPeriodeWordtGeweigerd() {
+        // ARRANGE
+        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        Leerling alice = new Leerling("Alice", "Janssens", klas1AA);
+
+        TalentenPeriode lente = new TalentenPeriode(
+                "Lente",
+                LocalDate.now().minusMonths(4),
+                LocalDate.now().minusMonths(2)
+        );
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenLente = richtTalentIn(schaken, lente, 10);
+        IngerichtTalent kokenLente = richtTalentIn(koken, lente, 10);
+
+        InMemoryToewijzingRepository repository = maakLeegToewijzingRepository();
+
+        repository.save(new Toewijzing(alice, schakenLente, ToewijzingsType.AUTOMATISCH));
+
+        ManueleToewijzingService service = new ManueleToewijzingService(repository);
+
+        // ACT + ASSERT
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.wijzigToewijzing(lente, alice, kokenLente)
+        );
+
+        Toewijzing oorspronkelijkeToewijzing =
+                repository.zoekToewijzingVoorLeerlingEnPeriode(alice, lente);
+
+        assertNotNull(oorspronkelijkeToewijzing);
+        assertSame(schakenLente, oorspronkelijkeToewijzing.getIngerichtTalent());
+        assertEquals(ToewijzingsType.AUTOMATISCH, oorspronkelijkeToewijzing.getToewijzingsType());
+        assertEquals(1, repository.zoekVoorPeriode(lente).size());
+    }
+
     private Klas maakObservatieKlas(
             String naam,
             int leerjaar

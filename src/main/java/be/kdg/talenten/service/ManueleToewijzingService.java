@@ -7,6 +7,8 @@ import be.kdg.talenten.domain.Toewijzing;
 import be.kdg.talenten.domain.ToewijzingsType;
 import be.kdg.talenten.repository.ToewijzingRepository;
 
+import java.time.LocalDate;
+
 public class ManueleToewijzingService {
     private final ToewijzingRepository toewijzingRepository;
 
@@ -33,6 +35,9 @@ public class ManueleToewijzingService {
 
         if (nieuwIngerichtTalent == null) {
             throw new IllegalArgumentException("Nieuw ingericht talent mag niet null zijn.");
+        }
+        if (talentenPeriode.getEindDatum().isBefore(LocalDate.now())) {
+            throw new IllegalStateException("Een afgelopen talentenperiode mag niet meer gewijzigd worden.");
         }
 
         if (!nieuwIngerichtTalent.getTalentenPeriode().equals(talentenPeriode)) {
