@@ -1,0 +1,565 @@
+@startuml
+
+title Design Class Diagram v3 - Talentontwikkeling (backend)
+
+hide circle
+hide empty members
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam groupInheritance 2
+left to right direction
+
+' =====================================================
+' CONFIGURATION / COMPOSITION ROOT
+' =====================================================
+
+package "config" {
+
+class ApplicationConfig <<composition root>> {
+  - klasRepository: KlasRepository
+  - leerlingRepository: LeerlingRepository
+  - leerkrachtRepository: LeerkrachtRepository
+  - talentRepository: TalentRepository
+  - talentenPeriodeRepository: TalentenPeriodeRepository
+  - ingerichtTalentRepository: IngerichtTalentRepository
+  - voorkeurRepository: VoorkeurRepository
+  - toewijzingRepository: ToewijzingRepository
+
+  - automatischeVerdelingService: AutomatischeVerdelingService
+  - manueleToewijzingService: ManueleToewijzingService
+  - verdelingBekijkenService: VerdelingBekijkenService
+
+  + ApplicationConfig()
+  + getAutomatischeVerdelingService(): AutomatischeVerdelingService
+  + getManueleToewijzingService(): ManueleToewijzingService
+  + getVerdelingBekijkenService(): VerdelingBekijkenService
+}
+
+}
+
+' =====================================================
+' SERVICES
+' =====================================================
+
+package "service" {
+
+class AutomatischeVerdelingService {
+  - voorkeurRepository: VoorkeurRepository
+  - toewijzingRepository: ToewijzingRepository
+
+  + AutomatischeVerdelingService(voorkeurRepository: VoorkeurRepository, toewijzingRepository: ToewijzingRepository)
+  + voerAutomatischeVerdelingUit(talentenPeriode: TalentenPeriode): VerdelingsResultaat
+}
+
+class ManueleToewijzingService {
+  - toewijzingRepository: ToewijzingRepository
+
+  + ManueleToewijzingService(toewijzingRepository: ToewijzingRepository)
+  + wijzigToewijzing(talentenPeriode: TalentenPeriode, leerling: Leerling, nieuwIngerichtTalent: IngerichtTalent): Toewijzing
+}
+
+class VerdelingBekijkenService {
+  - ingerichtTalentRepository: IngerichtTalentRepository
+  - toewijzingRepository: ToewijzingRepository
+  - leerlingRepository: LeerlingRepository
+
+  + VerdelingBekijkenService(ingerichtTalentRepository: IngerichtTalentRepository, toewijzingRepository: ToewijzingRepository, leerlingRepository: LeerlingRepository)
+  + bekijkPerIngerichtTalent(periode: TalentenPeriode): List<IngerichtTalentOverzicht>
+  + bekijkVoorKlas(periode: TalentenPeriode, klas: Klas): KlasOverzicht
+}
+
+}
+
+' =====================================================
+' DISTRIBUTION ALGORITHM
+' =====================================================
+
+package "verdeling" {
+
+class AutomatischeVerdeler {
+  - voorkeuren: List<Voorkeur>
+  - historischeToewijzingen: List<Toewijzing>
+  - verdelingsResultaat: VerdelingsResultaat
+  {static} - MAX_LEERLINGEN_PER_KLAS_PER_TALENT: int = 2
+
+  + AutomatischeVerdeler(voorkeuren: List<Voorkeur>)
+  + AutomatischeVerdeler(voorkeuren: List<Voorkeur>, historischeToewijzingen: List<Toewijzing>)
+  + verdeel(): VerdelingsResultaat
+
+  - zoekToewijzingZonderHistoriek(leerling: Leerling, voorkeurenVanLeerling: List<Voorkeur>, bezetting: Map<IngerichtTalent, Integer>, bezettingPerKlas: Map<IngerichtTalent, Map<Klas, Integer>>): Toewijzing
+  - zoekToewijzingMetHistoriekToegestaan(leerling: Leerling, voorkeurenVanLeerling: List<Voorkeur>, bezetting: Map<IngerichtTalent, Integer>, bezettingPerKlas: Map<IngerichtTalent, Map<Klas, Integer>>): Toewijzing
+  - heeftIngerichtTalentVrijePlaats(ingerichtTalent: IngerichtTalent, bezetting: Map<IngerichtTalent, Integer>): boolean
+  - heeftLeerlingTalentAlGevolgd(leerling: Leerling, talent: Talent): boolean
+  - groepeerVoorkeurenPerLeerling(): Map<Leerling, List<Voorkeur>>
+  - bepaalLeerlingVolgorde(voorkeurenPerLeerling: Map<Leerling, List<Voorkeur>>): List<Leerling>
+  - berekenVerdelingsPrioriteit(leerling: Leerling): int
+  - zoekLaatsteHistorischeToewijzing(leerling: Leerling): Toewijzing
+  - isNieuwerDan(kandidaat: Toewijzing, huidigeLaatste: Toewijzing): boolean
+  - heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent: IngerichtTalent, klas: Klas, bezettingPerKlas: Map<IngerichtTalent, Map<Klas, Integer>>): boolean
+  - verhoogKlasBezetting(ingerichtTalent: IngerichtTalent, klas: Klas, bezettingPerKlas: Map<IngerichtTalent, Map<Klas, Integer>>): void
+}
+
+class VerdelingsResultaat {
+  - toewijzingen: List<Toewijzing>
+  - nietToegewezenLeerlingen: List<Leerling>
+
+  + VerdelingsResultaat()
+  + voegToewijzingToe(toewijzing: Toewijzing): void
+  + voegNietToegewezenLeerlingToe(leerling: Leerling): void
+  + getToewijzingen(): List<Toewijzing>
+  + getNietToegewezenLeerlingen(): List<Leerling>
+  + getAantalToewijzingen(): int
+  + heeftNietToegewezenLeerlingen(): boolean
+}
+
+}
+
+' =====================================================
+' OVERVIEW DTOs / RECORDS
+' =====================================================
+
+package "overzicht" {
+
+class IngerichtTalentOverzicht <<record>> {
+  + ingerichtTalent(): IngerichtTalent
+  + aantalToegewezen(): int
+  + aantalVrijePlaatsen(): int
+  + toewijzingen(): List<Toewijzing>
+}
+
+class KlasOverzicht <<record>> {
+  + klas(): Klas
+  + periode(): TalentenPeriode
+  + leerlingen(): List<LeerlingToewijzingOverzicht>
+}
+
+class LeerlingToewijzingOverzicht <<record>> {
+  + leerling(): Leerling
+  + toewijzing(): Toewijzing
+}
+
+}
+
+' =====================================================
+' DOMAIN
+' =====================================================
+
+package "domain" {
+
+class Klas {
+  - id: Long
+  - naam: String
+  - schooljaar: String
+  - leerjaar: int
+  - doelgroep: Doelgroep
+
+  + Klas(naam: String, schooljaar: String, leerjaar: int, doelgroep: Doelgroep)
+  + Klas(id: Long, naam: String, schooljaar: String, leerjaar: int, doelgroep: Doelgroep)
+  + getId(): Long
+  + getNaam(): String
+  + getSchooljaar(): String
+  + getLeerjaar(): int
+  + getDoelgroep(): Doelgroep
+}
+
+class Leerling {
+  - id: Long
+  - voornaam: String
+  - achternaam: String
+  - klas: Klas
+
+  + Leerling(voornaam: String, achternaam: String, klas: Klas)
+  + Leerling(id: Long, voornaam: String, achternaam: String, klas: Klas)
+  + wijsKlasToe(klas: Klas): void
+  + getId(): Long
+  + getVoornaam(): String
+  + getAchternaam(): String
+  + getKlas(): Klas
+}
+
+class Leerkracht {
+  - id: Long
+  - voornaam: String
+  - achternaam: String
+
+  + Leerkracht(voornaam: String, achternaam: String)
+  + Leerkracht(id: Long, voornaam: String, achternaam: String)
+  + getId(): Long
+  + getVoornaam(): String
+  + getAchternaam(): String
+}
+
+class Talent {
+  - id: Long
+  - naam: String
+  - beschrijving: String
+
+  + Talent(naam: String, beschrijving: String)
+  + Talent(id: Long, naam: String, beschrijving: String)
+  + getId(): Long
+  + getNaam(): String
+  + getBeschrijving(): String
+}
+
+class TalentenPeriode {
+  - id: Long
+  - naam: String
+  - startDatum: LocalDate
+  - eindDatum: LocalDate
+
+  + TalentenPeriode(naam: String, startDatum: LocalDate, eindDatum: LocalDate)
+  + TalentenPeriode(id: Long, naam: String, startDatum: LocalDate, eindDatum: LocalDate)
+  + getId(): Long
+  + getNaam(): String
+  + getStartDatum(): LocalDate
+  + getEindDatum(): LocalDate
+}
+
+class IngerichtTalent {
+  - id: Long
+  - talent: Talent
+  - talentenPeriode: TalentenPeriode
+  - maxCapaciteit: int
+  - leerkrachten: List<Leerkracht>
+  - doelgroep: Doelgroep
+
+  + IngerichtTalent(talent: Talent, talentenPeriode: TalentenPeriode, maxCapaciteit: int, doelgroep: Doelgroep, leerkrachten: List<Leerkracht>)
+  + IngerichtTalent(id: Long, talent: Talent, talentenPeriode: TalentenPeriode, maxCapaciteit: int, doelgroep: Doelgroep, leerkrachten: List<Leerkracht>)
+  + voegLeerkrachtToe(leerkracht: Leerkracht): void
+  + setMaxCapaciteit(maxCapaciteit: int): void
+  + behoortTot(talentenPeriode: TalentenPeriode): boolean
+  + heeftVrijePlaats(aantalToewijzingen: int): boolean
+  + isGeschiktVoor(leerling: Leerling): boolean
+  + getId(): Long
+  + getTalent(): Talent
+  + getTalentenPeriode(): TalentenPeriode
+  + getMaxCapaciteit(): int
+  + getLeerkrachten(): List<Leerkracht>
+  + getDoelgroep(): Doelgroep
+}
+
+class Voorkeur {
+  - id: Long
+  - leerling: Leerling
+  - talentenPeriode: TalentenPeriode
+  - ingerichtTalent: IngerichtTalent
+  - voorkeurNummer: int
+
+  + Voorkeur(leerling: Leerling, talentenPeriode: TalentenPeriode, ingerichtTalent: IngerichtTalent, voorkeurNummer: int)
+  + Voorkeur(id: Long, leerling: Leerling, talentenPeriode: TalentenPeriode, ingerichtTalent: IngerichtTalent, voorkeurNummer: int)
+  + getId(): long
+  + getLeerling(): Leerling
+  + getTalentenPeriode(): TalentenPeriode
+  + getIngerichtTalent(): IngerichtTalent
+  + getVoorkeurNummer(): int
+}
+
+class Toewijzing {
+  - id: Long
+  - leerling: Leerling
+  - ingerichtTalent: IngerichtTalent
+  - toewijzingsType: ToewijzingsType
+  - toegewezenOp: LocalDateTime
+  - gewijzigdOp: LocalDateTime
+  - voorkeurNummer: Integer
+
+  + Toewijzing(leerling: Leerling, ingerichtTalent: IngerichtTalent, toewijzingsType: ToewijzingsType)
+  + Toewijzing(leerling: Leerling, ingerichtTalent: IngerichtTalent, toewijzingsType: ToewijzingsType, voorkeurNummer: Integer)
+  + Toewijzing(id: Long, leerling: Leerling, ingerichtTalent: IngerichtTalent, toewijzingsType: ToewijzingsType, toegewezenOp: LocalDateTime, gewijzigdOp: LocalDateTime, voorkeurNummer: Integer)
+  + wijzigNaar(ingerichtTalent: IngerichtTalent, toewijzingsType: ToewijzingsType, voorkeurNummer: Integer): void
+  + getId(): Long
+  + getLeerling(): Leerling
+  + getIngerichtTalent(): IngerichtTalent
+  + getToewijzingsType(): ToewijzingsType
+  + getToegewezenOp(): LocalDateTime
+  + getGewijzigdOp(): LocalDateTime
+  + getVoorkeurNummer(): Integer
+  + setGewijzigdOp(gewijzigdOp: LocalDateTime): void
+}
+
+enum Doelgroep {
+  OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+  KWALIFICATIEFASE_TWEEDEGRAAD_AB
+}
+
+enum ToewijzingsType {
+  MANUEEL
+  AUTOMATISCH
+}
+
+}
+
+' =====================================================
+' REPOSITORY INTERFACES
+' =====================================================
+
+package "repository" {
+
+interface KlasRepository {
+  + save(klas: Klas): Klas
+  + zoekAlle(): List<Klas>
+}
+
+interface LeerlingRepository {
+  + zoekVoorKlas(klas: Klas): List<Leerling>
+  + save(leerling: Leerling): Leerling
+  + zoekOpId(id: long): Leerling
+}
+
+interface LeerkrachtRepository {
+  + save(leerkracht: Leerkracht): Leerkracht
+  + zoekAlle(): List<Leerkracht>
+}
+
+interface TalentRepository {
+  + save(talent: Talent): Talent
+  + zoekAlle(): List<Talent>
+}
+
+interface TalentenPeriodeRepository {
+  + save(periode: TalentenPeriode): TalentenPeriode
+  + zoekAlle(): List<TalentenPeriode>
+}
+
+interface IngerichtTalentRepository {
+  + save(ingerichtTalent: IngerichtTalent): IngerichtTalent
+  + zoekVoorPeriode(periode: TalentenPeriode): List<IngerichtTalent>
+  + zoekOpId(id: long): IngerichtTalent
+}
+
+interface VoorkeurRepository {
+  + save(voorkeur: Voorkeur): Voorkeur
+  + zoekVoorPeriode(periode: TalentenPeriode): List<Voorkeur>
+}
+
+interface ToewijzingRepository {
+  + zoekHistorischeToewijzingen(): List<Toewijzing>
+  + saveAll(toewijzingen: List<Toewijzing>): void
+  + zoekToewijzingVoorLeerlingEnPeriode(leerling: Leerling, talentenPeriode: TalentenPeriode): Toewijzing
+  + telToewijzingenVoorIngerichtTalent(ingerichtTalent: IngerichtTalent): int
+  + save(toewijzing: Toewijzing): Toewijzing
+  + update(toewijzing: Toewijzing): Toewijzing
+  + zoekVoorPeriode(periode: TalentenPeriode): List<Toewijzing>
+}
+
+}
+
+' =====================================================
+' IN-MEMORY REPOSITORY IMPLEMENTATIONS
+' =====================================================
+
+package "repository.inmemory" {
+
+class InMemoryLeerlingRepository <<repository>> {
+  - leerlingen: List<Leerling>
+  + InMemoryLeerlingRepository(leerlingen: List<Leerling>)
+}
+
+class InMemoryIngerichtTalentRepository <<repository>> {
+  - ingerichteTalenten: List<IngerichtTalent>
+  + InMemoryIngerichtTalentRepository(ingerichteTalenten: List<IngerichtTalent>)
+}
+
+class InMemoryVoorkeurRepository <<repository>> {
+  - voorkeuren: List<Voorkeur>
+  + InMemoryVoorkeurRepository(voorkeuren: List<Voorkeur>)
+}
+
+class InMemoryToewijzingRepository <<repository>> {
+  - historischeToewijzingen: List<Toewijzing>
+  - opgeslagenToewijzingen: List<Toewijzing>
+  + InMemoryToewijzingRepository(historischeToewijzingen: List<Toewijzing>)
+  + getOpgeslagenToewijzingen(): List<Toewijzing>
+}
+
+}
+
+' =====================================================
+' POSTGRESQL REPOSITORY IMPLEMENTATIONS
+' =====================================================
+
+package "repository.postgres" {
+
+class PostgresKlasRepository <<repository>>
+class PostgresLeerlingRepository <<repository>>
+class PostgresLeerkrachtRepository <<repository>>
+class PostgresTalentRepository <<repository>>
+class PostgresTalentenPeriodeRepository <<repository>>
+class PostgresIngerichtTalentRepository <<repository>>
+
+class PostgresVoorkeurRepository <<repository>> {
+  - leerlingRepository: LeerlingRepository
+  - ingerichtTalentRepository: IngerichtTalentRepository
+  + PostgresVoorkeurRepository()
+  + PostgresVoorkeurRepository(leerlingRepository: LeerlingRepository, ingerichtTalentRepository: IngerichtTalentRepository)
+}
+
+class PostgresToewijzingRepository <<repository>> {
+  - leerlingRepository: LeerlingRepository
+  - ingerichtTalentRepository: IngerichtTalentRepository
+  + PostgresToewijzingRepository()
+  + PostgresToewijzingRepository(leerlingRepository: LeerlingRepository, ingerichtTalentRepository: IngerichtTalentRepository)
+}
+
+}
+
+package "database" {
+
+class DatabaseConnectionFactory <<utility>> {
+  {static} - PROPERTIES: Properties
+  {static} + maakVerbinding(): Connection
+  {static} - laadProperties(): Properties
+}
+
+}
+
+' =====================================================
+' DOMAIN RELATIONS
+' =====================================================
+
+Doelgroep "1" <-- "0..*" Klas : doelgroep
+Klas "1" <-- "0..*" Leerling : zit in
+
+Talent "1" <-- "0..*" IngerichtTalent : basis van
+TalentenPeriode "1" <-- "0..*" IngerichtTalent : ingericht in
+Doelgroep "1" <-- "0..*" IngerichtTalent : doelgroep
+Leerkracht "1..2" -- "0..*" IngerichtTalent : begeleidt
+
+Leerling "1" <-- "0..*" Voorkeur : geeft op
+TalentenPeriode "1" <-- "0..*" Voorkeur : hoort bij
+IngerichtTalent "1" <-- "0..*" Voorkeur : keuze voor
+
+Leerling "1" <-- "0..*" Toewijzing : krijgt
+IngerichtTalent "1" <-- "0..*" Toewijzing : toegewezen aan
+Toewijzing --> ToewijzingsType
+
+' =====================================================
+' OVERVIEW RELATIONS
+' =====================================================
+
+IngerichtTalentOverzicht --> IngerichtTalent
+IngerichtTalentOverzicht o-- "0..*" Toewijzing
+KlasOverzicht --> Klas
+KlasOverzicht --> TalentenPeriode
+KlasOverzicht o-- "0..*" LeerlingToewijzingOverzicht
+LeerlingToewijzingOverzicht --> Leerling
+LeerlingToewijzingOverzicht --> "0..1" Toewijzing
+
+' =====================================================
+' SERVICE DEPENDENCIES
+' =====================================================
+
+AutomatischeVerdelingService --> VoorkeurRepository
+AutomatischeVerdelingService --> ToewijzingRepository
+AutomatischeVerdelingService ..> AutomatischeVerdeler : maakt aan
+AutomatischeVerdelingService --> VerdelingsResultaat
+
+ManueleToewijzingService --> ToewijzingRepository
+ManueleToewijzingService --> Toewijzing
+
+VerdelingBekijkenService --> IngerichtTalentRepository
+VerdelingBekijkenService --> ToewijzingRepository
+VerdelingBekijkenService --> LeerlingRepository
+VerdelingBekijkenService --> IngerichtTalentOverzicht
+VerdelingBekijkenService --> KlasOverzicht
+VerdelingBekijkenService --> LeerlingToewijzingOverzicht
+
+AutomatischeVerdeler --> VerdelingsResultaat
+AutomatischeVerdeler --> Voorkeur
+AutomatischeVerdeler --> Toewijzing
+
+' =====================================================
+' REPOSITORY IMPLEMENTATIONS
+' =====================================================
+
+InMemoryLeerlingRepository ..|> LeerlingRepository
+InMemoryIngerichtTalentRepository ..|> IngerichtTalentRepository
+InMemoryVoorkeurRepository ..|> VoorkeurRepository
+InMemoryToewijzingRepository ..|> ToewijzingRepository
+
+PostgresKlasRepository ..|> KlasRepository
+PostgresLeerlingRepository ..|> LeerlingRepository
+PostgresLeerkrachtRepository ..|> LeerkrachtRepository
+PostgresTalentRepository ..|> TalentRepository
+PostgresTalentenPeriodeRepository ..|> TalentenPeriodeRepository
+PostgresIngerichtTalentRepository ..|> IngerichtTalentRepository
+PostgresVoorkeurRepository ..|> VoorkeurRepository
+PostgresToewijzingRepository ..|> ToewijzingRepository
+
+PostgresVoorkeurRepository --> LeerlingRepository
+PostgresVoorkeurRepository --> IngerichtTalentRepository
+PostgresToewijzingRepository --> LeerlingRepository
+PostgresToewijzingRepository --> IngerichtTalentRepository
+
+PostgresKlasRepository ..> DatabaseConnectionFactory
+PostgresLeerlingRepository ..> DatabaseConnectionFactory
+PostgresLeerkrachtRepository ..> DatabaseConnectionFactory
+PostgresTalentRepository ..> DatabaseConnectionFactory
+PostgresTalentenPeriodeRepository ..> DatabaseConnectionFactory
+PostgresIngerichtTalentRepository ..> DatabaseConnectionFactory
+PostgresVoorkeurRepository ..> DatabaseConnectionFactory
+PostgresToewijzingRepository ..> DatabaseConnectionFactory
+
+' =====================================================
+' APPLICATION CONFIG DEPENDENCIES
+' =====================================================
+
+ApplicationConfig --> PostgresKlasRepository
+ApplicationConfig --> PostgresLeerlingRepository
+ApplicationConfig --> PostgresLeerkrachtRepository
+ApplicationConfig --> PostgresTalentRepository
+ApplicationConfig --> PostgresTalentenPeriodeRepository
+ApplicationConfig --> PostgresIngerichtTalentRepository
+ApplicationConfig --> PostgresVoorkeurRepository
+ApplicationConfig --> PostgresToewijzingRepository
+
+ApplicationConfig --> AutomatischeVerdelingService
+ApplicationConfig --> ManueleToewijzingService
+ApplicationConfig --> VerdelingBekijkenService
+
+' =====================================================
+' NOTES
+' =====================================================
+
+note bottom of ApplicationConfig
+  Composition root:
+  maakt de PostgreSQL-repositories één keer aan
+  en injecteert ze in de services.
+
+  JavaFX-controllers krijgen later alleen services,
+  geen rechtstreekse repositorytoegang.
+end note
+
+note bottom of IngerichtTalent
+  Een ingericht talent:
+  - behoort tot exact één talentenperiode;
+  - heeft één doelgroep;
+  - heeft een maximumcapaciteit;
+  - wordt begeleid door één of twee leerkrachten.
+end note
+
+note bottom of Toewijzing
+  voorkeurNummer:
+  1, 2 of 3 bij een automatische toewijzing.
+  null bij een manuele toewijzing.
+
+  toegewezenOp bewaart het aanmaakmoment.
+  gewijzigdOp wordt ingevuld na een wijziging.
+end note
+
+note bottom of AutomatischeVerdeler
+  Domeinalgoritme voor UC-007.
+  Houdt rekening met capaciteit,
+  maximaal twee leerlingen uit dezelfde klas
+  per ingericht talent en historische deelname.
+end note
+
+note bottom of VerdelingBekijkenService
+  Levert overzichtsrecords voor UC-008:
+  - per ingericht talent;
+  - per klas.
+end note
+
+@enduml
