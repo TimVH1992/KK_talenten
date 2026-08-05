@@ -1,5 +1,7 @@
 package be.kdg.talenten.verdeling;
 
+import be.kdg.talenten.testutil.TestDataFactory;
+
 import be.kdg.talenten.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +77,8 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -169,7 +172,8 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -273,7 +277,8 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -389,7 +394,8 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -485,12 +491,14 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2025, 9, 21),
                 LocalDate.of(2025, 11, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
                 LocalDate.of(2025, 11, 22),
                 LocalDate.of(2026, 2, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -604,12 +612,14 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2025, 9, 21),
                 LocalDate.of(2025, 11, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
                 LocalDate.of(2025, 11, 22),
                 LocalDate.of(2026, 2, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -732,12 +742,14 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2025, 9, 21),
                 LocalDate.of(2025, 11, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
                 LocalDate.of(2025, 11, 22),
                 LocalDate.of(2026, 2, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -893,7 +905,8 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2025, 9, 21),
                 LocalDate.of(2025, 11, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -1016,7 +1029,8 @@ class AutomatischeVerdelerTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
 
         Talent schaken = new Talent(
                 "Schaken",

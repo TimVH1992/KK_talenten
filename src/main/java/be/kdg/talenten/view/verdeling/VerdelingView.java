@@ -2,6 +2,7 @@ package be.kdg.talenten.view.verdeling;
 
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
+import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
 import be.kdg.talenten.domain.Voorkeur;
@@ -25,6 +26,7 @@ public class VerdelingView extends BorderPane {
     private final DateTimeFormatter datumFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private Button terugButton;
+    private ComboBox<Schooljaar> schooljaarComboBox;
     private ComboBox<TalentenPeriode> periodeComboBox;
     private Button overzichtLadenButton;
     private Button automatischeVerdelingButton;
@@ -44,11 +46,27 @@ public class VerdelingView extends BorderPane {
     public VerdelingView() {
         initialiseNodes();
         layoutNodes();
+        setWijzigingenToegestaan(false);
     }
 
     private void initialiseNodes() {
         terugButton = new Button("← Hoofdmenu");
         terugButton.getStyleClass().add("secondary-button");
+
+        schooljaarComboBox = new ComboBox<>();
+        schooljaarComboBox.setPromptText("Selecteer een schooljaar");
+        schooljaarComboBox.setPrefWidth(170);
+        schooljaarComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Schooljaar schooljaar) {
+                return schooljaar == null ? "" : schooljaar.getNaam();
+            }
+
+            @Override
+            public Schooljaar fromString(String string) {
+                return null;
+            }
+        });
 
         periodeComboBox = new ComboBox<>();
         periodeComboBox.setPromptText("Selecteer een talentenperiode");
@@ -238,7 +256,7 @@ public class VerdelingView extends BorderPane {
         HBox titelBalk = new HBox(18, terugButton, titel);
         titelBalk.setAlignment(Pos.CENTER_LEFT);
 
-        HBox selectieBalk = new HBox(12, new Label("Periode:"), periodeComboBox, overzichtLadenButton, automatischeVerdelingButton);
+        HBox selectieBalk = new HBox(12, new Label("Schooljaar:"), schooljaarComboBox, new Label("Periode:"), periodeComboBox, overzichtLadenButton, automatischeVerdelingButton);
         selectieBalk.setAlignment(Pos.CENTER_LEFT);
         selectieBalk.getStyleClass().add("toolbar");
 
@@ -342,8 +360,13 @@ public class VerdelingView extends BorderPane {
         return overzicht.toewijzing().getVoorkeurNummer().toString();
     }
 
+    public void setSchooljaren(List<Schooljaar> schooljaren) {
+        schooljaarComboBox.setItems(FXCollections.observableArrayList(schooljaren));
+    }
+
     public void setPeriodes(List<TalentenPeriode> periodes) {
         periodeComboBox.setItems(FXCollections.observableArrayList(periodes));
+        periodeComboBox.setDisable(periodes.isEmpty());
     }
 
     public void setKlassen(List<Klas> klassen) {
@@ -406,8 +429,18 @@ public class VerdelingView extends BorderPane {
         return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
     }
 
+    public void setWijzigingenToegestaan(boolean toegestaan) {
+        automatischeVerdelingButton.setDisable(!toegestaan);
+        doelTalentComboBox.setDisable(!toegestaan);
+        verplaatsLeerlingButton.setDisable(!toegestaan);
+    }
+
     public Button getTerugButton() {
         return terugButton;
+    }
+
+    public ComboBox<Schooljaar> getSchooljaarComboBox() {
+        return schooljaarComboBox;
     }
 
     public ComboBox<TalentenPeriode> getPeriodeComboBox() {

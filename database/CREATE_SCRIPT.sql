@@ -1,5 +1,9 @@
 BEGIN;
 
+-- =========================================================
+-- BESTAANDE DATABASESTRUCTUUR VERWIJDEREN
+-- =========================================================
+
 DROP TABLE IF EXISTS
     ingericht_talent_leerkrachten,
     voorkeuren,
@@ -9,12 +13,49 @@ DROP TABLE IF EXISTS
     leerkrachten,
     talenten,
     talenten_periodes,
+    schooljaren,
     klassen
     CASCADE;
 
+DROP FUNCTION IF EXISTS controleer_talentenperiode_binnen_schooljaar();
+DROP FUNCTION IF EXISTS controleer_schooljaar_datums();
+
 
 -- =========================================================
--- 1. KLASSEN
+-- SCHOOLJAREN
+-- =========================================================
+
+CREATE TABLE schooljaren (
+                             schooljaar_id BIGINT GENERATED ALWAYS AS IDENTITY,
+                             naam VARCHAR(9) NOT NULL,
+                             startdatum DATE NOT NULL,
+                             einddatum DATE NOT NULL,
+                             actief BOOLEAN NOT NULL DEFAULT FALSE,
+
+                             CONSTRAINT pk_schooljaren
+                                 PRIMARY KEY (schooljaar_id),
+
+                             CONSTRAINT uq_schooljaren_naam
+                                 UNIQUE (naam),
+
+                             CONSTRAINT uq_schooljaren_datums
+                                 UNIQUE (startdatum, einddatum),
+
+                             CONSTRAINT chk_schooljaren_naam
+                                 CHECK (naam ~ '^[0-9]{4}-[0-9]{4}$'),
+
+                             CONSTRAINT chk_schooljaren_datums
+                                 CHECK (einddatum > startdatum)
+);
+
+-- Er kan maximaal één actief schooljaar zijn.
+CREATE UNIQUE INDEX uq_schooljaren_een_actief
+    ON schooljaren (actief)
+    WHERE actief = TRUE;
+
+
+-- =========================================================
+-- KLASSEN
 -- =========================================================
 
 CREATE TABLE klassen (
@@ -50,7 +91,7 @@ CREATE TABLE klassen (
 
 
 -- =========================================================
--- 2. LEERLINGEN
+-- LEERLINGEN
 -- =========================================================
 
 CREATE TABLE leerlingen (
@@ -76,7 +117,7 @@ CREATE TABLE leerlingen (
 
 
 -- =========================================================
--- 3. LEERKRACHTEN
+-- LEERKRACHTEN
 -- =========================================================
 
 CREATE TABLE leerkrachten (
@@ -96,7 +137,7 @@ CREATE TABLE leerkrachten (
 
 
 -- =========================================================
--- 4. TALENTEN
+-- TALENTEN
 -- =========================================================
 
 CREATE TABLE talenten (
@@ -119,7 +160,7 @@ CREATE TABLE talenten (
 
 
 -- =========================================================
--- 5. TALENTENPERIODES
+-- TALENTENPERIODES
 -- =========================================================
 
 CREATE TABLE talenten_periodes (
@@ -127,9 +168,15 @@ CREATE TABLE talenten_periodes (
                                    naam VARCHAR(100) NOT NULL,
                                    startdatum DATE NOT NULL,
                                    einddatum DATE NOT NULL,
+                                   schooljaar_id BIGINT NOT NULL,
 
                                    CONSTRAINT pk_talenten_periodes
                                        PRIMARY KEY (talenten_periode_id),
+
+                                   CONSTRAINT fk_talenten_periodes_schooljaar
+                                       FOREIGN KEY (schooljaar_id)
+                                           REFERENCES schooljaren (schooljaar_id)
+                                           ON DELETE RESTRICT,
 
                                    CONSTRAINT chk_talenten_periodes_naam
                                        CHECK (btrim(naam) <> ''),
@@ -138,12 +185,95 @@ CREATE TABLE talenten_periodes (
                                        CHECK (einddatum > startdatum),
 
                                    CONSTRAINT uq_talenten_periodes_datums
-                                       UNIQUE (startdatum, einddatum)
+                                       UNIQUE (startdatum, einddatum),
+
+                                   CONSTRAINT uq_talenten_periodes_naam_schooljaar
+                                       UNIQUE (naam, schooljaar_id)
 );
 
 
 -- =========================================================
--- 6. INGERICHTE TALENTEN
+-- CONTROLE: PERIODE MOET BINNEN SCHOOLJAAR VALLEN
+-- =========================================================
+
+CREATE OR REPLACE FUNCTION controleer_talentenperiode_binnen_schooljaar()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+AS $$
+DECLARE
+    schooljaar_startdatum DATE;
+    schooljaar_einddatum DATE;
+BEGIN
+    SELECT startdatum, einddatum
+    INTO schooljaar_startdatum, schooljaar_einddatum
+    FROM schooljaren
+    WHERE schooljaar_id = NEW.schooljaar_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION
+            'Schooljaar met id % bestaat niet.',
+            NEW.schooljaar_id;
+    END IF;
+
+    IF NEW.startdatum < schooljaar_startdatum
+        OR NEW.einddatum > schooljaar_einddatum THEN
+
+        RAISE EXCEPTION
+            'Talentenperiode "%" (% tot %) valt niet volledig binnen het schooljaar (% tot %).',
+            NEW.naam,
+            NEW.startdatum,
+            NEW.einddatum,
+            schooljaar_startdatum,
+            schooljaar_einddatum;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_talentenperiode_binnen_schooljaar
+    BEFORE INSERT OR UPDATE OF startdatum, einddatum, schooljaar_id
+    ON talenten_periodes
+    FOR EACH ROW
+EXECUTE FUNCTION controleer_talentenperiode_binnen_schooljaar();
+
+
+-- =========================================================
+-- CONTROLE: SCHOOLJAAR MAG BESTAANDE PERIODES NIET UITSLUITEN
+-- =========================================================
+
+CREATE OR REPLACE FUNCTION controleer_schooljaar_datums()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM talenten_periodes
+        WHERE schooljaar_id = NEW.schooljaar_id
+          AND (
+            startdatum < NEW.startdatum
+                OR einddatum > NEW.einddatum
+            )
+    ) THEN
+        RAISE EXCEPTION
+            'De datums van schooljaar "%" kunnen niet gewijzigd worden omdat minstens één talentenperiode dan buiten het schooljaar valt.',
+            NEW.naam;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_schooljaar_datums_controleren
+    BEFORE UPDATE OF startdatum, einddatum
+    ON schooljaren
+    FOR EACH ROW
+EXECUTE FUNCTION controleer_schooljaar_datums();
+
+
+-- =========================================================
+-- INGERICHTE TALENTEN
 -- =========================================================
 
 CREATE TABLE ingerichte_talenten (
@@ -177,31 +307,16 @@ CREATE TABLE ingerichte_talenten (
                                                  )
                                              ),
 
-    /*
-     * Hetzelfde talent mag in dezelfde periode eenmaal
-     * per doelgroep ingericht worden.
-     */
                                      CONSTRAINT uq_ingerichte_talenten_talent_periode_doelgroep
-                                         UNIQUE (
-                                                 talent_id,
-                                                 talenten_periode_id,
-                                                 doelgroep
-                                             ),
+                                         UNIQUE (talent_id, talenten_periode_id, doelgroep),
 
-    /*
-     * Deze unieke combinatie is nodig voor de samengestelde
-     * foreign keys in voorkeuren en toewijzingen.
-     */
                                      CONSTRAINT uq_ingerichte_talenten_id_periode
-                                         UNIQUE (
-                                                 ingericht_talent_id,
-                                                 talenten_periode_id
-                                             )
+                                         UNIQUE (ingericht_talent_id, talenten_periode_id)
 );
 
 
 -- =========================================================
--- 7. KOPPELTABEL INGERICHT TALENT - LEERKRACHT
+-- LEERKRACHTEN PER INGERICHT TALENT
 -- =========================================================
 
 CREATE TABLE ingericht_talent_leerkrachten (
@@ -209,10 +324,7 @@ CREATE TABLE ingericht_talent_leerkrachten (
                                                leerkracht_id BIGINT NOT NULL,
 
                                                CONSTRAINT pk_ingericht_talent_leerkrachten
-                                                   PRIMARY KEY (
-                                                                ingericht_talent_id,
-                                                                leerkracht_id
-                                                       ),
+                                                   PRIMARY KEY (ingericht_talent_id, leerkracht_id),
 
                                                CONSTRAINT fk_itl_ingericht_talent
                                                    FOREIGN KEY (ingericht_talent_id)
@@ -227,7 +339,7 @@ CREATE TABLE ingericht_talent_leerkrachten (
 
 
 -- =========================================================
--- 8. VOORKEUREN
+-- VOORKEUREN
 -- =========================================================
 
 CREATE TABLE voorkeuren (
@@ -245,15 +357,8 @@ CREATE TABLE voorkeuren (
                                     REFERENCES leerlingen (leerling_id)
                                     ON DELETE RESTRICT,
 
-    /*
-     * De samengestelde foreign key garandeert dat het gekozen
-     * ingericht talent werkelijk bij dezelfde periode hoort.
-     */
                             CONSTRAINT fk_voorkeuren_ingericht_talent_periode
-                                FOREIGN KEY (
-                                             ingericht_talent_id,
-                                             talenten_periode_id
-                                    )
+                                FOREIGN KEY (ingericht_talent_id, talenten_periode_id)
                                     REFERENCES ingerichte_talenten (
                                                                     ingericht_talent_id,
                                                                     talenten_periode_id
@@ -263,10 +368,6 @@ CREATE TABLE voorkeuren (
                             CONSTRAINT chk_voorkeuren_nummer
                                 CHECK (voorkeur_nummer BETWEEN 1 AND 3),
 
-    /*
-     * Een leerling heeft per periode maximaal één eerste,
-     * tweede en derde voorkeur.
-     */
                             CONSTRAINT uq_voorkeuren_leerling_periode_nummer
                                 UNIQUE (
                                         leerling_id,
@@ -274,10 +375,6 @@ CREATE TABLE voorkeuren (
                                         voorkeur_nummer
                                     ),
 
-    /*
-     * Een leerling mag hetzelfde ingericht talent niet
-     * meermaals kiezen binnen dezelfde periode.
-     */
                             CONSTRAINT uq_voorkeuren_leerling_periode_talent
                                 UNIQUE (
                                         leerling_id,
@@ -288,7 +385,7 @@ CREATE TABLE voorkeuren (
 
 
 -- =========================================================
--- 9. TOEWIJZINGEN
+-- TOEWIJZINGEN
 -- =========================================================
 
 CREATE TABLE toewijzingen (
@@ -309,15 +406,8 @@ CREATE TABLE toewijzingen (
                                       REFERENCES leerlingen (leerling_id)
                                       ON DELETE RESTRICT,
 
-    /*
-     * Hierdoor kan een toewijzing nooit verwijzen naar
-     * een ingericht talent uit een andere periode.
-     */
                               CONSTRAINT fk_toewijzingen_ingericht_talent_periode
-                                  FOREIGN KEY (
-                                               ingericht_talent_id,
-                                               talenten_periode_id
-                                      )
+                                  FOREIGN KEY (ingericht_talent_id, talenten_periode_id)
                                       REFERENCES ingerichte_talenten (
                                                                       ingericht_talent_id,
                                                                       talenten_periode_id
@@ -332,14 +422,11 @@ CREATE TABLE toewijzingen (
                                           )
                                       ),
 
-    /*
-     * Automatische toewijzingen bewaren voorkeur 1, 2 of 3.
-     * Manuele toewijzingen hebben geen voorkeurNummer.
-     */
                               CONSTRAINT chk_toewijzingen_type_voorkeur
                                   CHECK (
                                       (
                                           toewijzings_type = 'AUTOMATISCH'
+                                              AND voorkeur_nummer IS NOT NULL
                                               AND voorkeur_nummer BETWEEN 1 AND 3
                                           )
                                           OR
@@ -349,24 +436,20 @@ CREATE TABLE toewijzingen (
                                           )
                                       ),
 
-    /*
-     * Een leerling kan per talentenperiode maximaal
-     * één toewijzing hebben.
-     */
                               CONSTRAINT uq_toewijzingen_leerling_periode
-                                  UNIQUE (
-                                          leerling_id,
-                                          talenten_periode_id
-                                      )
+                                  UNIQUE (leerling_id, talenten_periode_id)
 );
 
 
 -- =========================================================
--- INDEXEN VOOR FOREIGN KEYS EN VEELGEBRUIKTE ZOEKACTIES
+-- INDEXEN
 -- =========================================================
 
 CREATE INDEX idx_leerlingen_klas
     ON leerlingen (klas_id);
+
+CREATE INDEX idx_talenten_periodes_schooljaar
+    ON talenten_periodes (schooljaar_id);
 
 CREATE INDEX idx_ingerichte_talenten_periode
     ON ingerichte_talenten (talenten_periode_id);

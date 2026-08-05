@@ -1,5 +1,7 @@
 package be.kdg.talenten.repository;
 
+import be.kdg.talenten.testutil.TestDataFactory;
+
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import org.junit.jupiter.api.Assertions;
@@ -19,13 +21,15 @@ public class IngerichtTalentRepositoryTest {
                 "Herfst",
                 LocalDate.of(2025, 9, 21),
                 LocalDate.of(2025, 11, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
 
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
                 LocalDate.of(2025, 11, 22),
                 LocalDate.of(2026, 2, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
 
         Talent schaken = new Talent("Schaken", "Leren schaken");
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");

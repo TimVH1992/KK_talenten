@@ -1,5 +1,6 @@
 package be.kdg.talenten.service;
 
+import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.repository.TalentenPeriodeRepository;
 
@@ -17,5 +18,12 @@ public class TalentenPeriodeService {
 
     public List<TalentenPeriode> zoekAlle() {
         return talentenPeriodeRepository.zoekAlle();
+    }
+
+    public List<TalentenPeriode> zoekVoorSchooljaar(Schooljaar schooljaar) {
+        if (schooljaar == null) {
+            throw new IllegalArgumentException("Schooljaar mag niet null zijn");
+        }
+        return talentenPeriodeRepository.zoekVoorSchooljaar(schooljaar);
     }
 }

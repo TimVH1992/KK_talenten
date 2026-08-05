@@ -92,3 +92,10 @@ Versie 1 is geslaagd wanneer een talentcoördinator:
 - scheiding tussen domein, services en persistence
 - businessregels zijn centraal beheerd
 - testbaarheid
+## Schooljaren (toegevoegd augustus 2026)
+
+- Een talentenperiode behoort verplicht tot precies één schooljaar.
+- Het aantal talentenperiodes per schooljaar is variabel.
+- Eén schooljaar wordt in PostgreSQL als actief bewaard en bij de volgende opstart opnieuw geselecteerd.
+- Afgelopen, niet-actieve schooljaren blijven bewaard maar verschijnen niet in de normale verdelingsflow.
+- De automatische verdeler en leerlingdetails gebruiken historiek alleen binnen het geselecteerde schooljaar.

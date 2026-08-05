@@ -4,6 +4,7 @@ import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
+import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
@@ -14,17 +15,21 @@ import be.kdg.talenten.service.AutomatischeVerdelingService;
 import be.kdg.talenten.service.KlasService;
 import be.kdg.talenten.service.LeerlingDetailsService;
 import be.kdg.talenten.service.ManueleToewijzingService;
+import be.kdg.talenten.service.SchooljaarService;
 import be.kdg.talenten.service.TalentenPeriodeService;
 import be.kdg.talenten.service.VerdelingBekijkenService;
 import be.kdg.talenten.verdeling.VerdelingsResultaat;
 import be.kdg.talenten.view.SceneManager;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 public class VerdelingPresenter {
     private final VerdelingView view;
     private final SceneManager sceneManager;
     private final Runnable terugNaarHoofdmenu;
+    private final SchooljaarService schooljaarService;
     private final TalentenPeriodeService talentenPeriodeService;
     private final KlasService klasService;
     private final VerdelingBekijkenService verdelingBekijkenService;
@@ -34,6 +39,7 @@ public class VerdelingPresenter {
 
     private Leerling geselecteerdeLeerling;
     private Toewijzing huidigeToewijzingVanGeselecteerdeLeerling;
+    private boolean schooljarenWordenGeladen;
 
     public VerdelingPresenter(ApplicationConfig config, VerdelingView view, SceneManager sceneManager, Runnable terugNaarHoofdmenu) {
         if (config == null || view == null || sceneManager == null || terugNaarHoofdmenu == null) {
@@ -43,6 +49,7 @@ public class VerdelingPresenter {
         this.view = view;
         this.sceneManager = sceneManager;
         this.terugNaarHoofdmenu = terugNaarHoofdmenu;
+        this.schooljaarService = config.getSchooljaarService();
         this.talentenPeriodeService = config.getTalentenPeriodeService();
         this.klasService = config.getKlasService();
         this.verdelingBekijkenService = config.getVerdelingBekijkenService();
@@ -51,12 +58,12 @@ public class VerdelingPresenter {
         this.leerlingDetailsService = config.getLeerlingDetailsService();
 
         addEventHandlers();
-        laadPeriodes();
-        laadKlassen();
+        laadSchooljaren();
     }
 
     private void addEventHandlers() {
         view.getTerugButton().setOnAction(event -> terugNaarHoofdmenu.run());
+        view.getSchooljaarComboBox().setOnAction(event -> schooljaarGewijzigd());
         view.getOverzichtLadenButton().setOnAction(event -> laadOverzicht());
         view.getPeriodeComboBox().setOnAction(event -> laadOverzicht());
         view.getKlasComboBox().setOnAction(event -> laadKlasOverzicht());
@@ -67,42 +74,101 @@ public class VerdelingPresenter {
         view.getVerplaatsLeerlingButton().setOnAction(event -> verplaatsLeerling());
     }
 
-    private void laadPeriodes() {
+    private void laadSchooljaren() {
         try {
-            List<TalentenPeriode> periodes = talentenPeriodeService.zoekAlle();
-            view.setPeriodes(periodes);
+            schooljarenWordenGeladen = true;
+            List<Schooljaar> schooljaren = schooljaarService.zoekSelecteerbareSchooljaren();
+            view.setSchooljaren(schooljaren);
 
-            if (periodes.isEmpty()) {
-                view.toonMelding("Er zijn nog geen talentenperiodes opgeslagen.");
+            if (schooljaren.isEmpty()) {
+                view.setPeriodes(List.of());
+                view.setKlassen(List.of());
+                view.toonMelding("Er is geen selecteerbaar schooljaar opgeslagen.");
                 return;
             }
 
-            view.getPeriodeComboBox().getSelectionModel().selectFirst();
-            laadOverzicht();
+            Schooljaar actiefSchooljaar = schooljaarService.zoekActiefSchooljaar()
+                    .filter(schooljaren::contains)
+                    .orElse(schooljaren.getFirst());
+            view.getSchooljaarComboBox().getSelectionModel().select(actiefSchooljaar);
+            laadGegevensVoorSchooljaar(actiefSchooljaar);
         } catch (RuntimeException exception) {
-            view.toonFout("De talentenperiodes konden niet geladen worden: " + veiligBericht(exception));
+            view.toonFout("De schooljaren konden niet geladen worden: " + veiligBericht(exception));
+        } finally {
+            schooljarenWordenGeladen = false;
         }
     }
 
-    private void laadKlassen() {
-        try {
-            List<Klas> klassen = klasService.zoekAlle();
-            view.setKlassen(klassen);
+    private void schooljaarGewijzigd() {
+        if (schooljarenWordenGeladen) return;
 
-            if (klassen.isEmpty()) {
-                view.setKlasOverzicht(null);
-                return;
-            }
-
-            view.getKlasComboBox().getSelectionModel().selectFirst();
-            laadKlasOverzicht();
-        } catch (RuntimeException exception) {
-            view.toonFout("De klassen konden niet geladen worden: " + veiligBericht(exception));
+        Schooljaar schooljaar = view.getSchooljaarComboBox().getValue();
+        if (schooljaar == null) {
+            view.setPeriodes(List.of());
+            view.setKlassen(List.of());
+            view.toonMelding("Selecteer eerst een schooljaar.");
+            return;
         }
+
+        try {
+            schooljaarService.maakActief(schooljaar);
+            laadGegevensVoorSchooljaar(schooljaar);
+            view.toonMelding("Schooljaar " + schooljaar.getNaam() + " is geselecteerd en wordt bij de volgende opstart opnieuw gebruikt.");
+        } catch (RuntimeException exception) {
+            view.toonFout("Het schooljaar kon niet geselecteerd worden: " + veiligBericht(exception));
+        }
+    }
+
+    private void laadGegevensVoorSchooljaar(Schooljaar schooljaar) {
+        laadPeriodes(schooljaar);
+        laadKlassen(schooljaar);
+    }
+
+    private void laadPeriodes(Schooljaar schooljaar) {
+        List<TalentenPeriode> periodes = talentenPeriodeService.zoekVoorSchooljaar(schooljaar);
+        view.setPeriodes(periodes);
+
+        if (periodes.isEmpty()) {
+            view.setOverzichten(List.of());
+            view.setToewijzingen(null, List.of());
+            view.toonMelding("Voor schooljaar " + schooljaar.getNaam() + " zijn nog geen talentenperiodes opgeslagen.");
+            return;
+        }
+
+        view.getPeriodeComboBox().getSelectionModel().select(bepaalStandaardPeriode(periodes));
+        laadOverzicht();
+    }
+
+    private TalentenPeriode bepaalStandaardPeriode(List<TalentenPeriode> periodes) {
+        LocalDate vandaag = LocalDate.now();
+
+        return periodes.stream()
+                .filter(periode -> !vandaag.isBefore(periode.getStartDatum()) && !vandaag.isAfter(periode.getEindDatum()))
+                .findFirst()
+                .orElseGet(() -> periodes.stream()
+                        .filter(periode -> !periode.getStartDatum().isBefore(vandaag))
+                        .min(Comparator.comparing(TalentenPeriode::getStartDatum))
+                        .orElse(periodes.getLast()));
+    }
+
+    private void laadKlassen(Schooljaar schooljaar) {
+        List<Klas> klassen = klasService.zoekAlle().stream()
+                .filter(klas -> klas.getSchooljaar().equals(schooljaar.getNaam()))
+                .toList();
+        view.setKlassen(klassen);
+
+        if (klassen.isEmpty()) {
+            view.setKlasOverzicht(null);
+            return;
+        }
+
+        view.getKlasComboBox().getSelectionModel().selectFirst();
+        laadKlasOverzicht();
     }
 
     private void laadOverzicht() {
         TalentenPeriode periode = view.getPeriodeComboBox().getValue();
+        pasWijzigMogelijkhedenAan(periode);
         wisGeselecteerdeLeerling();
 
         if (periode == null) {
@@ -128,7 +194,9 @@ public class VerdelingPresenter {
             laadKlasOverzicht();
 
             int totaalToegewezen = overzichten.stream().mapToInt(IngerichtTalentOverzicht::aantalToegewezen).sum();
-            view.toonMelding("Overzicht geladen voor " + periode.getNaam() + ". " + totaalToegewezen + " leerlingen toegewezen in totaal.");
+            String melding = "Overzicht geladen voor " + periode.getNaam() + ". " + totaalToegewezen + " leerlingen toegewezen in totaal.";
+            if (isAfgelopenPeriode(periode)) melding += " Deze periode is afgelopen en kan alleen bekeken worden.";
+            view.toonMelding(melding);
         } catch (RuntimeException exception) {
             view.toonFout("Het overzicht kon niet geladen worden: " + veiligBericht(exception));
         }
@@ -144,8 +212,7 @@ public class VerdelingPresenter {
         }
 
         try {
-            KlasOverzicht overzicht = verdelingBekijkenService.bekijkVoorKlas(periode, klas);
-            view.setKlasOverzicht(overzicht);
+            view.setKlasOverzicht(verdelingBekijkenService.bekijkVoorKlas(periode, klas));
         } catch (RuntimeException exception) {
             view.setKlasOverzicht(null);
             view.toonFout("Het klasoverzicht kon niet geladen worden: " + veiligBericht(exception));
@@ -154,26 +221,21 @@ public class VerdelingPresenter {
 
     private void toonToewijzingen(IngerichtTalentOverzicht overzicht) {
         wisGeselecteerdeLeerling();
-
         if (overzicht == null) {
             view.setToewijzingen(null, List.of());
             return;
         }
-
-        String talentNaam = overzicht.ingerichtTalent().getTalent().getNaam();
-        view.setToewijzingen(talentNaam, overzicht.toewijzingen());
+        view.setToewijzingen(overzicht.ingerichtTalent().getTalent().getNaam(), overzicht.toewijzingen());
     }
 
     private void selecteerToewijzing(Toewijzing toewijzing) {
         if (toewijzing == null) return;
-
         view.getKlasLeerlingenTable().getSelectionModel().clearSelection();
         selecteerLeerling(toewijzing.getLeerling(), toewijzing);
     }
 
     private void selecteerLeerlingUitKlasOverzicht(LeerlingToewijzingOverzicht overzicht) {
         if (overzicht == null) return;
-
         view.getLeerlingenTable().getSelectionModel().clearSelection();
         selecteerLeerling(overzicht.leerling(), overzicht.toewijzing());
     }
@@ -220,11 +282,8 @@ public class VerdelingPresenter {
             VerdelingsResultaat resultaat = automatischeVerdelingService.voerAutomatischeVerdelingUit(periode);
             laadOverzicht();
 
-            String melding = resultaat.getAantalToewijzingen() + " leerlingen automatisch toegewezen. Niet toegewezen: "
-                    + resultaat.getNietToegewezenLeerlingen().size() + ".";
-            if (bestaandeToewijzingen) {
-                melding += " De manuele toewijzingen zijn behouden.";
-            }
+            String melding = resultaat.getAantalToewijzingen() + " leerlingen automatisch toegewezen. Niet toegewezen: " + resultaat.getNietToegewezenLeerlingen().size() + ".";
+            if (bestaandeToewijzingen) melding += " De manuele toewijzingen zijn behouden.";
             view.toonSucces(melding);
         } catch (RuntimeException exception) {
             view.toonFout("De automatische verdeling is niet uitgevoerd: " + veiligBericht(exception));
@@ -260,5 +319,13 @@ public class VerdelingPresenter {
 
     private String veiligBericht(RuntimeException exception) {
         return exception.getMessage() == null || exception.getMessage().isBlank() ? exception.getClass().getSimpleName() : exception.getMessage();
+    }
+
+    private void pasWijzigMogelijkhedenAan(TalentenPeriode periode) {
+        view.setWijzigingenToegestaan(periode != null && !isAfgelopenPeriode(periode));
+    }
+
+    private boolean isAfgelopenPeriode(TalentenPeriode periode) {
+        return periode.getEindDatum().isBefore(LocalDate.now());
     }
 }

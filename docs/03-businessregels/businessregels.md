@@ -148,3 +148,12 @@ Mogelijke toekomstige businessregels:
 * Sommige talenten vereisen voorkennis.
 * Leerkrachten kunnen een maximum aantal leerlingen begeleiden.
 * Broers/zussen mogen (of mogen net niet) samen geplaatst worden.
+
+## Schooljaar en archief
+
+- Elke talentenperiode behoort tot precies één schooljaar.
+- Een schooljaar kan een variabel aantal talentenperiodes bevatten.
+- Er is maximaal één actief schooljaar.
+- Het actieve schooljaar wordt bij het opstarten opnieuw geselecteerd.
+- Afgelopen, niet-actieve schooljaren blijven bewaard, maar zijn niet rechtstreeks beschikbaar in de normale verdelingsflow.
+- Historiek uit een vorig schooljaar beïnvloedt de automatische verdeling van het huidige schooljaar niet.

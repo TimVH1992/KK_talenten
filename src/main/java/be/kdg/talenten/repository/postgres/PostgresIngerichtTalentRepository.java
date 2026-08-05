@@ -201,10 +201,16 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                     tp.talenten_periode_id,
                     tp.naam AS periode_naam,
                     tp.startdatum,
-                    tp.einddatum
+                    tp.einddatum,
+                    sj.schooljaar_id,
+                    sj.naam AS schooljaar_naam,
+                    sj.startdatum AS schooljaar_startdatum,
+                    sj.einddatum AS schooljaar_einddatum,
+                    sj.actief
                 FROM ingerichte_talenten it
                 JOIN talenten t ON (t.talent_id = it.talent_id)
                 JOIN talenten_periodes tp ON tp.talenten_periode_id = it.talenten_periode_id
+                JOIN schooljaren sj ON sj.schooljaar_id = tp.schooljaar_id
                 WHERE it.ingericht_talent_id = ?
                 """;
 
@@ -219,11 +225,20 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                 }
                 Talent talent = new Talent(resultSet.getLong("talent_id"), resultSet.getString("talent_naam"), resultSet.getString("beschrijving"));
 
+                Schooljaar schooljaar = new Schooljaar(
+                        resultSet.getLong("schooljaar_id"),
+                        resultSet.getString("schooljaar_naam"),
+                        resultSet.getDate("schooljaar_startdatum").toLocalDate(),
+                        resultSet.getDate("schooljaar_einddatum").toLocalDate(),
+                        resultSet.getBoolean("actief")
+                );
+
                 TalentenPeriode periode = new TalentenPeriode(
                         resultSet.getLong("talenten_periode_id"),
                         resultSet.getString("periode_naam"),
                         resultSet.getDate("startdatum").toLocalDate(),
-                        resultSet.getDate("einddatum").toLocalDate()
+                        resultSet.getDate("einddatum").toLocalDate(),
+                        schooljaar
                 );
 
                 List<Leerkracht> leerkrachten = zoekLeerkrachtenVoorIngerichtTalent(connection, id);

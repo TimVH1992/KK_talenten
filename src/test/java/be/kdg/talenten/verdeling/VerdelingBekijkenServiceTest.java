@@ -1,5 +1,7 @@
 package be.kdg.talenten.verdeling;
 
+import be.kdg.talenten.testutil.TestDataFactory;
+
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
 import be.kdg.talenten.overzicht.KlasOverzicht;
@@ -302,7 +304,8 @@ class VerdelingBekijkenServiceTest {
                 "Kerst",
                 LocalDate.of(2026, 12, 22),
                 LocalDate.of(2027, 1, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 12, 22), LocalDate.of(2027, 1, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -734,7 +737,8 @@ class VerdelingBekijkenServiceTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
     }
 
     private IngerichtTalent richtTalentIn(

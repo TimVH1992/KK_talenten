@@ -1,7 +1,9 @@
 package be.kdg.talenten.repository;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
+import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.domain.TalentenPeriode;
+import be.kdg.talenten.repository.postgres.PostgresSchooljaarRepository;
 import be.kdg.talenten.repository.postgres.PostgresTalentenPeriodeRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 class PostgresTalentenPeriodeRepositoryTest {
+    private Schooljaar schooljaar2025_2026;
+    private Schooljaar schooljaar2026_2027;
 
     private TalentenPeriodeRepository repository;
 
@@ -38,10 +42,15 @@ class PostgresTalentenPeriodeRepositoryTest {
                         leerkrachten,
                         talenten,
                         talenten_periodes,
+                        schooljaren,
                         klassen
                     RESTART IDENTITY CASCADE
                     """);
         }
+
+        PostgresSchooljaarRepository schooljaarRepository = new PostgresSchooljaarRepository();
+        schooljaar2025_2026 = schooljaarRepository.save(new Schooljaar("2025-2026", LocalDate.of(2025, 7, 1), LocalDate.of(2026, 6, 30)));
+        schooljaar2026_2027 = schooljaarRepository.save(new Schooljaar("2026-2027", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30), true));
 
         repository = new PostgresTalentenPeriodeRepository();
     }
@@ -55,7 +64,8 @@ class PostgresTalentenPeriodeRepositoryTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 21),
                 LocalDate.of(2026, 12, 21)
-        );
+        ,
+                schooljaarVoorPeriode(LocalDate.of(2026, 9, 21)));
 
         // Act
         TalentenPeriode opgeslagenPeriode =
@@ -131,40 +141,27 @@ class PostgresTalentenPeriodeRepositoryTest {
 
     @Test
     void zoekAlleGeeftPeriodesGesorteerdOpStartdatumTerug() {
-        // Arrange: bewust niet chronologisch opslaan
+        // Arrange
+        Schooljaar schooljaar = schooljaarVoorPeriode(LocalDate.of(2026, 9, 21));
+
+        // Bewust niet chronologisch opslaan
         TalentenPeriode winter = repository.save(
-                new TalentenPeriode(
-                        "Winter",
-                        LocalDate.of(2027, 1, 11),
-                        LocalDate.of(2027, 3, 26)
-                )
+                new TalentenPeriode("Winter", LocalDate.of(2027, 1, 11), LocalDate.of(2027, 3, 26), schooljaar)
         );
 
         TalentenPeriode herfst = repository.save(
-                new TalentenPeriode(
-                        "Herfst",
-                        LocalDate.of(2026, 9, 21),
-                        LocalDate.of(2026, 12, 21)
-                )
+                new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 21), LocalDate.of(2026, 12, 21), schooljaar)
         );
 
         TalentenPeriode lente = repository.save(
-                new TalentenPeriode(
-                        "Lente",
-                        LocalDate.of(2027, 4, 19),
-                        LocalDate.of(2027, 6, 25)
-                )
+                new TalentenPeriode("Lente", LocalDate.of(2027, 4, 19), LocalDate.of(2027, 6, 25), schooljaar)
         );
 
         // Act
-        List<TalentenPeriode> resultaat =
-                repository.zoekAlle();
+        List<TalentenPeriode> resultaat = repository.zoekAlle();
 
-        // Assert: volgorde uit ORDER BY startdatum
-        Assertions.assertEquals(
-                List.of(herfst, winter, lente),
-                resultaat
-        );
+        // Assert
+        Assertions.assertEquals(List.of(herfst, winter, lente), resultaat);
     }
 
     @Test
@@ -176,5 +173,9 @@ class PostgresTalentenPeriodeRepositoryTest {
         // Assert
         Assertions.assertNotNull(resultaat);
         Assertions.assertTrue(resultaat.isEmpty());
+    }
+
+    private Schooljaar schooljaarVoorPeriode(LocalDate startDatum) {
+        return startDatum.getMonthValue() >= 7 ? schooljaar2026_2027 : schooljaar2025_2026;
     }
 }

@@ -1,5 +1,7 @@
 package be.kdg.talenten;
 
+import be.kdg.talenten.testutil.TestDataFactory;
+
 import be.kdg.talenten.domain.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,8 @@ public class VoorkeurTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
 
         Talent schaken = new Talent(
                 "Schaken",

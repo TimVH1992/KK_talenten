@@ -36,6 +36,7 @@ class PostgresKlasRepositoryTest {
                         leerkrachten,
                         talenten,
                         talenten_periodes,
+                        schooljaren,
                         klassen
                     RESTART IDENTITY CASCADE
                     """);

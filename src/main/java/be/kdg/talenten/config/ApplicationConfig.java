@@ -9,6 +9,7 @@ public final class ApplicationConfig {
     private final LeerlingRepository leerlingRepository;
     private final LeerkrachtRepository leerkrachtRepository;
     private final TalentRepository talentRepository;
+    private final SchooljaarRepository schooljaarRepository;
     private final TalentenPeriodeRepository talentenPeriodeRepository;
     private final IngerichtTalentRepository ingerichtTalentRepository;
     private final VoorkeurRepository voorkeurRepository;
@@ -17,6 +18,7 @@ public final class ApplicationConfig {
     private final AutomatischeVerdelingService automatischeVerdelingService;
     private final ManueleToewijzingService manueleToewijzingService;
     private final VerdelingBekijkenService verdelingBekijkenService;
+    private final SchooljaarService schooljaarService;
     private final TalentenPeriodeService talentenPeriodeService;
     private final KlasService klasService;
     private final LeerlingDetailsService leerlingDetailsService;
@@ -26,6 +28,7 @@ public final class ApplicationConfig {
         leerlingRepository = new PostgresLeerlingRepository();
         leerkrachtRepository = new PostgresLeerkrachtRepository();
         talentRepository = new PostgresTalentRepository();
+        schooljaarRepository = new PostgresSchooljaarRepository();
         talentenPeriodeRepository = new PostgresTalentenPeriodeRepository();
         ingerichtTalentRepository = new PostgresIngerichtTalentRepository();
         voorkeurRepository = new PostgresVoorkeurRepository(leerlingRepository, ingerichtTalentRepository);
@@ -34,6 +37,7 @@ public final class ApplicationConfig {
         automatischeVerdelingService = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository);
         manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository);
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
+        schooljaarService = new SchooljaarService(schooljaarRepository);
         talentenPeriodeService = new TalentenPeriodeService(talentenPeriodeRepository);
         klasService = new KlasService(klasRepository);
         leerlingDetailsService = new LeerlingDetailsService(voorkeurRepository, toewijzingRepository);
@@ -49,6 +53,10 @@ public final class ApplicationConfig {
 
     public AutomatischeVerdelingService getAutomatischeVerdelingService() {
         return automatischeVerdelingService;
+    }
+
+    public SchooljaarService getSchooljaarService() {
+        return schooljaarService;
     }
 
     public TalentenPeriodeService getTalentenPeriodeService() {

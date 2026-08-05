@@ -93,7 +93,7 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                 SELECT voorkeur_id, voorkeur_nummer,leerling_id, talenten_periode_id, ingericht_talent_id
                 FROM voorkeuren
                 WHERE talenten_periode_id = ?
-                ORDER BY ingericht_talent_id, voorkeur_nummer
+                ORDER BY leerling_id, voorkeur_nummer
                 """;
 
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();

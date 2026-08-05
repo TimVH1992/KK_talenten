@@ -1,5 +1,7 @@
 package be.kdg.talenten.verdeling;
 
+import be.kdg.talenten.testutil.TestDataFactory;
+
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
@@ -36,10 +38,14 @@ class AutomatischeVerdelingServiceTest {
                 klas1AA
         );
 
+        LocalDate startDatum = LocalDate.of(2099, 11, 22);
+        LocalDate eindDatum = LocalDate.of(2100, 2, 21);
+
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
-                LocalDate.of(2025, 11, 22),
-                LocalDate.of(2026, 2, 21)
+                startDatum,
+                eindDatum,
+                TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum)
         );
 
         Talent schaken = new Talent(
@@ -157,17 +163,15 @@ class AutomatischeVerdelingServiceTest {
                 klas1AA
         );
 
-        TalentenPeriode herfst = new TalentenPeriode(
-                "Herfst",
-                LocalDate.of(2025, 9, 21),
-                LocalDate.of(2025, 11, 21)
-        );
+        LocalDate startHerfst = LocalDate.of(2099, 9, 21);
+        LocalDate eindeHerfst = LocalDate.of(2099, 11, 21);
+        LocalDate startWinter = LocalDate.of(2099, 11, 22);
+        LocalDate eindeWinter = LocalDate.of(2100, 2, 21);
 
-        TalentenPeriode winter = new TalentenPeriode(
-                "Winter",
-                LocalDate.of(2025, 11, 22),
-                LocalDate.of(2026, 2, 21)
-        );
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startHerfst, eindeWinter);
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", startHerfst, eindeHerfst, schooljaar);
+        TalentenPeriode winter = new TalentenPeriode("Winter", startWinter, eindeWinter, schooljaar);
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -309,7 +313,8 @@ class AutomatischeVerdelingServiceTest {
         Klas klas1AA = maakObservatieKlas();
         Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
         Leerling julie = new Leerling("Julie", "Martens", klas1AA);
-        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20));
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20),
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20)));
 
         IngerichtTalent schakenWinter = richtTalentIn(new Talent("Schaken", "Leren schaken"), winter, 1);
         IngerichtTalent voetbalWinter = richtTalentIn(new Talent("Voetbal", "Voetbaltraining"), winter, 10);
@@ -359,8 +364,10 @@ class AutomatischeVerdelingServiceTest {
         Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
         Leerling julie = new Leerling("Julie", "Martens", klas1AA);
 
-        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31));
-        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20));
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31),
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20),
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20)));
 
         IngerichtTalent schakenHerfst = richtTalentIn(new Talent("Schaken", "Leren schaken"), herfst, 10);
 
@@ -423,7 +430,8 @@ class AutomatischeVerdelingServiceTest {
                 "Lente",
                 LocalDate.now().minusMonths(4),
                 LocalDate.now().minusMonths(2)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.now().minusMonths(4), LocalDate.now().minusMonths(2)));
 
         IngerichtTalent schakenLente = richtTalentIn(new Talent("Schaken", "Leren schaken"), lente, 10);
         IngerichtTalent kokenLente = richtTalentIn(new Talent("Koken", "Leren koken"), lente, 10);

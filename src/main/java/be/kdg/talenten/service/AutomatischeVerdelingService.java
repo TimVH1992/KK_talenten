@@ -33,13 +33,15 @@ public class AutomatischeVerdelingService {
     }
 
     public VerdelingsResultaat voerAutomatischeVerdelingUit(TalentenPeriode talentenPeriode) {
+        valideerTalentenPeriode(talentenPeriode);
         if (talentenPeriode.getEindDatum().isBefore(LocalDate.now())) {
             throw new IllegalStateException("Een afgelopen talentenperiode mag niet meer automatisch verdeeld worden.");
         }
-        valideerTalentenPeriode(talentenPeriode);
 
         List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
-        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingen();
+        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingen().stream()
+                .filter(toewijzing -> toewijzing.getIngerichtTalent().getTalentenPeriode().getSchooljaar().equals(talentenPeriode.getSchooljaar()))
+                .toList();
         List<Toewijzing> manueleToewijzingen = toewijzingRepository.zoekVoorPeriode(talentenPeriode).stream()
                 .filter(toewijzing -> toewijzing.getToewijzingsType() == ToewijzingsType.MANUEEL)
                 .toList();

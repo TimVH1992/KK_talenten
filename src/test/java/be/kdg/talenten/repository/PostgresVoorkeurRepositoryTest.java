@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class PostgresVoorkeurRepositoryTest {
+    private Schooljaar schooljaar2025_2026;
+    private Schooljaar schooljaar2026_2027;
     private record TestData(
             Klas klas,
             Leerling leerling,
@@ -39,10 +41,15 @@ public class PostgresVoorkeurRepositoryTest {
                         leerkrachten,
                         talenten,
                         talenten_periodes,
+                        schooljaren,
                         klassen
                     RESTART IDENTITY CASCADE
                     """);
         }
+
+        PostgresSchooljaarRepository schooljaarRepository = new PostgresSchooljaarRepository();
+        schooljaar2025_2026 = schooljaarRepository.save(new Schooljaar("2025-2026", LocalDate.of(2025, 7, 1), LocalDate.of(2026, 6, 30)));
+        schooljaar2026_2027 = schooljaarRepository.save(new Schooljaar("2026-2027", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30), true));
     }
 
     @Test
@@ -71,8 +78,10 @@ public class PostgresVoorkeurRepositoryTest {
         Klas klas1AA = klasRepository.save(new Klas("1AA", "2026-2027", 1, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB));
         Leerling tim = leerlingRepository.save(new Leerling("Tim", "Van Herreweghe", klas1AA));
 
-        TalentenPeriode herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
-        TalentenPeriode winter = periodeRepository.save(new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20)));
+        TalentenPeriode herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31),
+                schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))));
+        TalentenPeriode winter = periodeRepository.save(new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20),
+                schooljaarVoorPeriode(LocalDate.of(2026, 11, 1))));
 
         Talent schaken = talentRepository.save(new Talent("Schaken", "Leren schaken"));
         Talent voetbal = talentRepository.save(new Talent("Voetbal", "Voetbaltraining"));
@@ -122,12 +131,17 @@ public class PostgresVoorkeurRepositoryTest {
 
         Klas klas = klasRepository.save(new Klas("1AA", "2026-2027", 1, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB));
         Leerling leerling = leerlingRepository.save(new Leerling("Tim", "VH", klas));
-        TalentenPeriode periode = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 21)));
+        TalentenPeriode periode = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 21),
+                schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))));
         Talent talent = talentRepository.save(new Talent("Voetbal", "Balsport"));
         Leerkracht leerkracht = leerkrachtRepository.save(new Leerkracht("Tom", "Laforce"));
         IngerichtTalent ingerichtTalent = ingerichtTalentRepository.save(new IngerichtTalent(talent, periode, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht)));
         Voorkeur voorkeur = new Voorkeur(leerling, periode, ingerichtTalent, 1);
 
         return new TestData(klas, leerling, talent, periode, leerkracht, ingerichtTalent, voorkeur);
+    }
+
+    private Schooljaar schooljaarVoorPeriode(LocalDate startDatum) {
+        return startDatum.getMonthValue() >= 7 ? schooljaar2026_2027 : schooljaar2025_2026;
     }
 }

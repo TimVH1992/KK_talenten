@@ -13,6 +13,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PostgresToewijzingRepositoryTest {
+    private Schooljaar schooljaar2025_2026;
+    private Schooljaar schooljaar2026_2027;
 
     private PostgresKlasRepository klasRepository;
     private PostgresLeerlingRepository leerlingRepository;
@@ -45,10 +47,15 @@ class PostgresToewijzingRepositoryTest {
                         leerkrachten,
                         talenten,
                         talenten_periodes,
+                        schooljaren,
                         klassen
                     RESTART IDENTITY CASCADE
                     """);
         }
+
+        PostgresSchooljaarRepository schooljaarRepository = new PostgresSchooljaarRepository();
+        schooljaar2025_2026 = schooljaarRepository.save(new Schooljaar("2025-2026", LocalDate.of(2025, 7, 1), LocalDate.of(2026, 6, 30)));
+        schooljaar2026_2027 = schooljaarRepository.save(new Schooljaar("2026-2027", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30), true));
 
         klasRepository = new PostgresKlasRepository();
         leerlingRepository = new PostgresLeerlingRepository();
@@ -66,7 +73,8 @@ class PostgresToewijzingRepositoryTest {
         schaken = talentRepository.save(new Talent("Schaken", "Leren schaken"));
         Talent dansen = talentRepository.save(new Talent("Dansen", "Leren dansen"));
 
-        herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+        herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31),
+                schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))));
 
         tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
 
@@ -118,7 +126,8 @@ class PostgresToewijzingRepositoryTest {
         Toewijzing janHerfst = toewijzingRepository.save(new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH, 1));
         Toewijzing julieHerfst = toewijzingRepository.save(new Toewijzing(julie, dansenHerfst, ToewijzingsType.MANUEEL));
 
-        TalentenPeriode winter = periodeRepository.save(new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20)));
+        TalentenPeriode winter = periodeRepository.save(new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20),
+                schooljaarVoorPeriode(LocalDate.of(2026, 11, 1))));
         IngerichtTalent schakenWinter = ingerichtTalentRepository.save(new IngerichtTalent(schaken, winter, 8, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
         Toewijzing winterToewijzing = toewijzingRepository.save(new Toewijzing(jan, schakenWinter, ToewijzingsType.AUTOMATISCH, 2));
 
@@ -238,7 +247,8 @@ class PostgresToewijzingRepositoryTest {
         // ARRANGE
         LocalDate vandaag = LocalDate.now();
 
-        TalentenPeriode verleden = periodeRepository.save(new TalentenPeriode("Verleden", vandaag.minusMonths(3), vandaag.minusMonths(2)));
+        TalentenPeriode verleden = periodeRepository.save(new TalentenPeriode("Verleden", vandaag.minusMonths(3), vandaag.minusMonths(2),
+                schooljaarVoorPeriode(vandaag.minusMonths(3))));
         IngerichtTalent schakenVerleden = ingerichtTalentRepository.save(new IngerichtTalent(schaken, verleden, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
 
         Toewijzing historischeToewijzing = toewijzingRepository.save(new Toewijzing(jan, schakenVerleden, ToewijzingsType.AUTOMATISCH, 1));
@@ -291,5 +301,9 @@ class PostgresToewijzingRepositoryTest {
                 assertFalse(resultSet.next(), "Er werden meerdere toewijzingen met hetzelfde ID gevonden");
             }
         }
+    }
+
+    private Schooljaar schooljaarVoorPeriode(LocalDate startDatum) {
+        return startDatum.getMonthValue() >= 7 ? schooljaar2026_2027 : schooljaar2025_2026;
     }
 }

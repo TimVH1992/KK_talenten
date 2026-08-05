@@ -1,5 +1,7 @@
 package be.kdg.talenten.verdeling;
 
+import be.kdg.talenten.testutil.TestDataFactory;
+
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.service.ManueleToewijzingService;
@@ -168,7 +170,8 @@ class ManueleToewijzingServiceTest {
                 "Kerst",
                 LocalDate.of(2026, 12, 22),
                 LocalDate.of(2027, 1, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 12, 22), LocalDate.of(2027, 1, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -346,7 +349,8 @@ class ManueleToewijzingServiceTest {
                 "Kerst",
                 LocalDate.of(2026, 12, 22),
                 LocalDate.of(2027, 1, 21)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 12, 22), LocalDate.of(2027, 1, 21)));
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -799,7 +803,8 @@ class ManueleToewijzingServiceTest {
                 "Lente",
                 LocalDate.now().minusMonths(4),
                 LocalDate.now().minusMonths(2)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.now().minusMonths(4), LocalDate.now().minusMonths(2)));
 
         Talent schaken = new Talent("Schaken", "Leren schaken");
         Talent koken = new Talent("Koken", "Leren koken");
@@ -845,7 +850,8 @@ class ManueleToewijzingServiceTest {
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 10, 31)
-        );
+        ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
     }
 
     private IngerichtTalent richtTalentIn(
