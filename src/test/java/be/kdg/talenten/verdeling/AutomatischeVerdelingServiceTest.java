@@ -413,6 +413,57 @@ class AutomatischeVerdelingServiceTest {
         assertEquals(1, nieuweWinterToewijzing.getVoorkeurNummer());
     }
 
+    @Test
+    void automatischeVerdelingVoorAfgelopenPeriodeWordtGeweigerd() {
+        // ARRANGE
+        Klas klas1AA = maakObservatieKlas();
+        Leerling alice = new Leerling("Alice", "Janssens", klas1AA);
+
+        TalentenPeriode lente = new TalentenPeriode(
+                "Lente",
+                LocalDate.now().minusMonths(4),
+                LocalDate.now().minusMonths(2)
+        );
+
+        IngerichtTalent schakenLente = richtTalentIn(new Talent("Schaken", "Leren schaken"), lente, 10);
+        IngerichtTalent kokenLente = richtTalentIn(new Talent("Koken", "Leren koken"), lente, 10);
+        IngerichtTalent voetbalLente = richtTalentIn(new Talent("Voetbal", "Voetbaltraining"), lente, 10);
+
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(alice, lente, kokenLente, 1),
+                new Voorkeur(alice, lente, voetbalLente, 2),
+                new Voorkeur(alice, lente, schakenLente, 3)
+        );
+
+        InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
+        InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+
+        Toewijzing bestaandeToewijzing = new Toewijzing(
+                alice,
+                schakenLente,
+                ToewijzingsType.AUTOMATISCH,
+                3
+        );
+
+        toewijzingRepository.save(bestaandeToewijzing);
+
+        AutomatischeVerdelingService service = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository);
+
+        // ACT + ASSERT
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.voerAutomatischeVerdelingUit(lente)
+        );
+
+        List<Toewijzing> lenteToewijzingen = toewijzingRepository.zoekVoorPeriode(lente);
+
+        assertEquals(1, lenteToewijzingen.size());
+        assertSame(bestaandeToewijzing, lenteToewijzingen.getFirst());
+        assertSame(schakenLente, lenteToewijzingen.getFirst().getIngerichtTalent());
+        assertEquals(ToewijzingsType.AUTOMATISCH, lenteToewijzingen.getFirst().getToewijzingsType());
+        assertEquals(3, lenteToewijzingen.getFirst().getVoorkeurNummer());
+    }
+
     private Klas maakObservatieKlas() {
         return new Klas(
                 "1AA",

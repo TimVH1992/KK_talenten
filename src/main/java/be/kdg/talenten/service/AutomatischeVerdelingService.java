@@ -9,6 +9,7 @@ import be.kdg.talenten.repository.VoorkeurRepository;
 import be.kdg.talenten.verdeling.AutomatischeVerdeler;
 import be.kdg.talenten.verdeling.VerdelingsResultaat;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class AutomatischeVerdelingService {
@@ -32,6 +33,9 @@ public class AutomatischeVerdelingService {
     }
 
     public VerdelingsResultaat voerAutomatischeVerdelingUit(TalentenPeriode talentenPeriode) {
+        if (talentenPeriode.getEindDatum().isBefore(LocalDate.now())) {
+            throw new IllegalStateException("Een afgelopen talentenperiode mag niet meer automatisch verdeeld worden.");
+        }
         valideerTalentenPeriode(talentenPeriode);
 
         List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
