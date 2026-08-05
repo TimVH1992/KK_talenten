@@ -4,11 +4,13 @@ import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
 import be.kdg.talenten.overzicht.KlasOverzicht;
 import be.kdg.talenten.overzicht.LeerlingToewijzingOverzicht;
+import be.kdg.talenten.overzicht.NietToegewezenLeerlingOverzicht;
 import be.kdg.talenten.repository.IngerichtTalentRepository;
 import be.kdg.talenten.repository.LeerlingRepository;
 import be.kdg.talenten.repository.ToewijzingRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class VerdelingBekijkenService {
     private final IngerichtTalentRepository ingerichtTalentRepository;
@@ -80,5 +82,29 @@ public class VerdelingBekijkenService {
         return klasOverzicht;
     }
 
+    public List<NietToegewezenLeerlingOverzicht> bekijkNietToegewezenLeerlingen(TalentenPeriode periode) {
+        if (periode == null) {
+            throw new IllegalArgumentException("De talentenperiode mag niet null zijn");
+        }
+
+        List<Leerling> leerlingen = leerlingRepository.zoekVoorSchooljaar(periode.getSchooljaar());
+
+        Set<Leerling> toegewezenLeerlingen = toewijzingRepository.zoekVoorPeriode(periode).stream()
+                .map(Toewijzing::getLeerling)
+                .collect(Collectors.toSet());
+
+        return leerlingen.stream()
+                .filter(leerling -> !toegewezenLeerlingen.contains(leerling))
+                .sorted(Comparator
+                        .comparing((Leerling leerling) -> leerling.getKlas().getNaam())
+                        .thenComparing(Leerling::getAchternaam)
+                        .thenComparing(Leerling::getVoornaam))
+                .map(leerling -> new NietToegewezenLeerlingOverzicht(
+                        leerling,
+                        leerling.getVoornaam() + " " + leerling.getAchternaam(),
+                        leerling.getKlas().getNaam()
+                ))
+                .toList();
+    }
 
 }

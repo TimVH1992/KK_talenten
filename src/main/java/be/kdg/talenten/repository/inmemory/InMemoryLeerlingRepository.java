@@ -2,9 +2,11 @@ package be.kdg.talenten.repository.inmemory;
 
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
+import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.repository.LeerlingRepository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class InMemoryLeerlingRepository implements LeerlingRepository {
@@ -49,5 +51,19 @@ public class InMemoryLeerlingRepository implements LeerlingRepository {
         }
 
         throw new IllegalStateException("Geen leerling gevonden met ID " + id);
+    }
+    @Override
+    public List<Leerling> zoekVoorSchooljaar(Schooljaar schooljaar) {
+        if (schooljaar == null) {
+            throw new IllegalArgumentException("Het schooljaar mag niet null zijn");
+        }
+
+        return leerlingen.stream()
+                .filter(leerling -> leerling.getKlas().getSchooljaar().equals(schooljaar.getNaam()))
+                .sorted(Comparator
+                        .comparing((Leerling leerling) -> leerling.getKlas().getNaam())
+                        .thenComparing(Leerling::getAchternaam)
+                        .thenComparing(Leerling::getVoornaam))
+                .toList();
     }
 }

@@ -4,6 +4,7 @@ import be.kdg.talenten.database.DatabaseConnectionFactory;
 import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
+import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.repository.LeerlingRepository;
 
 import java.sql.Connection;
@@ -149,6 +150,65 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
 
         } catch (SQLException e) {
             throw new IllegalStateException("De leerling kan niet op id gevonden worden", e);
+        }
+    }
+
+    @Override
+    public List<Leerling> zoekVoorSchooljaar(Schooljaar schooljaar) {
+        if (schooljaar == null) {
+            throw new IllegalArgumentException("Het schooljaar mag niet null zijn");
+        }
+
+        String sql = """
+            SELECT
+                l.leerling_id,
+                l.voornaam,
+                l.achternaam,
+                k.klas_id,
+                k.klas_naam,
+                k.schooljaar,
+                k.leerjaar,
+                k.doelgroep
+            FROM leerlingen l
+            JOIN klassen k ON k.klas_id = l.klas_id
+            WHERE k.schooljaar = ?
+            ORDER BY k.klas_naam, l.achternaam, l.voornaam
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, schooljaar.getNaam());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Leerling> leerlingen = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    Klas klas = new Klas(
+                            resultSet.getLong("klas_id"),
+                            resultSet.getString("klas_naam"),
+                            resultSet.getString("schooljaar"),
+                            resultSet.getInt("leerjaar"),
+                            Doelgroep.valueOf(resultSet.getString("doelgroep"))
+                    );
+
+                    Leerling leerling = new Leerling(
+                            resultSet.getLong("leerling_id"),
+                            resultSet.getString("voornaam"),
+                            resultSet.getString("achternaam"),
+                            klas
+                    );
+
+                    leerlingen.add(leerling);
+                }
+
+                return leerlingen;
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException(
+                    "De leerlingen van het schooljaar konden niet opgehaald worden",
+                    exception
+            );
         }
     }
 }
