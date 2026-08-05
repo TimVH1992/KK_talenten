@@ -1,0 +1,111 @@
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 14px;
+}
+
+.app-background {
+    -fx-background-color: linear-gradient(to bottom right, #f3f6fb, #e7edf7);
+}
+
+.dashboard-card,
+.content-card,
+.bottom-panel,
+.toolbar {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #d8e0ec;
+    -fx-effect: dropshadow(gaussian, rgba(32, 45, 65, 0.10), 16, 0.15, 0, 4);
+}
+
+.app-title {
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f3554;
+}
+
+.app-subtitle,
+.muted-label {
+    -fx-text-fill: #607086;
+}
+
+.screen-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f3554;
+}
+
+.section-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263d5c;
+}
+
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+    -fx-padding: 9 16;
+    -fx-font-weight: bold;
+}
+
+.primary-button {
+    -fx-background-color: #315f9d;
+    -fx-text-fill: white;
+}
+
+.primary-button:hover {
+    -fx-background-color: #284f83;
+}
+
+.secondary-button {
+    -fx-background-color: #e9eef5;
+    -fx-text-fill: #294361;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #dce5f0;
+}
+
+.warning-button {
+    -fx-background-color: #d88921;
+    -fx-text-fill: white;
+}
+
+.warning-button:hover {
+    -fx-background-color: #ba741a;
+}
+
+.combo-box,
+.table-view {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.table-view {
+    -fx-border-color: #d8e0ec;
+    -fx-background-color: white;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #edf2f8;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #c8d9ef;
+    -fx-text-background-color: #182d47;
+}
+
+.status-label {
+    -fx-padding: 8 0 0 0;
+    -fx-text-fill: #53657b;
+}
+
+.status-success {
+    -fx-text-fill: #267241;
+    -fx-font-weight: bold;
+}
+
+.status-error {
+    -fx-text-fill: #a22d2d;
+    -fx-font-weight: bold;
+}

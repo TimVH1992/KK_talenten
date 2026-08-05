@@ -49,7 +49,7 @@ public class ManueleToewijzingService {
 
         boolean leerlingZitAlInDitIngerichtTalent =
                 bestaandeToewijzing != null
-                        && bestaandeToewijzing.getIngerichtTalent() == nieuwIngerichtTalent;
+                        && bestaandeToewijzing.getIngerichtTalent().equals(nieuwIngerichtTalent);
 
         if (!leerlingZitAlInDitIngerichtTalent) {
             int huidigAantal =
@@ -68,9 +68,7 @@ public class ManueleToewijzingService {
                     null
             );
 
-            toewijzingRepository.save(nieuweToewijzing);
-
-            return nieuweToewijzing;
+            return toewijzingRepository.save(nieuweToewijzing);
         }
 
         bestaandeToewijzing.wijzigNaar(
@@ -79,8 +77,6 @@ public class ManueleToewijzingService {
                 null
         );
 
-        toewijzingRepository.update(bestaandeToewijzing);
-
-        return bestaandeToewijzing;
+        return toewijzingRepository.update(bestaandeToewijzing);
     }
 }
