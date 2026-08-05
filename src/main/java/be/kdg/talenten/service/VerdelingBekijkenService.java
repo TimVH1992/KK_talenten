@@ -30,6 +30,8 @@ public class VerdelingBekijkenService {
         this.leerlingRepository = leerlingRepository;
     }
 
+
+
     public List<IngerichtTalentOverzicht> bekijkPerIngerichtTalent(TalentenPeriode periode) {
         if (periode == null) {
             throw new IllegalArgumentException("periode mag niet null zijn");

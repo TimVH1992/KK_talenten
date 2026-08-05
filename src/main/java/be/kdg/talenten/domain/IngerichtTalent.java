@@ -2,6 +2,7 @@ package be.kdg.talenten.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class IngerichtTalent {
     private final Long id;
@@ -187,6 +188,22 @@ public class IngerichtTalent {
     public Doelgroep getDoelgroep() {
         return doelgroep;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        IngerichtTalent ander = (IngerichtTalent) object;
+        return id != null && id.equals(ander.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : System.identityHashCode(this);
+    }
+
+
 
     @Override
     public String toString() {

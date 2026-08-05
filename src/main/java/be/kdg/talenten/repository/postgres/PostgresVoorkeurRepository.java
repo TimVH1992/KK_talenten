@@ -17,9 +17,17 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
     private final LeerlingRepository leerlingRepository;
     private final IngerichtTalentRepository ingerichtTalentRepository;
 
-    public PostgresVoorkeurRepository(){
-        leerlingRepository = new PostgresLeerlingRepository();
-        ingerichtTalentRepository = new PostgresIngerichtTalentRepository();
+    public PostgresVoorkeurRepository() {
+        this(new PostgresLeerlingRepository(), new PostgresIngerichtTalentRepository());
+    }
+
+    public PostgresVoorkeurRepository(LeerlingRepository leerlingRepository, IngerichtTalentRepository ingerichtTalentRepository) {
+        if (leerlingRepository == null || ingerichtTalentRepository == null) {
+            throw new IllegalArgumentException("Repositories mogen niet null zijn");
+        }
+
+        this.leerlingRepository = leerlingRepository;
+        this.ingerichtTalentRepository = ingerichtTalentRepository;
     }
 
     @Override
