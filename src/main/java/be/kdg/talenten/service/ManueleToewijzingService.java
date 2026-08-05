@@ -52,19 +52,6 @@ public class ManueleToewijzingService {
         Toewijzing bestaandeToewijzing =
                 toewijzingRepository.zoekToewijzingVoorLeerlingEnPeriode(leerling, talentenPeriode);
 
-        boolean leerlingZitAlInDitIngerichtTalent =
-                bestaandeToewijzing != null
-                        && bestaandeToewijzing.getIngerichtTalent().equals(nieuwIngerichtTalent);
-
-        if (!leerlingZitAlInDitIngerichtTalent) {
-            int huidigAantal =
-                    toewijzingRepository.telToewijzingenVoorIngerichtTalent(nieuwIngerichtTalent);
-
-            if (!nieuwIngerichtTalent.heeftVrijePlaats(huidigAantal)) {
-                throw new IllegalStateException("Het ingericht talent heeft geen vrije plaatsen meer.");
-            }
-        }
-
         if (bestaandeToewijzing == null) {
             Toewijzing nieuweToewijzing = new Toewijzing(
                     leerling,

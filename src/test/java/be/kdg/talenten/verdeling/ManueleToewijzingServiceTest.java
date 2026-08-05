@@ -5,6 +5,7 @@ import be.kdg.talenten.testutil.TestDataFactory;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.service.ManueleToewijzingService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -250,87 +251,6 @@ class ManueleToewijzingServiceTest {
         );
     }
 
-    @Test
-    void manueleToewijzingNaarVolTalentWordtGeweigerd() {
-        // ARRANGE
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
-
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling tim = new Leerling(
-                "Tim",
-                "Janssens",
-                klas1AA
-        );
-
-        TalentenPeriode herfst = maakHerfstPeriode();
-
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-
-        IngerichtTalent schakenHerfst =
-                richtTalentIn(schaken, herfst, 10);
-
-        IngerichtTalent voetbalHerfst =
-                richtTalentIn(voetbal, herfst, 1);
-
-        InMemoryToewijzingRepository repository =
-                maakLeegToewijzingRepository();
-
-        repository.save(
-                new Toewijzing(
-                        jan,
-                        schakenHerfst,
-                        ToewijzingsType.AUTOMATISCH
-                )
-        );
-
-        repository.save(
-                new Toewijzing(
-                        tim,
-                        voetbalHerfst,
-                        ToewijzingsType.AUTOMATISCH
-                )
-        );
-
-        ManueleToewijzingService service =
-                new ManueleToewijzingService(repository);
-
-        // ACT + ASSERT
-        assertThrows(
-                IllegalStateException.class,
-                () -> service.wijzigToewijzing(
-                        herfst,
-                        jan,
-                        voetbalHerfst
-                )
-        );
-
-        Toewijzing toewijzingJan =
-                repository.zoekToewijzingVoorLeerlingEnPeriode(
-                        jan,
-                        herfst
-                );
-
-        assertNotNull(toewijzingJan);
-        assertSame(
-                schakenHerfst,
-                toewijzingJan.getIngerichtTalent()
-        );
-        assertEquals(
-                ToewijzingsType.AUTOMATISCH,
-                toewijzingJan.getToewijzingsType()
-        );
-    }
 
     @Test
     void manueleToewijzingNaarTalentUitAnderePeriodeWordtGeweigerd() {
@@ -831,6 +751,41 @@ class ManueleToewijzingServiceTest {
         assertSame(schakenLente, oorspronkelijkeToewijzing.getIngerichtTalent());
         assertEquals(ToewijzingsType.AUTOMATISCH, oorspronkelijkeToewijzing.getToewijzingsType());
         assertEquals(1, repository.zoekVoorPeriode(lente).size());
+    }
+
+    @Test
+    public void manueleToewijzingMagMaximumCapaciteitOverschrijden(){
+        // ARRANGE
+        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        Leerling alice = new Leerling("Alice", "Janssens", klas1AA);
+        Leerling jos = new Leerling("Jos", "Janssens", klas1AA);
+        Leerling tim = new Leerling("Tim", "Janssens", klas1AA);
+
+        TalentenPeriode lente = new TalentenPeriode(
+                "Lente",
+                LocalDate.now().plusMonths(2),
+                LocalDate.now().plusMonths(4)
+                ,
+                TestDataFactory.schooljaarVoorPeriode(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(4)));
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenLente = richtTalentIn(schaken, lente, 2);
+
+        InMemoryToewijzingRepository repository = maakLeegToewijzingRepository();
+
+        repository.save(new Toewijzing(alice, schakenLente, ToewijzingsType.AUTOMATISCH));
+        repository.save(new Toewijzing(jos, schakenLente, ToewijzingsType.AUTOMATISCH));
+
+//          ACT
+        ManueleToewijzingService service = new ManueleToewijzingService(repository);
+        Toewijzing result = service.wijzigToewijzing(lente, tim, schakenLente);
+//          ASSERT
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(result.getIngerichtTalent(), schakenLente);
+        Assertions.assertEquals(ToewijzingsType.MANUEEL, result.getToewijzingsType());
+
     }
 
     private Klas maakObservatieKlas(

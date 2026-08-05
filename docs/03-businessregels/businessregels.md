@@ -83,11 +83,7 @@ Bij een nieuwe verdeling wordt rekening gehouden met eerder gevolgde talenten.
 
 ### BR-017
 
-Na de automatische verdeling mag de talentcoördinator leerlingen manueel verplaatsen.
-
-### BR-018
-
-Ook na een manuele wijziging mag de capaciteit van een ingericht talent niet overschreden worden.
+Na de automatische verdeling mag de talentcoördinator leerlingen manueel verplaatsen. De talentCoordinator mag de capaciteit van een ingerichtTalent overschrijden.
 
 ### BR-019
 
