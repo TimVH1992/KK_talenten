@@ -119,4 +119,52 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
             throw new IllegalStateException("De voorkeuren konden niet opgehaald worden", e);
         }
     }
+    @Override
+    public List<Voorkeur> zoekVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn");
+        }
+        if (leerling.getId() == null) {
+            throw new IllegalArgumentException("De leerling moet eerst opgeslagen zijn");
+        }
+        if (periode == null) {
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
+        if (periode.getId() == null) {
+            throw new IllegalArgumentException("De periode moet eerst opgeslagen zijn");
+        }
+
+        String sql = """
+            SELECT voorkeur_id, voorkeur_nummer, ingericht_talent_id
+            FROM voorkeuren
+            WHERE leerling_id = ?
+              AND talenten_periode_id = ?
+            ORDER BY voorkeur_nummer
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, leerling.getId());
+            statement.setLong(2, periode.getId());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Voorkeur> voorkeuren = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    voorkeuren.add(new Voorkeur(
+                            resultSet.getLong("voorkeur_id"),
+                            leerling,
+                            periode,
+                            ingerichtTalentRepository.zoekOpId(resultSet.getLong("ingericht_talent_id")),
+                            resultSet.getInt("voorkeur_nummer")
+                    ));
+                }
+
+                return voorkeuren;
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("De voorkeuren van de leerling konden niet opgehaald worden", exception);
+        }
+    }
 }

@@ -1,10 +1,12 @@
 package be.kdg.talenten.repository.inmemory;
 
+import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Voorkeur;
 import be.kdg.talenten.repository.VoorkeurRepository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class InMemoryVoorkeurRepository implements VoorkeurRepository {
@@ -40,5 +42,20 @@ public class InMemoryVoorkeurRepository implements VoorkeurRepository {
             }
         }
         return resultaat;
+    }
+    @Override
+    public List<Voorkeur> zoekVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn");
+        }
+        if (periode == null) {
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
+
+        return voorkeuren.stream()
+                .filter(voorkeur -> voorkeur.getLeerling().equals(leerling))
+                .filter(voorkeur -> voorkeur.getTalentenPeriode().equals(periode))
+                .sorted(Comparator.comparingInt(Voorkeur::getVoorkeurNummer))
+                .toList();
     }
 }

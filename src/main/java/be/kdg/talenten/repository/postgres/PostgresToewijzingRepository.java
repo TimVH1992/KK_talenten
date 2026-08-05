@@ -1,11 +1,7 @@
 package be.kdg.talenten.repository.postgres;
 
 import be.kdg.talenten.database.DatabaseConnectionFactory;
-import be.kdg.talenten.domain.IngerichtTalent;
-import be.kdg.talenten.domain.Leerling;
-import be.kdg.talenten.domain.TalentenPeriode;
-import be.kdg.talenten.domain.Toewijzing;
-import be.kdg.talenten.domain.ToewijzingsType;
+import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.IngerichtTalentRepository;
 import be.kdg.talenten.repository.LeerlingRepository;
 import be.kdg.talenten.repository.ToewijzingRepository;
@@ -389,8 +385,81 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
         }
     }
 
+    @Override
+    public List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(Leerling leerling, Schooljaar schooljaar) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn");
+        }
+        if (leerling.getId() == null) {
+            throw new IllegalArgumentException("De leerling moet eerst opgeslagen zijn");
+        }
+        if (schooljaar == null) {
+            throw new IllegalArgumentException("Het schooljaar mag niet null zijn");
+        }
+        if (schooljaar.getId() == null) {
+            throw new IllegalArgumentException("Het schooljaar moet eerst opgeslagen zijn");
+        }
+
+        String sql = """
+            SELECT
+                tw.toewijzing_id,
+                tw.toewijzings_type,
+                tw.voorkeur_nummer,
+                tw.leerling_id,
+                tw.ingericht_talent_id,
+                tw.toegewezen_op,
+                tw.gewijzigd_op
+            FROM toewijzingen tw
+            JOIN talenten_periodes tp
+                ON tp.talenten_periode_id = tw.talenten_periode_id
+            WHERE tw.leerling_id = ?
+              AND tp.schooljaar_id = ?
+              AND tp.einddatum < CURRENT_DATE
+            ORDER BY tp.einddatum DESC
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, leerling.getId());
+            statement.setLong(2, schooljaar.getId());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Toewijzing> toewijzingen = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    toewijzingen.add(maakToewijzing(resultSet, leerling));
+                }
+
+                return toewijzingen;
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("De historische toewijzingen van de leerling konden niet opgehaald worden", exception);
+        }
+    }
+
     private Toewijzing maakToewijzing(ResultSet resultSet) throws SQLException {
         Leerling leerling = leerlingRepository.zoekOpId(resultSet.getLong("leerling_id"));
+        IngerichtTalent ingerichtTalent = ingerichtTalentRepository.zoekOpId(resultSet.getLong("ingericht_talent_id"));
+        ToewijzingsType toewijzingsType = ToewijzingsType.valueOf(resultSet.getString("toewijzings_type"));
+
+        int voorkeurWaarde = resultSet.getInt("voorkeur_nummer");
+        Integer voorkeurNummer = resultSet.wasNull() ? null : voorkeurWaarde;
+
+        Timestamp gewijzigdOp = resultSet.getTimestamp("gewijzigd_op");
+
+        return new Toewijzing(
+                resultSet.getLong("toewijzing_id"),
+                leerling,
+                ingerichtTalent,
+                toewijzingsType,
+                resultSet.getTimestamp("toegewezen_op").toLocalDateTime(),
+                gewijzigdOp == null ? null : gewijzigdOp.toLocalDateTime(),
+                voorkeurNummer
+        );
+    }
+
+    private Toewijzing maakToewijzing(ResultSet resultSet, Leerling leerling) throws SQLException {
         IngerichtTalent ingerichtTalent = ingerichtTalentRepository.zoekOpId(resultSet.getLong("ingericht_talent_id"));
         ToewijzingsType toewijzingsType = ToewijzingsType.valueOf(resultSet.getString("toewijzings_type"));
 
@@ -456,4 +525,5 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             throw new IllegalArgumentException("De talentenperiode moet eerst opgeslagen zijn");
         }
     }
+
 }

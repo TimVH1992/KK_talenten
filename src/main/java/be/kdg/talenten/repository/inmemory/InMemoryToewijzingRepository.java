@@ -1,10 +1,6 @@
 package be.kdg.talenten.repository.inmemory;
 
-import be.kdg.talenten.domain.IngerichtTalent;
-import be.kdg.talenten.domain.Leerling;
-import be.kdg.talenten.domain.TalentenPeriode;
-import be.kdg.talenten.domain.Toewijzing;
-import be.kdg.talenten.domain.ToewijzingsType;
+import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.ToewijzingRepository;
 
 import java.util.ArrayList;
@@ -144,5 +140,22 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
             }
         }
         return toewijzingenVoorPeriode;
+    }
+    @Override
+    public List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(Leerling leerling, Schooljaar schooljaar) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn");
+        }
+        if (schooljaar == null) {
+            throw new IllegalArgumentException("Het schooljaar mag niet null zijn");
+        }
+
+        return historischeToewijzingen.stream()
+                .filter(toewijzing -> toewijzing.getLeerling().equals(leerling))
+                .filter(toewijzing -> toewijzing.getIngerichtTalent()
+                        .getTalentenPeriode()
+                        .getSchooljaar()
+                        .equals(schooljaar))
+                .toList();
     }
 }

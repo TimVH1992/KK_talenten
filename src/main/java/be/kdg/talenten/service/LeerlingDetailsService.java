@@ -32,16 +32,19 @@ public class LeerlingDetailsService {
             throw new IllegalArgumentException("Periode mag niet null zijn");
         }
 
-        List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(periode).stream()
-                .filter(voorkeur -> voorkeur.getLeerling().equals(leerling))
-                .sorted(Comparator.comparingInt(Voorkeur::getVoorkeurNummer))
-                .toList();
+        List<Voorkeur> voorkeuren = voorkeurRepository
+                .zoekVoorLeerlingEnPeriode(leerling, periode);
 
-        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingen().stream()
-                .filter(toewijzing -> toewijzing.getLeerling().equals(leerling))
-                .filter(toewijzing -> toewijzing.getIngerichtTalent().getTalentenPeriode().getSchooljaar().equals(periode.getSchooljaar()))
+        List<Toewijzing> historischeToewijzingen = toewijzingRepository
+                .zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(leerling, periode.getSchooljaar())
+                .stream()
                 .filter(toewijzing -> !toewijzing.getIngerichtTalent().getTalentenPeriode().equals(periode))
-                .sorted(Comparator.comparing((Toewijzing toewijzing) -> toewijzing.getIngerichtTalent().getTalentenPeriode().getEindDatum()).reversed())
+                .sorted(Comparator.comparing(
+                        (Toewijzing toewijzing) -> toewijzing
+                                .getIngerichtTalent()
+                                .getTalentenPeriode()
+                                .getEindDatum()
+                ).reversed())
                 .toList();
 
         return new LeerlingDetailsOverzicht(leerling, periode, voorkeuren, historischeToewijzingen);

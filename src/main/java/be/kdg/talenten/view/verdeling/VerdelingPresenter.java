@@ -242,6 +242,7 @@ public class VerdelingPresenter {
 
     private void selecteerLeerling(Leerling leerling, Toewijzing huidigeToewijzing) {
         TalentenPeriode periode = view.getPeriodeComboBox().getValue();
+
         if (leerling == null || periode == null) {
             wisGeselecteerdeLeerling();
             return;
