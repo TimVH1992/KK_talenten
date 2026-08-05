@@ -303,6 +303,55 @@ class AutomatischeVerdelingServiceTest {
         );
     }
 
+    @Test
+    void serviceBehoudtManueleToewijzingenEnVervangtAlleenAutomatischeToewijzingen() {
+        // ARRANGE
+        Klas klas1AA = maakObservatieKlas();
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+        TalentenPeriode winter = new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20));
+
+        IngerichtTalent schakenWinter = richtTalentIn(new Talent("Schaken", "Leren schaken"), winter, 1);
+        IngerichtTalent voetbalWinter = richtTalentIn(new Talent("Voetbal", "Voetbaltraining"), winter, 10);
+        IngerichtTalent kokenWinter = richtTalentIn(new Talent("Koken", "Leren koken"), winter, 10);
+
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(jan, winter, schakenWinter, 1),
+                new Voorkeur(jan, winter, voetbalWinter, 2),
+                new Voorkeur(jan, winter, kokenWinter, 3),
+                new Voorkeur(julie, winter, schakenWinter, 1),
+                new Voorkeur(julie, winter, voetbalWinter, 2),
+                new Voorkeur(julie, winter, kokenWinter, 3)
+        );
+
+        InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
+        InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+
+        Toewijzing manueleToewijzing = toewijzingRepository.save(new Toewijzing(jan, schakenWinter, ToewijzingsType.MANUEEL));
+        Toewijzing oudeAutomatischeToewijzing = toewijzingRepository.save(new Toewijzing(julie, kokenWinter, ToewijzingsType.AUTOMATISCH, 3));
+
+        AutomatischeVerdelingService service = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository);
+
+        // ACT
+        VerdelingsResultaat resultaat = service.voerAutomatischeVerdelingUit(winter);
+
+        // ASSERT
+        List<Toewijzing> opgeslagenToewijzingen = toewijzingRepository.getOpgeslagenToewijzingen();
+        assertEquals(2, opgeslagenToewijzingen.size());
+        assertTrue(opgeslagenToewijzingen.contains(manueleToewijzing));
+        assertFalse(opgeslagenToewijzingen.contains(oudeAutomatischeToewijzing));
+
+        Toewijzing nieuweAutomatischeToewijzing = opgeslagenToewijzingen.stream()
+                .filter(toewijzing -> toewijzing.getToewijzingsType() == ToewijzingsType.AUTOMATISCH)
+                .findFirst()
+                .orElseThrow();
+
+        assertSame(julie, nieuweAutomatischeToewijzing.getLeerling());
+        assertSame(voetbalWinter, nieuweAutomatischeToewijzing.getIngerichtTalent());
+        assertEquals(2, nieuweAutomatischeToewijzing.getVoorkeurNummer());
+        assertEquals(1, resultaat.getAantalToewijzingen());
+    }
+
     private Klas maakObservatieKlas() {
         return new Klas(
                 "1AA",

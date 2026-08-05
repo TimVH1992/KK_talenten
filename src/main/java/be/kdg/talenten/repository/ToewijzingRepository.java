@@ -10,6 +10,7 @@ import java.util.List;
 public interface ToewijzingRepository {
     List<Toewijzing> zoekHistorischeToewijzingen();
     void saveAll(List<Toewijzing> toewijzingen);
+    void vervangAutomatischeToewijzingenVoorPeriode(TalentenPeriode periode, List<Toewijzing> nieuweToewijzingen);
 
     Toewijzing zoekToewijzingVoorLeerlingEnPeriode(
             Leerling leerling,

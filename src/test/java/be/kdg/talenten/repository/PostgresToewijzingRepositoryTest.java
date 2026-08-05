@@ -214,6 +214,26 @@ class PostgresToewijzingRepositoryTest {
     }
 
     @Test
+    void vervangAutomatischeToewijzingenVoorPeriodeBehoudtManueleToewijzingen() {
+        // ARRANGE
+        Toewijzing manueleToewijzing = toewijzingRepository.save(new Toewijzing(jan, schakenHerfst, ToewijzingsType.MANUEEL));
+        Toewijzing oudeAutomatischeToewijzing = toewijzingRepository.save(new Toewijzing(julie, dansenHerfst, ToewijzingsType.AUTOMATISCH, 2));
+        Toewijzing nieuweAutomatischeToewijzing = new Toewijzing(julie, schakenHerfst, ToewijzingsType.AUTOMATISCH, 1);
+
+        // ACT
+        toewijzingRepository.vervangAutomatischeToewijzingenVoorPeriode(herfst, List.of(nieuweAutomatischeToewijzing));
+
+        // ASSERT
+        List<Toewijzing> resultaat = toewijzingRepository.zoekVoorPeriode(herfst);
+        assertEquals(2, resultaat.size());
+        assertTrue(resultaat.stream().anyMatch(toewijzing -> toewijzing.getId().equals(manueleToewijzing.getId())));
+        assertFalse(resultaat.stream().anyMatch(toewijzing -> toewijzing.getId().equals(oudeAutomatischeToewijzing.getId())));
+        assertTrue(resultaat.stream().anyMatch(toewijzing -> toewijzing.getLeerling().getId().equals(julie.getId())
+                && toewijzing.getIngerichtTalent().getId().equals(schakenHerfst.getId())
+                && toewijzing.getToewijzingsType() == ToewijzingsType.AUTOMATISCH));
+    }
+
+    @Test
     void zoekHistorischeToewijzingenGeeftAlleenToewijzingenUitAfgelopenPeriodes() {
         // ARRANGE
         LocalDate vandaag = LocalDate.now();

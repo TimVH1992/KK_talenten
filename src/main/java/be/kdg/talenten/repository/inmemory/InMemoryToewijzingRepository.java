@@ -4,6 +4,7 @@ import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
+import be.kdg.talenten.domain.ToewijzingsType;
 import be.kdg.talenten.repository.ToewijzingRepository;
 
 import java.util.ArrayList;
@@ -26,6 +27,32 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
     @Override
     public void saveAll(List<Toewijzing> toewijzingen) {
         opgeslagenToewijzingen.addAll(toewijzingen);
+    }
+
+    @Override
+    public void vervangAutomatischeToewijzingenVoorPeriode(TalentenPeriode periode, List<Toewijzing> nieuweToewijzingen) {
+        if (periode == null) {
+            throw new IllegalArgumentException("De talentenperiode mag niet null zijn");
+        }
+        if (nieuweToewijzingen == null) {
+            throw new IllegalArgumentException("De nieuwe toewijzingen mogen niet null zijn");
+        }
+
+        for (Toewijzing toewijzing : nieuweToewijzingen) {
+            if (toewijzing == null) {
+                throw new IllegalArgumentException("De lijst mag geen null-toewijzingen bevatten");
+            }
+            if (toewijzing.getToewijzingsType() != ToewijzingsType.AUTOMATISCH) {
+                throw new IllegalArgumentException("Alle nieuwe toewijzingen moeten automatisch zijn");
+            }
+            if (!toewijzing.getIngerichtTalent().getTalentenPeriode().equals(periode)) {
+                throw new IllegalArgumentException("Alle nieuwe toewijzingen moeten tot de gekozen periode behoren");
+            }
+        }
+
+        opgeslagenToewijzingen.removeIf(toewijzing -> toewijzing.getToewijzingsType() == ToewijzingsType.AUTOMATISCH
+                && toewijzing.getIngerichtTalent().getTalentenPeriode().equals(periode));
+        opgeslagenToewijzingen.addAll(nieuweToewijzingen);
     }
 
     public List<Toewijzing> getOpgeslagenToewijzingen() {

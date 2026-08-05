@@ -109,3 +109,16 @@
     -fx-text-fill: #a22d2d;
     -fx-font-weight: bold;
 }
+
+.detail-section {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #d8e0ec;
+}
+
+.selected-student-label {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263d5c;
+}

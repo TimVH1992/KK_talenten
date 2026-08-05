@@ -25,4 +25,7 @@ public class TalentenApplication extends Application {
         sceneManager.toon(mainView);
     }
 
+    public static void main(String[] args) {
+        launch(args);
+    }
 }

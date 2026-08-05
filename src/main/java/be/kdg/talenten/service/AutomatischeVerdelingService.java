@@ -2,6 +2,7 @@ package be.kdg.talenten.service;
 
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
+import be.kdg.talenten.domain.ToewijzingsType;
 import be.kdg.talenten.domain.Voorkeur;
 import be.kdg.talenten.repository.ToewijzingRepository;
 import be.kdg.talenten.repository.VoorkeurRepository;
@@ -25,18 +26,30 @@ public class AutomatischeVerdelingService {
         this.toewijzingRepository = toewijzingRepository;
     }
 
+    public boolean heeftBestaandeToewijzingen(TalentenPeriode talentenPeriode) {
+        valideerTalentenPeriode(talentenPeriode);
+        return !toewijzingRepository.zoekVoorPeriode(talentenPeriode).isEmpty();
+    }
+
     public VerdelingsResultaat voerAutomatischeVerdelingUit(TalentenPeriode talentenPeriode) {
+        valideerTalentenPeriode(talentenPeriode);
+
+        List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
+        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingen();
+        List<Toewijzing> manueleToewijzingen = toewijzingRepository.zoekVoorPeriode(talentenPeriode).stream()
+                .filter(toewijzing -> toewijzing.getToewijzingsType() == ToewijzingsType.MANUEEL)
+                .toList();
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren, historischeToewijzingen, manueleToewijzingen);
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        toewijzingRepository.vervangAutomatischeToewijzingenVoorPeriode(talentenPeriode, resultaat.getToewijzingen());
+        return resultaat;
+    }
+
+    private void valideerTalentenPeriode(TalentenPeriode talentenPeriode) {
         if (talentenPeriode == null) {
             throw new IllegalArgumentException("Talentenperiode mag niet null zijn.");
         }
-        List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
-        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingen();
-
-        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren, historischeToewijzingen);
-        VerdelingsResultaat resultaat = verdeler.verdeel();
-
-        toewijzingRepository.saveAll(resultaat.getToewijzingen());
-
-        return resultaat;
     }
 }

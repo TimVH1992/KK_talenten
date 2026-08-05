@@ -290,6 +290,73 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
     }
 
     @Override
+    public void vervangAutomatischeToewijzingenVoorPeriode(TalentenPeriode periode, List<Toewijzing> nieuweToewijzingen) {
+        valideerOpgeslagenPeriode(periode);
+
+        if (nieuweToewijzingen == null) {
+            throw new IllegalArgumentException("De nieuwe toewijzingen mogen niet null zijn");
+        }
+
+        for (Toewijzing toewijzing : nieuweToewijzingen) {
+            valideerToewijzingVoorOpslag(toewijzing);
+
+            if (toewijzing.getToewijzingsType() != ToewijzingsType.AUTOMATISCH) {
+                throw new IllegalArgumentException("Alle nieuwe toewijzingen moeten automatisch zijn");
+            }
+            if (!periode.getId().equals(toewijzing.getIngerichtTalent().getTalentenPeriode().getId())) {
+                throw new IllegalArgumentException("Alle nieuwe toewijzingen moeten tot de gekozen periode behoren");
+            }
+        }
+
+        String verwijderSql = """
+                DELETE FROM toewijzingen
+                WHERE talenten_periode_id = ?
+                  AND toewijzings_type = 'AUTOMATISCH'
+                """;
+
+        String invoegSql = """
+                INSERT INTO toewijzingen (
+                    toewijzings_type,
+                    voorkeur_nummer,
+                    leerling_id,
+                    talenten_periode_id,
+                    ingericht_talent_id,
+                    toegewezen_op,
+                    gewijzigd_op
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding()) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement verwijderStatement = connection.prepareStatement(verwijderSql)) {
+                    verwijderStatement.setLong(1, periode.getId());
+                    verwijderStatement.executeUpdate();
+                }
+
+                if (!nieuweToewijzingen.isEmpty()) {
+                    try (PreparedStatement invoegStatement = connection.prepareStatement(invoegSql)) {
+                        for (Toewijzing toewijzing : nieuweToewijzingen) {
+                            vulInsertStatement(invoegStatement, toewijzing);
+                            invoegStatement.addBatch();
+                        }
+                        invoegStatement.executeBatch();
+                    }
+                }
+
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("De automatische toewijzingen konden niet veilig herberekend worden", e);
+        }
+    }
+
+    @Override
     public List<Toewijzing> zoekHistorischeToewijzingen() {
         String sql = """
                 SELECT

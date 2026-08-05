@@ -1,9 +1,14 @@
 package be.kdg.talenten.view.verdeling;
 
 import be.kdg.talenten.domain.IngerichtTalent;
+import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
+import be.kdg.talenten.domain.Voorkeur;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
+import be.kdg.talenten.overzicht.KlasOverzicht;
+import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
+import be.kdg.talenten.overzicht.LeerlingToewijzingOverzicht;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -25,6 +30,13 @@ public class VerdelingView extends BorderPane {
     private Button automatischeVerdelingButton;
     private TableView<IngerichtTalentOverzicht> talentenTable;
     private TableView<Toewijzing> leerlingenTable;
+    private Label leerlingenTitelLabel;
+    private ComboBox<Klas> klasComboBox;
+    private TableView<LeerlingToewijzingOverzicht> klasLeerlingenTable;
+    private Label geselecteerdeLeerlingLabel;
+    private Label voorkeurenTitelLabel;
+    private TableView<Voorkeur> voorkeurenTable;
+    private TableView<Toewijzing> historiekTable;
     private ComboBox<IngerichtTalent> doelTalentComboBox;
     private Button verplaatsLeerlingButton;
     private Label statusLabel;
@@ -62,6 +74,33 @@ public class VerdelingView extends BorderPane {
 
         talentenTable = maakTalentenTable();
         leerlingenTable = maakLeerlingenTable();
+        leerlingenTitelLabel = new Label("Toegewezen leerlingen");
+        leerlingenTitelLabel.getStyleClass().add("section-title");
+
+        klasComboBox = new ComboBox<>();
+        klasComboBox.setPromptText("Selecteer een klas");
+        klasComboBox.setPrefWidth(260);
+        klasComboBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Klas klas) {
+                if (klas == null) return "";
+                return klas.getNaam() + " — " + klas.getSchooljaar();
+            }
+
+            @Override
+            public Klas fromString(String string) {
+                return null;
+            }
+        });
+        klasLeerlingenTable = maakKlasLeerlingenTable();
+
+        geselecteerdeLeerlingLabel = new Label("Selecteer een leerling om diens voorkeuren en historiek te bekijken.");
+        geselecteerdeLeerlingLabel.getStyleClass().add("selected-student-label");
+
+        voorkeurenTitelLabel = new Label("Voorkeuren voor geselecteerde periode");
+        voorkeurenTitelLabel.getStyleClass().add("section-title");
+        voorkeurenTable = maakVoorkeurenTable();
+        historiekTable = maakHistoriekTable();
 
         doelTalentComboBox = new ComboBox<>();
         doelTalentComboBox.setPromptText("Kies het nieuwe talent");
@@ -132,6 +171,66 @@ public class VerdelingView extends BorderPane {
         return table;
     }
 
+    private TableView<LeerlingToewijzingOverzicht> maakKlasLeerlingenTable() {
+        TableView<LeerlingToewijzingOverzicht> table = new TableView<>();
+        table.setPlaceholder(new Label("Selecteer een klas om alle leerlingen te bekijken."));
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        TableColumn<LeerlingToewijzingOverzicht, String> leerlingKolom = new TableColumn<>("Leerling");
+        leerlingKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().leerling().toString()));
+
+        TableColumn<LeerlingToewijzingOverzicht, String> talentKolom = new TableColumn<>("Toegewezen talent");
+        talentKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(naamVanToegewezenTalent(data.getValue())));
+
+        TableColumn<LeerlingToewijzingOverzicht, String> typeKolom = new TableColumn<>("Type");
+        typeKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(typeVanToewijzing(data.getValue())));
+
+        TableColumn<LeerlingToewijzingOverzicht, String> voorkeurKolom = new TableColumn<>("Voorkeur");
+        voorkeurKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(voorkeurVanToewijzing(data.getValue())));
+
+        table.getColumns().addAll(leerlingKolom, talentKolom, typeKolom, voorkeurKolom);
+        return table;
+    }
+
+    private TableView<Voorkeur> maakVoorkeurenTable() {
+        TableView<Voorkeur> table = new TableView<>();
+        table.setPlaceholder(new Label("Geen voorkeuren gevonden voor deze periode."));
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        table.setPrefHeight(150);
+
+        TableColumn<Voorkeur, Number> nummerKolom = new TableColumn<>("Nr.");
+        nummerKolom.setCellValueFactory(data -> new ReadOnlyIntegerWrapper(data.getValue().getVoorkeurNummer()));
+        nummerKolom.setMaxWidth(55);
+
+        TableColumn<Voorkeur, String> talentKolom = new TableColumn<>("Talent");
+        talentKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getIngerichtTalent().getTalent().getNaam()));
+
+        table.getColumns().addAll(nummerKolom, talentKolom);
+        return table;
+    }
+
+    private TableView<Toewijzing> maakHistoriekTable() {
+        TableView<Toewijzing> table = new TableView<>();
+        table.setPlaceholder(new Label("Nog geen eerder gevolgde talenten gevonden."));
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        table.setPrefHeight(150);
+
+        TableColumn<Toewijzing, String> periodeKolom = new TableColumn<>("Periode");
+        periodeKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getIngerichtTalent().getTalentenPeriode().getNaam()));
+
+        TableColumn<Toewijzing, String> talentKolom = new TableColumn<>("Talent");
+        talentKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getIngerichtTalent().getTalent().getNaam()));
+
+        TableColumn<Toewijzing, String> typeKolom = new TableColumn<>("Type");
+        typeKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getToewijzingsType().name()));
+
+        TableColumn<Toewijzing, String> voorkeurKolom = new TableColumn<>("Voorkeur");
+        voorkeurKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getVoorkeurNummer() == null ? "—" : data.getValue().getVoorkeurNummer().toString()));
+
+        table.getColumns().addAll(periodeKolom, talentKolom, typeKolom, voorkeurKolom);
+        return table;
+    }
+
     private void layoutNodes() {
         Label titel = new Label("Talentenverdeling");
         titel.getStyleClass().add("screen-title");
@@ -147,25 +246,54 @@ public class VerdelingView extends BorderPane {
         bovenkant.setPadding(new Insets(24, 24, 12, 24));
         setTop(bovenkant);
 
-        VBox talentenPaneel = maakPaneel("Ingerichte talenten", talentenTable);
-        VBox leerlingenPaneel = maakPaneel("Toegewezen leerlingen", leerlingenTable);
+        SplitPane perTalentSplitPane = new SplitPane(maakPaneel("Ingerichte talenten", talentenTable), maakPaneel(leerlingenTitelLabel, leerlingenTable));
+        perTalentSplitPane.setDividerPositions(0.48);
+        perTalentSplitPane.setPadding(new Insets(8, 12, 12, 12));
 
-        SplitPane splitPane = new SplitPane(talentenPaneel, leerlingenPaneel);
-        splitPane.setDividerPositions(0.48);
-        splitPane.setPadding(new Insets(0, 24, 12, 24));
-        setCenter(splitPane);
+        HBox klasSelectieBalk = new HBox(12, new Label("Klas:"), klasComboBox);
+        klasSelectieBalk.setAlignment(Pos.CENTER_LEFT);
+
+        Label klasUitleg = new Label("Dit overzicht toont alle leerlingen van de geselecteerde klas, ook wanneer ze nog niet zijn toegewezen.");
+        klasUitleg.getStyleClass().add("muted-label");
+
+        VBox klasPaneel = new VBox(12, klasSelectieBalk, klasUitleg, klasLeerlingenTable);
+        VBox.setVgrow(klasLeerlingenTable, Priority.ALWAYS);
+        klasPaneel.setPadding(new Insets(16));
+        klasPaneel.getStyleClass().add("content-card");
+
+        Tab perTalentTab = new Tab("Per talent", perTalentSplitPane);
+        Tab perKlasTab = new Tab("Per klas", klasPaneel);
+        perTalentTab.setClosable(false);
+        perKlasTab.setClosable(false);
+
+        TabPane overzichtTabPane = new TabPane(perTalentTab, perKlasTab);
+        overzichtTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        overzichtTabPane.setPadding(new Insets(0, 24, 12, 24));
+        setCenter(overzichtTabPane);
+
+        Label historiekTitel = new Label("Eerder gevolgde talenten");
+        historiekTitel.getStyleClass().add("section-title");
 
         Label handmatigeTitel = new Label("Manuele wijziging");
         handmatigeTitel.getStyleClass().add("section-title");
 
-        Label uitleg = new Label("Selecteer een leerling in de rechtertabel en kies daarna een nieuw ingericht talent.");
+        Label uitleg = new Label("Selecteer een leerling in een van de tabellen en kies daarna een nieuw ingericht talent.");
         uitleg.getStyleClass().add("muted-label");
+        uitleg.setWrapText(true);
 
-        HBox wijzigingBalk = new HBox(12, doelTalentComboBox, verplaatsLeerlingButton);
-        wijzigingBalk.setAlignment(Pos.CENTER_LEFT);
+        VBox voorkeurenPaneel = maakDetailPaneel(voorkeurenTitelLabel, voorkeurenTable);
+        VBox historiekPaneel = maakDetailPaneel(historiekTitel, historiekTable);
 
-        VBox onderkant = new VBox(8, handmatigeTitel, uitleg, wijzigingBalk, statusLabel);
-        onderkant.setPadding(new Insets(12, 24, 24, 24));
+        VBox wijzigingPaneel = new VBox(10, handmatigeTitel, uitleg, doelTalentComboBox, verplaatsLeerlingButton);
+        wijzigingPaneel.setPadding(new Insets(12));
+        wijzigingPaneel.getStyleClass().add("detail-section");
+
+        SplitPane detailSplitPane = new SplitPane(voorkeurenPaneel, historiekPaneel, wijzigingPaneel);
+        detailSplitPane.setDividerPositions(0.30, 0.72);
+        detailSplitPane.setPrefHeight(205);
+
+        VBox onderkant = new VBox(8, geselecteerdeLeerlingLabel, detailSplitPane, statusLabel);
+        onderkant.setPadding(new Insets(12, 24, 20, 24));
         onderkant.getStyleClass().add("bottom-panel");
         setBottom(onderkant);
 
@@ -175,10 +303,22 @@ public class VerdelingView extends BorderPane {
     private <T> VBox maakPaneel(String titelTekst, TableView<T> table) {
         Label titel = new Label(titelTekst);
         titel.getStyleClass().add("section-title");
+        return maakPaneel(titel, table);
+    }
+
+    private <T> VBox maakPaneel(Label titel, TableView<T> table) {
         VBox paneel = new VBox(10, titel, table);
         VBox.setVgrow(table, Priority.ALWAYS);
         paneel.setPadding(new Insets(16));
         paneel.getStyleClass().add("content-card");
+        return paneel;
+    }
+
+    private <T> VBox maakDetailPaneel(Label titel, TableView<T> table) {
+        VBox paneel = new VBox(8, titel, table);
+        VBox.setVgrow(table, Priority.ALWAYS);
+        paneel.setPadding(new Insets(12));
+        paneel.getStyleClass().add("detail-section");
         return paneel;
     }
 
@@ -189,8 +329,25 @@ public class VerdelingView extends BorderPane {
         };
     }
 
+    private String naamVanToegewezenTalent(LeerlingToewijzingOverzicht overzicht) {
+        return overzicht.toewijzing() == null ? "Niet toegewezen" : overzicht.toewijzing().getIngerichtTalent().getTalent().getNaam();
+    }
+
+    private String typeVanToewijzing(LeerlingToewijzingOverzicht overzicht) {
+        return overzicht.toewijzing() == null ? "—" : overzicht.toewijzing().getToewijzingsType().name();
+    }
+
+    private String voorkeurVanToewijzing(LeerlingToewijzingOverzicht overzicht) {
+        if (overzicht.toewijzing() == null || overzicht.toewijzing().getVoorkeurNummer() == null) return "—";
+        return overzicht.toewijzing().getVoorkeurNummer().toString();
+    }
+
     public void setPeriodes(List<TalentenPeriode> periodes) {
         periodeComboBox.setItems(FXCollections.observableArrayList(periodes));
+    }
+
+    public void setKlassen(List<Klas> klassen) {
+        klasComboBox.setItems(FXCollections.observableArrayList(klassen));
     }
 
     public void setOverzichten(List<IngerichtTalentOverzicht> overzichten) {
@@ -198,8 +355,30 @@ public class VerdelingView extends BorderPane {
         doelTalentComboBox.setItems(FXCollections.observableArrayList(overzichten.stream().map(IngerichtTalentOverzicht::ingerichtTalent).toList()));
     }
 
-    public void setToewijzingen(List<Toewijzing> toewijzingen) {
+    public void setToewijzingen(String talentNaam, List<Toewijzing> toewijzingen) {
+        leerlingenTitelLabel.setText(talentNaam == null || talentNaam.isBlank() ? "Toegewezen leerlingen" : "Toegewezen leerlingen voor " + talentNaam);
         leerlingenTable.setItems(FXCollections.observableArrayList(toewijzingen));
+    }
+
+    public void setKlasOverzicht(KlasOverzicht overzicht) {
+        List<LeerlingToewijzingOverzicht> leerlingen = overzicht == null ? List.of() : overzicht.leerlingen();
+        klasLeerlingenTable.setItems(FXCollections.observableArrayList(leerlingen));
+    }
+
+    public void setLeerlingDetails(LeerlingDetailsOverzicht details, Toewijzing huidigeToewijzing) {
+        if (details == null) {
+            geselecteerdeLeerlingLabel.setText("Selecteer een leerling om diens voorkeuren en historiek te bekijken.");
+            voorkeurenTitelLabel.setText("Voorkeuren voor geselecteerde periode");
+            voorkeurenTable.setItems(FXCollections.observableArrayList());
+            historiekTable.setItems(FXCollections.observableArrayList());
+            return;
+        }
+
+        String huidigTalent = huidigeToewijzing == null ? "Niet toegewezen" : huidigeToewijzing.getIngerichtTalent().getTalent().getNaam();
+        geselecteerdeLeerlingLabel.setText(details.leerling() + " — klas " + details.leerling().getKlas().getNaam() + " — huidige toewijzing: " + huidigTalent);
+        voorkeurenTitelLabel.setText("Voorkeuren voor " + details.periode().getNaam());
+        voorkeurenTable.setItems(FXCollections.observableArrayList(details.voorkeuren()));
+        historiekTable.setItems(FXCollections.observableArrayList(details.historischeToewijzingen()));
     }
 
     public void toonMelding(String melding) {
@@ -249,6 +428,14 @@ public class VerdelingView extends BorderPane {
 
     public TableView<Toewijzing> getLeerlingenTable() {
         return leerlingenTable;
+    }
+
+    public ComboBox<Klas> getKlasComboBox() {
+        return klasComboBox;
+    }
+
+    public TableView<LeerlingToewijzingOverzicht> getKlasLeerlingenTable() {
+        return klasLeerlingenTable;
     }
 
     public ComboBox<IngerichtTalent> getDoelTalentComboBox() {

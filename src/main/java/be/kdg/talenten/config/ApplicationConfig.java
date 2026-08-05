@@ -2,10 +2,7 @@ package be.kdg.talenten.config;
 
 import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
-import be.kdg.talenten.service.AutomatischeVerdelingService;
-import be.kdg.talenten.service.ManueleToewijzingService;
-import be.kdg.talenten.service.TalentenPeriodeService;
-import be.kdg.talenten.service.VerdelingBekijkenService;
+import be.kdg.talenten.service.*;
 
 public final class ApplicationConfig {
     private final KlasRepository klasRepository;
@@ -21,6 +18,8 @@ public final class ApplicationConfig {
     private final ManueleToewijzingService manueleToewijzingService;
     private final VerdelingBekijkenService verdelingBekijkenService;
     private final TalentenPeriodeService talentenPeriodeService;
+    private final KlasService klasService;
+    private final LeerlingDetailsService leerlingDetailsService;
 
     public ApplicationConfig() {
         klasRepository = new PostgresKlasRepository();
@@ -36,6 +35,8 @@ public final class ApplicationConfig {
         manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository);
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
         talentenPeriodeService = new TalentenPeriodeService(talentenPeriodeRepository);
+        klasService = new KlasService(klasRepository);
+        leerlingDetailsService = new LeerlingDetailsService(voorkeurRepository, toewijzingRepository);
     }
 
     public VerdelingBekijkenService getVerdelingBekijkenService() {
@@ -52,5 +53,13 @@ public final class ApplicationConfig {
 
     public TalentenPeriodeService getTalentenPeriodeService() {
         return talentenPeriodeService;
+    }
+
+    public KlasService getKlasService() {
+        return klasService;
+    }
+
+    public LeerlingDetailsService getLeerlingDetailsService() {
+        return leerlingDetailsService;
     }
 }
