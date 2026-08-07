@@ -16,8 +16,18 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
     }
 
     @Override
-    public List<Toewijzing> zoekHistorischeToewijzingen() {
-        return historischeToewijzingen;
+    public List<Toewijzing> zoekHistorischeToewijzingenVoorSchooljaar(Schooljaar schooljaar) {
+        List<Toewijzing> toewijzingenDitSchooljaar = new ArrayList<>();
+        if (schooljaar == null){
+            throw new IllegalArgumentException("schooljaar mag niet null zijn");
+        }
+
+        for (Toewijzing t : historischeToewijzingen){
+            if (t.getIngerichtTalent().getTalentenPeriode().getSchooljaar().equals(schooljaar)){
+                toewijzingenDitSchooljaar.add(t);
+            }
+        }
+        return toewijzingenDitSchooljaar;
     }
 
     @Override

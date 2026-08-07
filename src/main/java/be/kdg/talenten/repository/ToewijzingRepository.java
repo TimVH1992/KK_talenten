@@ -5,7 +5,7 @@ import be.kdg.talenten.domain.*;
 import java.util.List;
 
 public interface ToewijzingRepository {
-    List<Toewijzing> zoekHistorischeToewijzingen();
+    List<Toewijzing> zoekHistorischeToewijzingenVoorSchooljaar(Schooljaar schooljaar);
     void saveAll(List<Toewijzing> toewijzingen);
     void vervangAutomatischeToewijzingenVoorPeriode(TalentenPeriode periode, List<Toewijzing> nieuweToewijzingen);
 

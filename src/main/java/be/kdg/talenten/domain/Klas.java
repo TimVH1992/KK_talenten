@@ -7,11 +7,11 @@ public class Klas {
 
     private final Long id;
     private final String naam;
-    private final String schooljaar;
+    private final Schooljaar schooljaar;
     private final int leerjaar;
     private final Doelgroep doelgroep;
 
-    public Klas(String naam, String schooljaar, int leerjaar, Doelgroep doelgroep) {
+    public Klas(String naam, Schooljaar schooljaar, int leerjaar, Doelgroep doelgroep) {
         this(null, naam, schooljaar, leerjaar, doelgroep);
     }
 
@@ -19,7 +19,7 @@ public class Klas {
         return doelgroep;
     }
 
-    public Klas(Long id, String naam, String schooljaar, int leerjaar, Doelgroep doelgroep) {
+    public Klas(Long id, String naam, Schooljaar schooljaar, int leerjaar, Doelgroep doelgroep) {
         if (id != null && id < 1) {
             throw new IllegalArgumentException("ID moet groter zijn dan 0");
         }
@@ -28,7 +28,7 @@ public class Klas {
                     "Naam van de klas mag niet leeg zijn"
             );
         }
-        if (schooljaar == null || schooljaar.isBlank()) {
+        if (schooljaar == null) {
             throw new IllegalArgumentException("Schooljaar is ongeldig");
         }
         if (leerjaar < 1 || leerjaar > 7) {
@@ -58,7 +58,7 @@ public class Klas {
         return naam;
     }
 
-    public String getSchooljaar() {
+    public Schooljaar getSchooljaar() {
         return schooljaar;
     }
 

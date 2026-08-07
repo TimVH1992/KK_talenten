@@ -1,8 +1,7 @@
 package be.kdg.talenten.verdeling;
 
-import be.kdg.talenten.testutil.TestDataFactory;
-
 import be.kdg.talenten.domain.*;
+import be.kdg.talenten.testutil.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,80 +17,30 @@ class AutomatischeVerdelerTest {
 
     @BeforeEach
     void setUp() {
-        testLeerkracht = new Leerkracht(
-                "Test",
-                "Leerkracht"
-        );
-    }
-
-    private Klas maakObservatieKlas(
-            String naam,
-            int leerjaar
-    ) {
-        return new Klas(
-                naam,
-                "2026-2027",
-                leerjaar,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
-        );
-    }
-
-    private Klas maakKwalificatieKlas(
-            String naam,
-            int leerjaar
-    ) {
-        return new Klas(
-                naam,
-                "2026-2027",
-                leerjaar,
-                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
-        );
-    }
-
-    private IngerichtTalent richtTalentIn(
-            Talent talent,
-            TalentenPeriode periode,
-            int maximumCapaciteit,
-            Doelgroep doelgroep
-    ) {
-        return new IngerichtTalent(
-                talent,
-                periode,
-                maximumCapaciteit,
-                doelgroep,
-                List.of(testLeerkracht)
-        );
+        testLeerkracht = new Leerkracht("Test", "Leerkracht");
     }
 
     @Test
     void leerlingKrijgtEersteKeuzeAlsErPlaatsIs() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2026, 9, 1);
+        LocalDate eindDatum = LocalDate.of(2026, 10, 31);
+
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -115,78 +64,48 @@ class AutomatischeVerdelerTest {
         );
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
-        voorkeuren.add(
-                new Voorkeur(jan, periode, schakenHerfst, 1)
-        );
-        voorkeuren.add(
-                new Voorkeur(jan, periode, voetbalHerfst, 2)
-        );
-        voorkeuren.add(
-                new Voorkeur(jan, periode, kokenHerfst, 3)
-        );
+        voorkeuren.add(new Voorkeur(jan, periode, schakenHerfst, 1));
+        voorkeuren.add(new Voorkeur(jan, periode, voetbalHerfst, 2));
+        voorkeuren.add(new Voorkeur(jan, periode, kokenHerfst, 3));
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(voorkeuren);
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
 
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        // Assert
+        // ASSERT
         assertEquals(1, resultaat.getAantalToewijzingen());
-        assertTrue(
-                resultaat.getNietToegewezenLeerlingen().isEmpty()
-        );
+        assertTrue(resultaat.getNietToegewezenLeerlingen().isEmpty());
 
-        Toewijzing toewijzing =
-                resultaat.getToewijzingen().getFirst();
+        Toewijzing toewijzing = resultaat.getToewijzingen().getFirst();
 
         assertSame(jan, toewijzing.getLeerling());
-        assertSame(
-                schakenHerfst,
-                toewijzing.getIngerichtTalent()
-        );
-        assertEquals(
-                ToewijzingsType.AUTOMATISCH,
-                toewijzing.getToewijzingsType()
-        );
+        assertSame(schakenHerfst, toewijzing.getIngerichtTalent());
+        assertEquals(ToewijzingsType.AUTOMATISCH, toewijzing.getToewijzingsType());
     }
 
     @Test
     void leerlingKrijgtTweedeKeuzeAlsEersteKeuzeVolZit() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2026, 9, 1);
+        LocalDate eindDatum = LocalDate.of(2026, 10, 31);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling sara = new Leerling(
-                "Sara",
-                "Janssens",
-                klas1AA
-        );
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling sara = new Leerling("Sara", "Janssens", klas1AA);
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -194,12 +113,14 @@ class AutomatischeVerdelerTest {
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalHerfst = richtTalentIn(
                 voetbal,
                 periode,
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenHerfst = richtTalentIn(
                 koken,
                 periode,
@@ -227,71 +148,41 @@ class AutomatischeVerdelerTest {
                 kokenHerfst
         );
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(voorkeuren);
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
 
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        // Assert
-        Toewijzing toewijzingSara =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        sara
-                );
+        // ASSERT
+        Toewijzing toewijzingSara = zoekToewijzingVoorLeerling(resultaat, sara);
 
-        assertSame(
-                voetbalHerfst,
-                toewijzingSara.getIngerichtTalent()
-        );
+        assertSame(voetbalHerfst, toewijzingSara.getIngerichtTalent());
     }
 
     @Test
     void leerlingWordtNietToegewezenAlsAlleVoorkeurenVolZitten() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2026, 9, 1);
+        LocalDate eindDatum = LocalDate.of(2026, 10, 31);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling sara = new Leerling(
-                "Sara",
-                "Janssens",
-                klas1AA
-        );
-        Leerling tom = new Leerling(
-                "Tom",
-                "Mertens",
-                klas1AA
-        );
-        Leerling emma = new Leerling(
-                "Emma",
-                "Vermeulen",
-                klas1AA
-        );
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling sara = new Leerling("Sara", "Janssens", klas1AA);
+        Leerling tom = new Leerling("Tom", "Mertens", klas1AA);
+        Leerling emma = new Leerling("Emma", "Vermeulen", klas1AA);
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -299,12 +190,14 @@ class AutomatischeVerdelerTest {
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalHerfst = richtTalentIn(
                 voetbal,
                 periode,
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenHerfst = richtTalentIn(
                 koken,
                 periode,
@@ -322,6 +215,7 @@ class AutomatischeVerdelerTest {
                 voetbalHerfst,
                 kokenHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 sara,
@@ -330,6 +224,7 @@ class AutomatischeVerdelerTest {
                 voetbalHerfst,
                 kokenHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 tom,
@@ -338,6 +233,7 @@ class AutomatischeVerdelerTest {
                 voetbalHerfst,
                 kokenHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 emma,
@@ -347,68 +243,40 @@ class AutomatischeVerdelerTest {
                 kokenHerfst
         );
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(voorkeuren);
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
 
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        // Assert
+        // ASSERT
         assertEquals(3, resultaat.getAantalToewijzingen());
-        assertEquals(
-                1,
-                resultaat
-                        .getNietToegewezenLeerlingen()
-                        .size()
-        );
-        assertTrue(
-                resultaat
-                        .getNietToegewezenLeerlingen()
-                        .contains(emma)
-        );
+        assertEquals(1, resultaat.getNietToegewezenLeerlingen().size());
+        assertTrue(resultaat.getNietToegewezenLeerlingen().contains(emma));
     }
 
     @Test
     void capaciteitVanIngerichtTalentWordtNietOverschreden() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2026, 9, 1);
+        LocalDate eindDatum = LocalDate.of(2026, 10, 31);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling sara = new Leerling(
-                "Sara",
-                "Janssens",
-                klas1AA
-        );
-        Leerling tom = new Leerling(
-                "Tom",
-                "Mertens",
-                klas1AA
-        );
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling sara = new Leerling("Sara", "Janssens", klas1AA);
+        Leerling tom = new Leerling("Tom", "Mertens", klas1AA);
 
         TalentenPeriode periode = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -416,12 +284,14 @@ class AutomatischeVerdelerTest {
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalHerfst = richtTalentIn(
                 voetbal,
                 periode,
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenHerfst = richtTalentIn(
                 koken,
                 periode,
@@ -439,6 +309,7 @@ class AutomatischeVerdelerTest {
                 voetbalHerfst,
                 kokenHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 sara,
@@ -447,6 +318,7 @@ class AutomatischeVerdelerTest {
                 voetbalHerfst,
                 kokenHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 tom,
@@ -456,20 +328,17 @@ class AutomatischeVerdelerTest {
                 kokenHerfst
         );
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(voorkeuren);
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
 
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        // Assert
+        // ASSERT
         long aantalToegewezenAanSchaken =
                 resultaat.getToewijzingen()
                         .stream()
                         .filter(toewijzing ->
-                                toewijzing.getIngerichtTalent()
-                                        == schakenHerfst
+                                toewijzing.getIngerichtTalent() == schakenHerfst
                         )
                         .count();
 
@@ -478,40 +347,36 @@ class AutomatischeVerdelerTest {
 
     @Test
     void leerlingKrijgtLieverTalentDatHijNogNietGevolgdHeeft() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startHerfst = LocalDate.of(2025, 9, 21);
+        LocalDate eindeHerfst = LocalDate.of(2025, 11, 21);
+        LocalDate startWinter = LocalDate.of(2025, 11, 22);
+        LocalDate eindeWinter = LocalDate.of(2026, 2, 21);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(startHerfst, eindeWinter);
+
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2025, 9, 21),
-                LocalDate.of(2025, 11, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
+                startHerfst,
+                eindeHerfst,
+                schooljaar
+        );
+
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
-                LocalDate.of(2025, 11, 22),
-                LocalDate.of(2026, 2, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
+                startWinter,
+                eindeWinter,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -519,18 +384,21 @@ class AutomatischeVerdelerTest {
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent schakenWinter = richtTalentIn(
                 schaken,
                 winter,
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalWinter = richtTalentIn(
                 voetbal,
                 winter,
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenWinter = richtTalentIn(
                 koken,
                 winter,
@@ -538,8 +406,7 @@ class AutomatischeVerdelerTest {
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
 
-        List<Toewijzing> historischeToewijzingen =
-                new ArrayList<>();
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
 
         historischeToewijzingen.add(
                 new Toewijzing(
@@ -550,89 +417,61 @@ class AutomatischeVerdelerTest {
         );
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
-        voorkeuren.add(
-                new Voorkeur(jan, winter, schakenWinter, 1)
-        );
-        voorkeuren.add(
-                new Voorkeur(jan, winter, voetbalWinter, 2)
-        );
-        voorkeuren.add(
-                new Voorkeur(jan, winter, kokenWinter, 3)
+
+        voorkeuren.add(new Voorkeur(jan, winter, schakenWinter, 1));
+        voorkeuren.add(new Voorkeur(jan, winter, voetbalWinter, 2));
+        voorkeuren.add(new Voorkeur(jan, winter, kokenWinter, 3));
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(
+                voorkeuren,
+                historischeToewijzingen
         );
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(
-                        voorkeuren,
-                        historischeToewijzingen
-                );
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
-
-        // Assert
+        // ASSERT
         Toewijzing toewijzingJan =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        jan
-                );
+                zoekToewijzingVoorLeerling(resultaat, jan);
 
-        assertSame(
-                voetbalWinter,
-                toewijzingJan.getIngerichtTalent()
-        );
-        assertEquals(
-                2,
-                toewijzingJan.getVoorkeurNummer()
-        );
+        assertSame(voetbalWinter, toewijzingJan.getIngerichtTalent());
+        assertEquals(2, toewijzingJan.getVoorkeurNummer());
     }
 
     @Test
     void alsNieuweTalentenVolZittenMagLeerlingGevolgdTalentOpnieuwVolgen() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startHerfst = LocalDate.of(2025, 9, 21);
+        LocalDate eindeHerfst = LocalDate.of(2025, 11, 21);
+        LocalDate startWinter = LocalDate.of(2025, 11, 22);
+        LocalDate eindeWinter = LocalDate.of(2026, 2, 21);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling jos = new Leerling(
-                "Jos",
-                "Jacobs",
-                klas1AA
-        );
-        Leerling tim = new Leerling(
-                "Tim",
-                "VH",
-                klas1AA
-        );
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(startHerfst, eindeWinter);
+
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling jos = new Leerling("Jos", "Jacobs", klas1AA);
+        Leerling tim = new Leerling("Tim", "VH", klas1AA);
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2025, 9, 21),
-                LocalDate.of(2025, 11, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
+                startHerfst,
+                eindeHerfst,
+                schooljaar
+        );
+
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
-                LocalDate.of(2025, 11, 22),
-                LocalDate.of(2026, 2, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
+                startWinter,
+                eindeWinter,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -640,18 +479,21 @@ class AutomatischeVerdelerTest {
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent schakenWinter = richtTalentIn(
                 schaken,
                 winter,
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalWinter = richtTalentIn(
                 voetbal,
                 winter,
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenWinter = richtTalentIn(
                 koken,
                 winter,
@@ -659,8 +501,7 @@ class AutomatischeVerdelerTest {
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
 
-        List<Toewijzing> historischeToewijzingen =
-                new ArrayList<>();
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
 
         historischeToewijzingen.add(
                 new Toewijzing(
@@ -699,70 +540,54 @@ class AutomatischeVerdelerTest {
                 kokenWinter
         );
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(
-                        voorkeuren,
-                        historischeToewijzingen
-                );
-
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
-
-        // Assert
-        Toewijzing toewijzingJan =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        jan
-                );
-
-        assertSame(
-                schakenWinter,
-                toewijzingJan.getIngerichtTalent()
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(
+                voorkeuren,
+                historischeToewijzingen
         );
+
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // ASSERT
+        Toewijzing toewijzingJan =
+                zoekToewijzingVoorLeerling(resultaat, jan);
+
+        assertSame(schakenWinter, toewijzingJan.getIngerichtTalent());
     }
 
     @Test
     void tweeLeerlingenWillenDezelfdeKeuzeMetAndereHistorischeVoorkeurNummer() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startHerfst = LocalDate.of(2025, 9, 21);
+        LocalDate eindeHerfst = LocalDate.of(2025, 11, 21);
+        LocalDate startWinter = LocalDate.of(2025, 11, 22);
+        LocalDate eindeWinter = LocalDate.of(2026, 2, 21);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling jos = new Leerling(
-                "Jos",
-                "Jacobs",
-                klas1AA
-        );
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(startHerfst, eindeWinter);
+
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling jos = new Leerling("Jos", "Jacobs", klas1AA);
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2025, 9, 21),
-                LocalDate.of(2025, 11, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
+                startHerfst,
+                eindeHerfst,
+                schooljaar
+        );
+
         TalentenPeriode winter = new TalentenPeriode(
                 "Winter",
-                LocalDate.of(2025, 11, 22),
-                LocalDate.of(2026, 2, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 11, 22), LocalDate.of(2026, 2, 21)));
+                startWinter,
+                eindeWinter,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
         Talent muziek = new Talent(
                 "Muziek",
                 "Muziek leren spelen op een instrument"
@@ -774,6 +599,7 @@ class AutomatischeVerdelerTest {
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenHerfst = richtTalentIn(
                 koken,
                 herfst,
@@ -787,18 +613,21 @@ class AutomatischeVerdelerTest {
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalWinter = richtTalentIn(
                 voetbal,
                 winter,
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenWinter = richtTalentIn(
                 koken,
                 winter,
                 1,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent muziekWinter = richtTalentIn(
                 muziek,
                 winter,
@@ -806,8 +635,7 @@ class AutomatischeVerdelerTest {
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
 
-        List<Toewijzing> historischeToewijzingen =
-                new ArrayList<>();
+        List<Toewijzing> historischeToewijzingen = new ArrayList<>();
 
         historischeToewijzingen.add(
                 new Toewijzing(
@@ -817,6 +645,7 @@ class AutomatischeVerdelerTest {
                         1
                 )
         );
+
         historischeToewijzingen.add(
                 new Toewijzing(
                         jos,
@@ -828,98 +657,58 @@ class AutomatischeVerdelerTest {
 
         List<Voorkeur> voorkeuren = new ArrayList<>();
 
-        voorkeuren.add(
-                new Voorkeur(jan, winter, voetbalWinter, 1)
-        );
-        voorkeuren.add(
-                new Voorkeur(jan, winter, muziekWinter, 2)
-        );
-        voorkeuren.add(
-                new Voorkeur(jan, winter, kokenWinter, 3)
+        voorkeuren.add(new Voorkeur(jan, winter, voetbalWinter, 1));
+        voorkeuren.add(new Voorkeur(jan, winter, muziekWinter, 2));
+        voorkeuren.add(new Voorkeur(jan, winter, kokenWinter, 3));
+
+        voorkeuren.add(new Voorkeur(jos, winter, voetbalWinter, 1));
+        voorkeuren.add(new Voorkeur(jos, winter, schakenWinter, 2));
+        voorkeuren.add(new Voorkeur(jos, winter, kokenWinter, 3));
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(
+                voorkeuren,
+                historischeToewijzingen
         );
 
-        voorkeuren.add(
-                new Voorkeur(jos, winter, voetbalWinter, 1)
-        );
-        voorkeuren.add(
-                new Voorkeur(jos, winter, schakenWinter, 2)
-        );
-        voorkeuren.add(
-                new Voorkeur(jos, winter, kokenWinter, 3)
-        );
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(
-                        voorkeuren,
-                        historischeToewijzingen
-                );
-
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
-
-        // Assert
+        // ASSERT
         Toewijzing toewijzingJan =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        jan
-                );
-        Toewijzing toewijzingJos =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        jos
-                );
+                zoekToewijzingVoorLeerling(resultaat, jan);
 
-        assertSame(
-                muziekWinter,
-                toewijzingJan.getIngerichtTalent()
-        );
-        assertSame(
-                voetbalWinter,
-                toewijzingJos.getIngerichtTalent()
-        );
+        Toewijzing toewijzingJos =
+                zoekToewijzingVoorLeerling(resultaat, jos);
+
+        assertSame(muziekWinter, toewijzingJan.getIngerichtTalent());
+        assertSame(voetbalWinter, toewijzingJos.getIngerichtTalent());
     }
 
     @Test
     void drieLeerlingenUitDezelfdeKlasKiezenVoetbal() {
-        // Arrange
-        Klas klas1AA = maakObservatieKlas("1AA", 1);
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2025, 9, 21);
+        LocalDate eindDatum = LocalDate.of(2025, 11, 21);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling jos = new Leerling(
-                "Jos",
-                "Jacobs",
-                klas1AA
-        );
-        Leerling tim = new Leerling(
-                "Tim",
-                "Van Herreweghe",
-                klas1AA
-        );
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+
+        Klas klas1AA = maakObservatieKlas("1AA", 1, schooljaar);
+
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling jos = new Leerling("Jos", "Jacobs", klas1AA);
+        Leerling tim = new Leerling("Tim", "Van Herreweghe", klas1AA);
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2025, 9, 21),
-                LocalDate.of(2025, 11, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2025, 9, 21), LocalDate.of(2025, 11, 21)));
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent voetbal = new Talent(
-                "Voetbal",
-                "Voetbaltraining"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Leren koken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+        Talent koken = new Talent("Koken", "Leren koken");
 
         IngerichtTalent schakenHerfst = richtTalentIn(
                 schaken,
@@ -927,12 +716,14 @@ class AutomatischeVerdelerTest {
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent kokenHerfst = richtTalentIn(
                 koken,
                 herfst,
                 10,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
+
         IngerichtTalent voetbalHerfst = richtTalentIn(
                 voetbal,
                 herfst,
@@ -950,6 +741,7 @@ class AutomatischeVerdelerTest {
                 kokenHerfst,
                 voetbalHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 jos,
@@ -958,6 +750,7 @@ class AutomatischeVerdelerTest {
                 kokenHerfst,
                 voetbalHerfst
         );
+
         voegZelfdeVoorkeurenToe(
                 voorkeuren,
                 tim,
@@ -967,58 +760,53 @@ class AutomatischeVerdelerTest {
                 voetbalHerfst
         );
 
-        AutomatischeVerdeler verdeler =
-                new AutomatischeVerdeler(voorkeuren);
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
 
-        // Act
-        VerdelingsResultaat resultaat =
-                verdeler.verdeel();
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
 
-        // Assert
+        // ASSERT
         Toewijzing toewijzingJan =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        jan
-                );
-        Toewijzing toewijzingJos =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        jos
-                );
-        Toewijzing toewijzingTim =
-                zoekToewijzingVoorLeerling(
-                        resultaat,
-                        tim
-                );
+                zoekToewijzingVoorLeerling(resultaat, jan);
 
-        assertSame(
-                schakenHerfst,
-                toewijzingJan.getIngerichtTalent()
-        );
-        assertSame(
-                schakenHerfst,
-                toewijzingJos.getIngerichtTalent()
-        );
-        assertSame(
-                kokenHerfst,
-                toewijzingTim.getIngerichtTalent()
-        );
+        Toewijzing toewijzingJos =
+                zoekToewijzingVoorLeerling(resultaat, jos);
+
+        Toewijzing toewijzingTim =
+                zoekToewijzingVoorLeerling(resultaat, tim);
+
+        assertSame(schakenHerfst, toewijzingJan.getIngerichtTalent());
+        assertSame(schakenHerfst, toewijzingJos.getIngerichtTalent());
+        assertSame(kokenHerfst, toewijzingTim.getIngerichtTalent());
     }
 
     @Test
     void automatischeVerdelingWijstLeerlingenToeAanHunEigenDoelgroep() {
-        // Arrange
-        Klas observatieKlas =
-                maakObservatieKlas("2AA", 2);
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2026, 9, 1);
+        LocalDate eindDatum = LocalDate.of(2026, 10, 31);
 
-        Klas kwalificatieKlas =
-                maakKwalificatieKlas("5AA", 5);
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+
+        Klas observatieKlas = maakObservatieKlas(
+                "2AA",
+                2,
+                schooljaar
+        );
+
+        Klas kwalificatieKlas = maakKwalificatieKlas(
+                "5AA",
+                5,
+                schooljaar
+        );
 
         Leerling jan = new Leerling(
                 "Jan",
                 "Peeters",
                 observatieKlas
         );
+
         Leerling sara = new Leerling(
                 "Sara",
                 "Janssens",
@@ -1027,10 +815,10 @@ class AutomatischeVerdelerTest {
 
         TalentenPeriode herfst = new TalentenPeriode(
                 "Herfst",
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
 
         Talent schaken = new Talent(
                 "Schaken",
@@ -1069,11 +857,11 @@ class AutomatischeVerdelerTest {
         AutomatischeVerdeler verdeler =
                 new AutomatischeVerdeler(voorkeuren);
 
-        // Act
+        // ACT
         VerdelingsResultaat resultaat =
                 verdeler.verdeel();
 
-        // Assert
+        // ASSERT
         assertEquals(2, resultaat.getAantalToewijzingen());
 
         Toewijzing toewijzingJan =
@@ -1092,9 +880,43 @@ class AutomatischeVerdelerTest {
                 schakenObservatie,
                 toewijzingJan.getIngerichtTalent()
         );
+
         assertSame(
                 schakenKwalificatie,
                 toewijzingSara.getIngerichtTalent()
+        );
+    }
+
+    private Klas maakObservatieKlas(String naam, int leerjaar, Schooljaar schooljaar) {
+        return new Klas(
+                naam,
+                schooljaar,
+                leerjaar,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+    }
+
+    private Klas maakKwalificatieKlas(String naam, int leerjaar, Schooljaar schooljaar) {
+        return new Klas(
+                naam,
+                schooljaar,
+                leerjaar,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+        );
+    }
+
+    private IngerichtTalent richtTalentIn(
+            Talent talent,
+            TalentenPeriode periode,
+            int maximumCapaciteit,
+            Doelgroep doelgroep
+    ) {
+        return new IngerichtTalent(
+                talent,
+                periode,
+                maximumCapaciteit,
+                doelgroep,
+                List.of(testLeerkracht)
         );
     }
 
@@ -1109,9 +931,11 @@ class AutomatischeVerdelerTest {
         voorkeuren.add(
                 new Voorkeur(leerling, periode, keuze1, 1)
         );
+
         voorkeuren.add(
                 new Voorkeur(leerling, periode, keuze2, 2)
         );
+
         voorkeuren.add(
                 new Voorkeur(leerling, periode, keuze3, 3)
         );

@@ -15,10 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostgresLeerlingRepository implements LeerlingRepository {
+
     @Override
     public List<Leerling> zoekVoorKlas(Klas klas) {
         if (klas == null) {
             throw new IllegalArgumentException("Klas mag niet null zijn");
+        }
+        if (klas.getId() == null) {
+            throw new IllegalArgumentException("De klas moet eerst opgeslagen zijn");
         }
 
         String sql = """
@@ -29,8 +33,8 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                 """;
 
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
-             PreparedStatement statement = connection.prepareStatement(sql);
-        ) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
             statement.setLong(1, klas.getId());
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -57,11 +61,13 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
         }
     }
 
-
     @Override
     public Leerling save(Leerling leerling) {
         if (leerling == null) {
             throw new IllegalArgumentException("Leerling mag niet null zijn");
+        }
+        if (leerling.getKlas() == null || leerling.getKlas().getId() == null) {
+            throw new IllegalArgumentException("De klas van de leerling moet eerst opgeslagen zijn");
         }
 
         String sql = """
@@ -74,26 +80,19 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                 RETURNING leerling_id
                 """;
 
-        try (
-                Connection connection =
-                        DatabaseConnectionFactory.maakVerbinding();
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-                PreparedStatement statement =
-                        connection.prepareStatement(sql)
-        ) {
             statement.setString(1, leerling.getVoornaam());
             statement.setString(2, leerling.getAchternaam());
             statement.setLong(3, leerling.getKlas().getId());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) {
-                    throw new IllegalStateException(
-                            "PostgreSQL gaf geen leerling_id terug."
-                    );
+                    throw new IllegalStateException("PostgreSQL gaf geen leerling_id terug.");
                 }
 
-                long gegenereerdId =
-                        resultSet.getLong("leerling_id");
+                long gegenereerdId = resultSet.getLong("leerling_id");
 
                 return new Leerling(
                         gegenereerdId,
@@ -102,7 +101,6 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                         leerling.getKlas()
                 );
             }
-
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De leerling kon niet opgeslagen worden.",
@@ -113,14 +111,30 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
 
     @Override
     public Leerling zoekOpId(long id) {
-        if (id < 1){
+        if (id < 1) {
             throw new IllegalArgumentException("id moet groter zijn dan 0");
         }
 
         String sql = """
-                SELECT voornaam, achternaam, l.klas_id, k.klas_naam, k.schooljaar, k.leerjaar, k.doelgroep
-                FROM leerlingen l 
-                JOIN klassen k ON (l.klas_id = k.klas_id)
+                SELECT
+                    l.voornaam,
+                    l.achternaam,
+
+                    k.klas_id,
+                    k.klas_naam,
+                    k.leerjaar,
+                    k.doelgroep,
+
+                    s.schooljaar_id,
+                    s.naam AS schooljaar_naam,
+                    s.startdatum AS schooljaar_startdatum,
+                    s.einddatum AS schooljaar_einddatum,
+                    s.actief AS schooljaar_actief
+                FROM leerlingen l
+                JOIN klassen k
+                    ON k.klas_id = l.klas_id
+                JOIN schooljaren s
+                    ON s.naam = k.schooljaar
                 WHERE l.leerling_id = ?
                 """;
 
@@ -133,23 +147,29 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                 if (!resultSet.next()) {
                     throw new IllegalStateException("Geen leerling gevonden met id: " + id);
                 }
+
+                Schooljaar schooljaar = maakSchooljaar(resultSet);
+
                 Klas klas = new Klas(
                         resultSet.getLong("klas_id"),
                         resultSet.getString("klas_naam"),
-                        resultSet.getString("schooljaar"),
+                        schooljaar,
                         resultSet.getInt("leerjaar"),
-                        Doelgroep.valueOf(resultSet.getString("doelgroep")));
-                Leerling huidigeLeerling = new Leerling(
+                        Doelgroep.valueOf(resultSet.getString("doelgroep"))
+                );
+
+                return new Leerling(
                         id,
                         resultSet.getString("voornaam"),
                         resultSet.getString("achternaam"),
-                        klas);
-                return huidigeLeerling;
+                        klas
+                );
             }
-
-
         } catch (SQLException e) {
-            throw new IllegalStateException("De leerling kan niet op id gevonden worden", e);
+            throw new IllegalStateException(
+                    "De leerling kan niet op id gevonden worden",
+                    e
+            );
         }
     }
 
@@ -158,22 +178,25 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
         if (schooljaar == null) {
             throw new IllegalArgumentException("Het schooljaar mag niet null zijn");
         }
+        if (schooljaar.getId() == null) {
+            throw new IllegalArgumentException("Het schooljaar moet eerst opgeslagen zijn");
+        }
 
         String sql = """
-            SELECT
-                l.leerling_id,
-                l.voornaam,
-                l.achternaam,
-                k.klas_id,
-                k.klas_naam,
-                k.schooljaar,
-                k.leerjaar,
-                k.doelgroep
-            FROM leerlingen l
-            JOIN klassen k ON k.klas_id = l.klas_id
-            WHERE k.schooljaar = ?
-            ORDER BY k.klas_naam, l.achternaam, l.voornaam
-            """;
+                SELECT
+                    l.leerling_id,
+                    l.voornaam,
+                    l.achternaam,
+                    k.klas_id,
+                    k.klas_naam,
+                    k.leerjaar,
+                    k.doelgroep
+                FROM leerlingen l
+                JOIN klassen k
+                    ON k.klas_id = l.klas_id
+                WHERE k.schooljaar = ?
+                ORDER BY k.klas_naam, l.achternaam, l.voornaam
+                """;
 
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -187,7 +210,7 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                     Klas klas = new Klas(
                             resultSet.getLong("klas_id"),
                             resultSet.getString("klas_naam"),
-                            resultSet.getString("schooljaar"),
+                            schooljaar,
                             resultSet.getInt("leerjaar"),
                             Doelgroep.valueOf(resultSet.getString("doelgroep"))
                     );
@@ -204,11 +227,21 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
 
                 return leerlingen;
             }
-        } catch (SQLException exception) {
+        } catch (SQLException e) {
             throw new IllegalStateException(
                     "De leerlingen van het schooljaar konden niet opgehaald worden",
-                    exception
+                    e
             );
         }
+    }
+
+    private Schooljaar maakSchooljaar(ResultSet resultSet) throws SQLException {
+        return new Schooljaar(
+                resultSet.getLong("schooljaar_id"),
+                resultSet.getString("schooljaar_naam"),
+                resultSet.getDate("schooljaar_startdatum").toLocalDate(),
+                resultSet.getDate("schooljaar_einddatum").toLocalDate(),
+                resultSet.getBoolean("schooljaar_actief")
+        );
     }
 }

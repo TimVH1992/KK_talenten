@@ -1,7 +1,5 @@
 package be.kdg.talenten.verdeling;
 
-import be.kdg.talenten.testutil.TestDataFactory;
-
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
 import be.kdg.talenten.overzicht.KlasOverzicht;
@@ -13,6 +11,7 @@ import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.service.VerdelingBekijkenService;
+import be.kdg.talenten.testutil.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,12 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class VerdelingBekijkenServiceTest {
 
     private Leerkracht testLeerkracht;
+    private Schooljaar schooljaar2026_2027;
 
     @BeforeEach
     void setUp() {
-        testLeerkracht = new Leerkracht(
-                "Test",
-                "Leerkracht"
+        testLeerkracht = new Leerkracht("Test", "Leerkracht");
+
+        schooljaar2026_2027 = TestDataFactory.schooljaarVoorPeriode(
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2027, 1, 21)
         );
     }
 
@@ -40,43 +42,17 @@ class VerdelingBekijkenServiceTest {
         // ARRANGE
         Klas klas1AA = maakObservatieKlas("1AA", 1);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling julie = new Leerling(
-                "Julie",
-                "Martens",
-                klas1AA
-        );
-        Leerling eveline = new Leerling(
-                "Eveline",
-                "Van Oevelen",
-                klas1AA
-        );
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", klas1AA);
 
         TalentenPeriode herfst = maakHerfstPeriode();
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent dansen = new Talent(
-                "Dansen",
-                "Shake shake shake"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent dansen = new Talent("Dansen", "Shake shake shake");
 
-        IngerichtTalent schakenHerfst = richtTalentIn(
-                schaken,
-                herfst,
-                10
-        );
-        IngerichtTalent dansenHerfst = richtTalentIn(
-                dansen,
-                herfst,
-                6
-        );
+        IngerichtTalent schakenHerfst = richtTalentIn(schaken, herfst, 10);
+        IngerichtTalent dansenHerfst = richtTalentIn(dansen, herfst, 6);
 
         List<IngerichtTalent> ingerichteTalenten = List.of(
                 schakenHerfst,
@@ -84,50 +60,31 @@ class VerdelingBekijkenServiceTest {
         );
 
         List<Toewijzing> schakenToewijzingen = List.of(
-                new Toewijzing(
-                        jan,
-                        schakenHerfst,
-                        ToewijzingsType.AUTOMATISCH
-                ),
-                new Toewijzing(
-                        julie,
-                        schakenHerfst,
-                        ToewijzingsType.MANUEEL
-                )
+                new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH),
+                new Toewijzing(julie, schakenHerfst, ToewijzingsType.MANUEEL)
         );
 
         List<Toewijzing> dansenToewijzingen = List.of(
-                new Toewijzing(
-                        eveline,
-                        dansenHerfst,
-                        ToewijzingsType.AUTOMATISCH
-                )
+                new Toewijzing(eveline, dansenHerfst, ToewijzingsType.AUTOMATISCH)
         );
 
         IngerichtTalentRepository ingerichtTalentRepository =
-                new InMemoryIngerichtTalentRepository(
-                        ingerichteTalenten
-                );
+                new InMemoryIngerichtTalentRepository(ingerichteTalenten);
 
         ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryToewijzingRepository(new ArrayList<>());
 
         toewijzingRepository.saveAll(schakenToewijzingen);
         toewijzingRepository.saveAll(dansenToewijzingen);
 
         LeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryLeerlingRepository(new ArrayList<>());
 
-        VerdelingBekijkenService service =
-                new VerdelingBekijkenService(
-                        ingerichtTalentRepository,
-                        toewijzingRepository,
-                        leerlingRepository
-                );
+        VerdelingBekijkenService service = new VerdelingBekijkenService(
+                ingerichtTalentRepository,
+                toewijzingRepository,
+                leerlingRepository
+        );
 
         // ACT
         List<IngerichtTalentOverzicht> overzichten =
@@ -160,52 +117,19 @@ class VerdelingBekijkenServiceTest {
         // ARRANGE
         Klas klas1AA = maakObservatieKlas("1AA", 1);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling julie = new Leerling(
-                "Julie",
-                "Martens",
-                klas1AA
-        );
-        Leerling eveline = new Leerling(
-                "Eveline",
-                "Van Oevelen",
-                klas1AA
-        );
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", klas1AA);
 
         TalentenPeriode herfst = maakHerfstPeriode();
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent dansen = new Talent(
-                "Dansen",
-                "Shake shake shake"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Een warme keuken is vaak lekker"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent dansen = new Talent("Dansen", "Shake shake shake");
+        Talent koken = new Talent("Koken", "Een warme keuken is vaak lekker");
 
-        IngerichtTalent schakenHerfst = richtTalentIn(
-                schaken,
-                herfst,
-                10
-        );
-        IngerichtTalent dansenHerfst = richtTalentIn(
-                dansen,
-                herfst,
-                6
-        );
-        IngerichtTalent kokenHerfst = richtTalentIn(
-                koken,
-                herfst,
-                5
-        );
+        IngerichtTalent schakenHerfst = richtTalentIn(schaken, herfst, 10);
+        IngerichtTalent dansenHerfst = richtTalentIn(dansen, herfst, 6);
+        IngerichtTalent kokenHerfst = richtTalentIn(koken, herfst, 5);
 
         List<IngerichtTalent> ingerichteTalenten = List.of(
                 schakenHerfst,
@@ -214,50 +138,31 @@ class VerdelingBekijkenServiceTest {
         );
 
         List<Toewijzing> schakenToewijzingen = List.of(
-                new Toewijzing(
-                        jan,
-                        schakenHerfst,
-                        ToewijzingsType.AUTOMATISCH
-                ),
-                new Toewijzing(
-                        julie,
-                        schakenHerfst,
-                        ToewijzingsType.MANUEEL
-                )
+                new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH),
+                new Toewijzing(julie, schakenHerfst, ToewijzingsType.MANUEEL)
         );
 
         List<Toewijzing> dansenToewijzingen = List.of(
-                new Toewijzing(
-                        eveline,
-                        dansenHerfst,
-                        ToewijzingsType.AUTOMATISCH
-                )
+                new Toewijzing(eveline, dansenHerfst, ToewijzingsType.AUTOMATISCH)
         );
 
         IngerichtTalentRepository ingerichtTalentRepository =
-                new InMemoryIngerichtTalentRepository(
-                        ingerichteTalenten
-                );
+                new InMemoryIngerichtTalentRepository(ingerichteTalenten);
 
         ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryToewijzingRepository(new ArrayList<>());
 
         toewijzingRepository.saveAll(schakenToewijzingen);
         toewijzingRepository.saveAll(dansenToewijzingen);
 
         LeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryLeerlingRepository(new ArrayList<>());
 
-        VerdelingBekijkenService service =
-                new VerdelingBekijkenService(
-                        ingerichtTalentRepository,
-                        toewijzingRepository,
-                        leerlingRepository
-                );
+        VerdelingBekijkenService service = new VerdelingBekijkenService(
+                ingerichtTalentRepository,
+                toewijzingRepository,
+                leerlingRepository
+        );
 
         // ACT
         List<IngerichtTalentOverzicht> overzichten =
@@ -282,70 +187,29 @@ class VerdelingBekijkenServiceTest {
         // ARRANGE
         Klas klas1AA = maakObservatieKlas("1AA", 1);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling julie = new Leerling(
-                "Julie",
-                "Martens",
-                klas1AA
-        );
-        Leerling eveline = new Leerling(
-                "Eveline",
-                "Van Oevelen",
-                klas1AA
-        );
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", klas1AA);
 
         TalentenPeriode herfst = maakHerfstPeriode();
 
         TalentenPeriode kerst = new TalentenPeriode(
                 "Kerst",
                 LocalDate.of(2026, 12, 22),
-                LocalDate.of(2027, 1, 21)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 12, 22), LocalDate.of(2027, 1, 21)));
-
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
-        Talent dansen = new Talent(
-                "Dansen",
-                "Shake shake shake"
-        );
-        Talent koken = new Talent(
-                "Koken",
-                "Een warme keuken is vaak lekker"
+                LocalDate.of(2027, 1, 21),
+                schooljaar2026_2027
         );
 
-        IngerichtTalent schakenHerfst = richtTalentIn(
-                schaken,
-                herfst,
-                10
-        );
-        IngerichtTalent dansenHerfst = richtTalentIn(
-                dansen,
-                herfst,
-                6
-        );
-        IngerichtTalent kokenHerfst = richtTalentIn(
-                koken,
-                herfst,
-                5
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent dansen = new Talent("Dansen", "Shake shake shake");
+        Talent koken = new Talent("Koken", "Een warme keuken is vaak lekker");
 
-        IngerichtTalent schakenKerst = richtTalentIn(
-                schaken,
-                kerst,
-                10
-        );
-        IngerichtTalent dansenKerst = richtTalentIn(
-                dansen,
-                kerst,
-                2
-        );
+        IngerichtTalent schakenHerfst = richtTalentIn(schaken, herfst, 10);
+        IngerichtTalent dansenHerfst = richtTalentIn(dansen, herfst, 6);
+        IngerichtTalent kokenHerfst = richtTalentIn(koken, herfst, 5);
+
+        IngerichtTalent schakenKerst = richtTalentIn(schaken, kerst, 10);
+        IngerichtTalent dansenKerst = richtTalentIn(dansen, kerst, 2);
 
         List<IngerichtTalent> ingerichteTalenten = List.of(
                 schakenHerfst,
@@ -355,73 +219,38 @@ class VerdelingBekijkenServiceTest {
                 dansenKerst
         );
 
-        List<Toewijzing> schakenToewijzingenHerfst =
-                List.of(
-                        new Toewijzing(
-                                jan,
-                                schakenHerfst,
-                                ToewijzingsType.AUTOMATISCH
-                        ),
-                        new Toewijzing(
-                                julie,
-                                schakenHerfst,
-                                ToewijzingsType.MANUEEL
-                        )
-                );
+        List<Toewijzing> schakenToewijzingenHerfst = List.of(
+                new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH),
+                new Toewijzing(julie, schakenHerfst, ToewijzingsType.MANUEEL)
+        );
 
-        List<Toewijzing> dansenToewijzingenHerfst =
-                List.of(
-                        new Toewijzing(
-                                eveline,
-                                dansenHerfst,
-                                ToewijzingsType.AUTOMATISCH
-                        )
-                );
+        List<Toewijzing> dansenToewijzingenHerfst = List.of(
+                new Toewijzing(eveline, dansenHerfst, ToewijzingsType.AUTOMATISCH)
+        );
 
         List<Toewijzing> kerstToewijzingen = List.of(
-                new Toewijzing(
-                        jan,
-                        schakenKerst,
-                        ToewijzingsType.MANUEEL
-                ),
-                new Toewijzing(
-                        eveline,
-                        dansenKerst,
-                        ToewijzingsType.AUTOMATISCH
-                )
+                new Toewijzing(jan, schakenKerst, ToewijzingsType.MANUEEL),
+                new Toewijzing(eveline, dansenKerst, ToewijzingsType.AUTOMATISCH)
         );
 
         IngerichtTalentRepository ingerichtTalentRepository =
-                new InMemoryIngerichtTalentRepository(
-                        ingerichteTalenten
-                );
+                new InMemoryIngerichtTalentRepository(ingerichteTalenten);
 
         ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryToewijzingRepository(new ArrayList<>());
 
-        toewijzingRepository.saveAll(
-                schakenToewijzingenHerfst
-        );
-        toewijzingRepository.saveAll(
-                dansenToewijzingenHerfst
-        );
-        toewijzingRepository.saveAll(
-                kerstToewijzingen
-        );
+        toewijzingRepository.saveAll(schakenToewijzingenHerfst);
+        toewijzingRepository.saveAll(dansenToewijzingenHerfst);
+        toewijzingRepository.saveAll(kerstToewijzingen);
 
         LeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryLeerlingRepository(new ArrayList<>());
 
-        VerdelingBekijkenService service =
-                new VerdelingBekijkenService(
-                        ingerichtTalentRepository,
-                        toewijzingRepository,
-                        leerlingRepository
-                );
+        VerdelingBekijkenService service = new VerdelingBekijkenService(
+                ingerichtTalentRepository,
+                toewijzingRepository,
+                leerlingRepository
+        );
 
         List<IngerichtTalentOverzicht> verwacht = List.of(
                 new IngerichtTalentOverzicht(
@@ -468,34 +297,16 @@ class VerdelingBekijkenServiceTest {
         // ARRANGE
         Klas klas1AA = maakObservatieKlas("1AA", 1);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling julie = new Leerling(
-                "Julie",
-                "Martens",
-                klas1AA
-        );
-        Leerling eveline = new Leerling(
-                "Eveline",
-                "Van Oevelen",
-                klas1AA
-        );
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", klas1AA);
 
         TalentenPeriode herfst = maakHerfstPeriode();
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
 
-        IngerichtTalent schakenHerfst = richtTalentIn(
-                schaken,
-                herfst,
-                10
-        );
+        IngerichtTalent schakenHerfst =
+                richtTalentIn(schaken, herfst, 10);
 
         Toewijzing toewijzingJan = new Toewijzing(
                 jan,
@@ -515,39 +326,26 @@ class VerdelingBekijkenServiceTest {
                 );
 
         ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryToewijzingRepository(new ArrayList<>());
 
         toewijzingRepository.saveAll(
-                List.of(
-                        toewijzingJan,
-                        toewijzingJulie
-                )
+                List.of(toewijzingJan, toewijzingJulie)
         );
 
         LeerlingRepository leerlingRepository =
                 new InMemoryLeerlingRepository(
-                        List.of(
-                                jan,
-                                eveline,
-                                julie
-                        )
+                        List.of(jan, eveline, julie)
                 );
 
-        VerdelingBekijkenService service =
-                new VerdelingBekijkenService(
-                        ingerichtTalentRepository,
-                        toewijzingRepository,
-                        leerlingRepository
-                );
+        VerdelingBekijkenService service = new VerdelingBekijkenService(
+                ingerichtTalentRepository,
+                toewijzingRepository,
+                leerlingRepository
+        );
 
         // ACT
         KlasOverzicht werkelijk =
-                service.bekijkVoorKlas(
-                        herfst,
-                        klas1AA
-                );
+                service.bekijkVoorKlas(herfst, klas1AA);
 
         // ASSERT
         List<LeerlingToewijzingOverzicht> verwachteOverzichten =
@@ -613,34 +411,16 @@ class VerdelingBekijkenServiceTest {
         Klas klas1AA = maakObservatieKlas("1AA", 1);
         Klas klas1AB = maakObservatieKlas("1AB", 1);
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas1AA
-        );
-        Leerling julie = new Leerling(
-                "Julie",
-                "Martens",
-                klas1AA
-        );
-        Leerling eveline = new Leerling(
-                "Eveline",
-                "Van Oevelen",
-                klas1AB
-        );
+        Leerling jan = new Leerling("Jan", "Peeters", klas1AA);
+        Leerling julie = new Leerling("Julie", "Martens", klas1AA);
+        Leerling eveline = new Leerling("Eveline", "Van Oevelen", klas1AB);
 
         TalentenPeriode herfst = maakHerfstPeriode();
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
+        Talent schaken = new Talent("Schaken", "Leren schaken");
 
-        IngerichtTalent schakenHerfst = richtTalentIn(
-                schaken,
-                herfst,
-                10
-        );
+        IngerichtTalent schakenHerfst =
+                richtTalentIn(schaken, herfst, 10);
 
         Toewijzing toewijzingJan = new Toewijzing(
                 jan,
@@ -666,9 +446,7 @@ class VerdelingBekijkenServiceTest {
                 );
 
         ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryToewijzingRepository(new ArrayList<>());
 
         toewijzingRepository.saveAll(
                 List.of(
@@ -687,19 +465,15 @@ class VerdelingBekijkenServiceTest {
                         )
                 );
 
-        VerdelingBekijkenService service =
-                new VerdelingBekijkenService(
-                        ingerichtTalentRepository,
-                        toewijzingRepository,
-                        leerlingRepository
-                );
+        VerdelingBekijkenService service = new VerdelingBekijkenService(
+                ingerichtTalentRepository,
+                toewijzingRepository,
+                leerlingRepository
+        );
 
         // ACT
         KlasOverzicht werkelijk =
-                service.bekijkVoorKlas(
-                        herfst,
-                        klas1AA
-                );
+                service.bekijkVoorKlas(herfst, klas1AA);
 
         // ASSERT
         KlasOverzicht verwacht = new KlasOverzicht(
@@ -720,13 +494,10 @@ class VerdelingBekijkenServiceTest {
         assertEquals(verwacht, werkelijk);
     }
 
-    private Klas maakObservatieKlas(
-            String naam,
-            int leerjaar
-    ) {
+    private Klas maakObservatieKlas(String naam, int leerjaar) {
         return new Klas(
                 naam,
-                "2026-2027",
+                schooljaar2026_2027,
                 leerjaar,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
@@ -736,9 +507,9 @@ class VerdelingBekijkenServiceTest {
         return new TalentenPeriode(
                 "Herfst",
                 LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31)
-        ,
-                TestDataFactory.schooljaarVoorPeriode(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31)));
+                LocalDate.of(2026, 10, 31),
+                schooljaar2026_2027
+        );
     }
 
     private IngerichtTalent richtTalentIn(
@@ -757,19 +528,13 @@ class VerdelingBekijkenServiceTest {
 
     private VerdelingBekijkenService maakLegeVerdelingBekijkenService() {
         IngerichtTalentRepository ingerichtTalentRepository =
-                new InMemoryIngerichtTalentRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryIngerichtTalentRepository(new ArrayList<>());
 
         ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryToewijzingRepository(new ArrayList<>());
 
         LeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(
-                        new ArrayList<>()
-                );
+                new InMemoryLeerlingRepository(new ArrayList<>());
 
         return new VerdelingBekijkenService(
                 ingerichtTalentRepository,

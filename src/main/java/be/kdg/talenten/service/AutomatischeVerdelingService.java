@@ -39,7 +39,7 @@ public class AutomatischeVerdelingService {
         }
 
         List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
-        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingen().stream()
+        List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingenVoorSchooljaar(talentenPeriode.getSchooljaar()).stream()
                 .filter(toewijzing -> toewijzing.getIngerichtTalent().getTalentenPeriode().getSchooljaar().equals(talentenPeriode.getSchooljaar()))
                 .toList();
         List<Toewijzing> manueleToewijzingen = toewijzingRepository.zoekVoorPeriode(talentenPeriode).stream()
