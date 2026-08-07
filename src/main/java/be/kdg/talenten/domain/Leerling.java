@@ -57,14 +57,23 @@ public class Leerling {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         Leerling leerling = (Leerling) o;
-        return Objects.equals(id, leerling.id) && Objects.equals(voornaam, leerling.voornaam) && Objects.equals(achternaam, leerling.achternaam);
+
+        if (id == null || leerling.id == null) {
+            return false;
+        }
+
+        return id.equals(leerling.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, voornaam, achternaam);
+        return id != null
+                ? id.hashCode()
+                : System.identityHashCode(this);
     }
 
     @Override

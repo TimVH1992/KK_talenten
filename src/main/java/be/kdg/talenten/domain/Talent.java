@@ -37,14 +37,23 @@ public class Talent {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         Talent talent = (Talent) o;
-        return Objects.equals(naam, talent.naam) && Objects.equals(beschrijving, talent.beschrijving);
+
+        if (id == null || talent.id == null) {
+            return false;
+        }
+
+        return id.equals(talent.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(naam, beschrijving);
+        return id != null
+                ? id.hashCode()
+                : System.identityHashCode(this);
     }
 
     @Override
