@@ -1,9 +1,10 @@
-package be.kdg.talenten.verdeling;
+package be.kdg.talenten.service;
 
 import be.kdg.talenten.testutil.TestDataFactory;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
-import be.kdg.talenten.service.ManueleToewijzingService;
+import be.kdg.talenten.verdeling.AutomatischeVerdeler;
+import be.kdg.talenten.verdeling.VerdelingsResultaat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package be.kdg.talenten.verdeling;
+package be.kdg.talenten.service;
 
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
@@ -10,7 +10,6 @@ import be.kdg.talenten.repository.ToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
-import be.kdg.talenten.service.VerdelingBekijkenService;
 import be.kdg.talenten.testutil.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

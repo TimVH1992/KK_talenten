@@ -59,7 +59,7 @@ public class InMemoryLeerlingRepository implements LeerlingRepository {
         }
 
         return leerlingen.stream()
-                .filter(leerling -> leerling.getKlas().getSchooljaar().equals(schooljaar.getNaam()))
+                .filter(leerling -> leerling.getKlas().getSchooljaar().equals(schooljaar))
                 .sorted(Comparator
                         .comparing((Leerling leerling) -> leerling.getKlas().getNaam())
                         .thenComparing(Leerling::getAchternaam)
