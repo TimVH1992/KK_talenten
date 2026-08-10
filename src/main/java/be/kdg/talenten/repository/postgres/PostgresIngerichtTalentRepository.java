@@ -215,6 +215,94 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
     }
 
     @Override
+    public List<IngerichtTalent> zoekActieveVoorPeriodeEnDoelgroep(TalentenPeriode periode, Doelgroep doelgroep) {
+        if (periode == null) {
+            throw new IllegalArgumentException("Talentenperiode mag niet null zijn");
+        }
+
+        if (periode.getId() == null) {
+            throw new IllegalArgumentException("De talentenperiode moet eerst opgeslagen zijn");
+        }
+        if (doelgroep == null) {
+            throw new IllegalArgumentException("Doelgroep mag niet null zijn");
+        }
+
+        String sql = """
+                SELECT
+                    it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
+                    it.maximum_capaciteit,
+                    it.doelgroep,
+                    it.actief,
+                    t.talent_id,
+                    t.naam AS talent_naam,
+                    t.beschrijving
+                FROM ingerichte_talenten it
+                JOIN talenten t
+                    ON t.talent_id = it.talent_id
+                WHERE it.talenten_periode_id = ?
+                    AND it.doelgroep = ?
+                    AND it.actief = TRUE
+                ORDER BY it.naam
+                """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding()) {
+
+            Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent =
+                    zoekLeerkrachtenVoorPeriode(connection, periode.getId());
+
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setLong(1, periode.getId());
+                statement.setString(2,doelgroep.name());
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
+
+                    while (resultSet.next()) {
+                        long ingerichtTalentId =
+                                resultSet.getLong("ingericht_talent_id");
+
+                        Talent talent = new Talent(
+                                resultSet.getLong("talent_id"),
+                                resultSet.getString("talent_naam"),
+                                resultSet.getString("beschrijving")
+                        );
+
+                        List<Leerkracht> leerkrachten =
+                                zoekLeerkrachtenInMap(
+                                        leerkrachtenPerIngerichtTalent,
+                                        ingerichtTalentId
+                                );
+
+                        IngerichtTalent ingerichtTalent = new IngerichtTalent(
+                                ingerichtTalentId,
+                                talent,
+                                periode,
+                                resultSet.getString("ingericht_talent_naam"),
+                                resultSet.getString("ingericht_talent_omschrijving"),
+                                resultSet.getInt("maximum_capaciteit"),
+                                Doelgroep.valueOf(resultSet.getString("doelgroep")),
+                                leerkrachten,
+                                resultSet.getBoolean("actief")
+                        );
+
+                        ingerichteTalenten.add(ingerichtTalent);
+                    }
+
+                    return ingerichteTalenten;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De ingerichte talenten konden niet opgehaald worden",
+                    e
+            );
+        }
+    }
+
+    @Override
     public IngerichtTalent zoekOpId(long id) {
         if (id < 1) {
             throw new IllegalArgumentException("Id mag niet kleiner zijn dan 1");

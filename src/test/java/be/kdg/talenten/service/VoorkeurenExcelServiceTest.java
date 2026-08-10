@@ -3,8 +3,11 @@ package be.kdg.talenten.service;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
+import be.kdg.talenten.service.voorkeuren.VoorkeurenExcelService;
+import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,7 @@ public class VoorkeurenExcelServiceTest {
     private Schooljaar schooljaar;
     private TalentenPeriode periode;
     private Klas klas;
+    private InMemoryLeerlingRepository leerlingRepository;
     private VoorkeurenExcelService service;
 
     @BeforeEach
@@ -49,7 +53,7 @@ public class VoorkeurenExcelServiceTest {
         Leerling jan = new Leerling("Jan", "Mertens", klas);
         Leerling sofie = new Leerling("Sofie", "VO", klas);
 
-        InMemoryLeerlingRepository leerlingRepository =
+        leerlingRepository =
                 new InMemoryLeerlingRepository(List.of(jan, sofie));
 
         InMemoryIngerichtTalentRepository ingerichtTalentRepository =
@@ -241,4 +245,194 @@ public class VoorkeurenExcelServiceTest {
             assertFalse(leerlingRij.getCell(4).getCellStyle().getLocked());
         }
     }
+
+    @Test
+    void genereerTemplateMaaktVerborgenKeuzelijstMetActieveIngerichteTalenten(
+            @TempDir Path tempDir
+    ) throws IOException {
+        // ARRANGE
+        Leerkracht leerkracht = new Leerkracht("Jan", "Peeters");
+
+        Talent voetbal = new Talent(
+                "Voetbal",
+                "Balsport"
+        );
+
+        Talent schaken = new Talent(
+                "Schaken",
+                "Strategisch denkspel"
+        );
+
+        IngerichtTalent voetbalObservatie = new IngerichtTalent(
+                voetbal,
+                periode,
+                "Voetbal observatie",
+                "Voetbal voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(leerkracht)
+        );
+
+        IngerichtTalent schakenObservatie = new IngerichtTalent(
+                schaken,
+                periode,
+                "Schaken observatie",
+                "Schaken voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(leerkracht)
+        );
+
+        InMemoryIngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                voetbalObservatie,
+                                schakenObservatie
+                        )
+                );
+
+        VoorkeurenExcelService service =
+                new VoorkeurenExcelService(
+                        leerlingRepository,
+                        ingerichtTalentRepository
+                );
+
+        Path bestand =
+                tempDir.resolve("voorkeuren.xlsx");
+
+        // ACT
+        service.genereerTemplate(
+                periode,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                bestand
+        );
+
+        // ASSERT
+        try (XSSFWorkbook workbook =
+                     new XSSFWorkbook(
+                             Files.newInputStream(bestand)
+                     )) {
+
+            Sheet keuzelijst =
+                    workbook.getSheet("_keuzelijst");
+
+            assertNotNull(keuzelijst);
+
+            int sheetIndex =
+                    workbook.getSheetIndex("_keuzelijst");
+
+            assertTrue(
+                    workbook.isSheetHidden(sheetIndex)
+            );
+
+            assertEquals(
+                    "Voetbal observatie",
+                    keuzelijst
+                            .getRow(0)
+                            .getCell(0)
+                            .getStringCellValue()
+            );
+
+            assertEquals(
+                    "Schaken observatie",
+                    keuzelijst
+                            .getRow(1)
+                            .getCell(0)
+                            .getStringCellValue()
+            );
+        }
+    }
+    @Test
+    void genereerTemplateVoegtDropdownToeAanKeuzeCellen(@TempDir Path tempDir) throws IOException {
+        // ARRANGE
+        Leerkracht leerkracht = new Leerkracht("Jan", "Peeters");
+
+        Talent voetbal = new Talent(
+                "Voetbal",
+                "Balsport"
+        );
+
+        Talent schaken = new Talent(
+                "Schaken",
+                "Strategisch denkspel"
+        );
+
+        IngerichtTalent voetbalObservatie = new IngerichtTalent(
+                voetbal,
+                periode,
+                "Voetbal observatie",
+                "Voetbal voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(leerkracht)
+        );
+
+        IngerichtTalent schakenObservatie = new IngerichtTalent(
+                schaken,
+                periode,
+                "Schaken observatie",
+                "Schaken voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(leerkracht)
+        );
+
+        InMemoryIngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                voetbalObservatie,
+                                schakenObservatie
+                        )
+                );
+
+        VoorkeurenExcelService service =
+                new VoorkeurenExcelService(
+                        leerlingRepository,
+                        ingerichtTalentRepository
+                );
+
+        Path bestand = tempDir.resolve("voorkeuren.xlsx");
+
+        // ACT
+        service.genereerTemplate(
+                periode,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                bestand
+        );
+
+        // ASSERT
+        try (XSSFWorkbook workbook =
+                     new XSSFWorkbook(Files.newInputStream(bestand))) {
+
+            Sheet sheet = workbook.getSheet("1AA");
+
+            List<? extends DataValidation> validations =
+                    sheet.getDataValidations();
+
+            assertEquals(1, validations.size());
+
+            DataValidation validation = validations.getFirst();
+
+            assertEquals(
+                    "IngerichteTalenten",
+                    validation
+                            .getValidationConstraint()
+                            .getFormula1()
+            );
+
+            CellRangeAddress[] bereiken =
+                    validation
+                            .getRegions()
+                            .getCellRangeAddresses();
+
+            assertEquals(1, bereiken.length);
+
+            assertEquals(
+                    "C2:E3",
+                    bereiken[0].formatAsString()
+            );
+        }
+    }
+
+
 }

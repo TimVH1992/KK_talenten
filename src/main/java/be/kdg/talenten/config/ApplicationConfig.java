@@ -2,7 +2,13 @@ package be.kdg.talenten.config;
 
 import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
-import be.kdg.talenten.service.*;
+import be.kdg.talenten.service.beheer.KlasService;
+import be.kdg.talenten.service.beheer.SchooljaarService;
+import be.kdg.talenten.service.beheer.TalentenPeriodeService;
+import be.kdg.talenten.service.leerling.LeerlingDetailsService;
+import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
+import be.kdg.talenten.service.verdeling.ManueleToewijzingService;
+import be.kdg.talenten.service.verdeling.VerdelingBekijkenService;
 
 public final class ApplicationConfig {
     private final KlasRepository klasRepository;

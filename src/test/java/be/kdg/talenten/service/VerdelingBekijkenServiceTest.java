@@ -10,6 +10,7 @@ import be.kdg.talenten.repository.ToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
+import be.kdg.talenten.service.verdeling.VerdelingBekijkenService;
 import be.kdg.talenten.testutil.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

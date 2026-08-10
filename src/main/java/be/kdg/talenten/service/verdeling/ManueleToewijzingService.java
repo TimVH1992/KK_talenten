@@ -1,4 +1,4 @@
-package be.kdg.talenten.service;
+package be.kdg.talenten.service.verdeling;
 
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Leerling;

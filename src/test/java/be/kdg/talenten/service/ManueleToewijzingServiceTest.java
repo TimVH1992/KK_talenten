@@ -1,5 +1,6 @@
 package be.kdg.talenten.service;
 
+import be.kdg.talenten.service.verdeling.ManueleToewijzingService;
 import be.kdg.talenten.testutil.TestDataFactory;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;

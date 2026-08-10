@@ -3,13 +3,14 @@ package be.kdg.talenten.tijdelijkeTestKlasses;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
-import be.kdg.talenten.service.VoorkeurenExcelService;
+import be.kdg.talenten.service.voorkeuren.VoorkeurenExcelService;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
 public class VoorkeurenExcelServiceManualTest {
+
     public static void main(String[] args) {
         Schooljaar schooljaar = new Schooljaar(
                 "2026-2027",
@@ -31,14 +32,71 @@ public class VoorkeurenExcelServiceManualTest {
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
         );
 
-        Leerling jan = new Leerling("Jan", "Mertens", klas);
-        Leerling sofie = new Leerling("Sofie", "VO", klas);
+        Leerling jan = new Leerling(
+                "Jan",
+                "Mertens",
+                klas
+        );
+
+        Leerling sofie = new Leerling(
+                "Sofie",
+                "VO",
+                klas
+        );
 
         InMemoryLeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(List.of(jan, sofie));
+                new InMemoryLeerlingRepository(
+                        List.of(jan, sofie)
+                );
+
+        // -------------------------------------------------
+        // INGERICHTE TALENTEN VOOR DE DROPDOWN
+        // -------------------------------------------------
+
+        Leerkracht leerkracht = new Leerkracht(
+                "Tom",
+                "Peeters"
+        );
+
+        Talent voetbal = new Talent(
+                "Voetbal",
+                "Balsport"
+        );
+
+        Talent schaken = new Talent(
+                "Schaken",
+                "Strategisch denkspel"
+        );
+
+        IngerichtTalent voetbalObservatie =
+                new IngerichtTalent(
+                        voetbal,
+                        periode,
+                        "Voetbal observatie",
+                        "Voetbal voor de observatiefase",
+                        12,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(leerkracht)
+                );
+
+        IngerichtTalent schakenObservatie =
+                new IngerichtTalent(
+                        schaken,
+                        periode,
+                        "Schaken observatie",
+                        "Schaken voor de observatiefase",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(leerkracht)
+                );
 
         InMemoryIngerichtTalentRepository ingerichtTalentRepository =
-                new InMemoryIngerichtTalentRepository(List.of());
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                voetbalObservatie,
+                                schakenObservatie
+                        )
+                );
 
         VoorkeurenExcelService service =
                 new VoorkeurenExcelService(
@@ -58,6 +116,8 @@ public class VoorkeurenExcelServiceManualTest {
                 bestand
         );
 
-        System.out.println("Bestand aangemaakt: " + bestand.toAbsolutePath());
+        System.out.println(
+                "Bestand aangemaakt: " + bestand.toAbsolutePath()
+        );
     }
 }

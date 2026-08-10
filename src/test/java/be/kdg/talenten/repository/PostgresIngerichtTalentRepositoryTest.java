@@ -236,6 +236,93 @@ class PostgresIngerichtTalentRepositoryTest {
             }
         }
     }
+    @Test
+    void zoekActieveVoorPeriodeEnDoelgroepGeeftAlleenActieveTalentenVanJuisteDoelgroep() {
+        // ARRANGE
+        Talent voetbal = talentRepository.save(
+                new Talent("Voetbal", "Balsport")
+        );
+
+        Talent schaken = talentRepository.save(
+                new Talent("Schaken", "Strategisch denkspel")
+        );
+
+        Talent lassen = talentRepository.save(
+                new Talent("Lassen", "Leren lassen")
+        );
+
+        TalentenPeriode herfst = periodeRepository.save(
+                new TalentenPeriode(
+                        "Herfst",
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 10, 31),
+                        schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))
+                )
+        );
+
+        Leerkracht tim = leerkrachtRepository.save(
+                new Leerkracht("Tim", "Van Herreweghe")
+        );
+
+        IngerichtTalent voetbalObservatie = new IngerichtTalent(
+                voetbal,
+                herfst,
+                "Voetbal observatie",
+                "Voetbal voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(tim)
+        );
+
+        IngerichtTalent schakenObservatie = new IngerichtTalent(
+                schaken,
+                herfst,
+                "Schaken observatie",
+                "Schaken voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(tim)
+        );
+
+        schakenObservatie.deactiveer();
+
+        IngerichtTalent lassenKwalificatie = new IngerichtTalent(
+                lassen,
+                herfst,
+                "Lassen kwalificatie",
+                "Lassen voor de kwalificatiefase",
+                10,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                List.of(tim)
+        );
+
+        IngerichtTalent opgeslagenVoetbal =
+                ingerichtTalentRepository.save(voetbalObservatie);
+
+        ingerichtTalentRepository.save(schakenObservatie);
+        ingerichtTalentRepository.save(lassenKwalificatie);
+
+        // ACT
+        List<IngerichtTalent> resultaat =
+                ingerichtTalentRepository.zoekActieveVoorPeriodeEnDoelgroep(
+                        herfst,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
+
+        // ASSERT
+        assertEquals(1, resultaat.size());
+
+        IngerichtTalent gevonden = resultaat.getFirst();
+
+        assertEquals(opgeslagenVoetbal.getId(), gevonden.getId());
+        assertEquals("Voetbal observatie", gevonden.getNaam());
+        assertTrue(gevonden.isActief());
+
+        assertEquals(
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                gevonden.getDoelgroep()
+        );
+    }
 
     private Schooljaar schooljaarVoorPeriode(LocalDate startDatum) {
         return startDatum.getMonthValue() >= 7 ? schooljaar2026_2027 : schooljaar2025_2026;

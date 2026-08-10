@@ -1,4 +1,4 @@
-package be.kdg.talenten.service;
+package be.kdg.talenten.service.leerling;
 
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.TalentenPeriode;

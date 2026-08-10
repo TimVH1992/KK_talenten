@@ -4,6 +4,8 @@ import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
+import be.kdg.talenten.service.leerling.LeerlingDetailsService;
+import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.verdeling.VerdelingsResultaat;
 import org.junit.jupiter.api.Test;
 

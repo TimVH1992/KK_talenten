@@ -1,4 +1,4 @@
-package be.kdg.talenten.service;
+package be.kdg.talenten.service.beheer;
 
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.repository.KlasRepository;

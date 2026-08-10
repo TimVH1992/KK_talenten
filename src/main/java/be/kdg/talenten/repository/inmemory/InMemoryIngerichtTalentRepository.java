@@ -1,5 +1,6 @@
 package be.kdg.talenten.repository.inmemory;
 
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.repository.IngerichtTalentRepository;
@@ -41,6 +42,23 @@ public class InMemoryIngerichtTalentRepository implements IngerichtTalentReposit
             }
         }
         return ingerichteTalentenVoorPeriode;
+    }
+
+    @Override
+    public List<IngerichtTalent> zoekActieveVoorPeriodeEnDoelgroep(TalentenPeriode periode, Doelgroep doelgroep) {
+        if (periode == null){
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
+        if (doelgroep == null){
+            throw new IllegalArgumentException("De doelgroep mag niet null zijn");
+        }
+        List<IngerichtTalent> actieveIngerichteTalentenVoorPeriode = new ArrayList<>();
+        for (IngerichtTalent ingerichtTalent : ingerichteTalenten){
+            if (ingerichtTalent.getTalentenPeriode() == periode && ingerichtTalent.isActief() && ingerichtTalent.getDoelgroep() == doelgroep){
+                actieveIngerichteTalentenVoorPeriode.add(ingerichtTalent);
+            }
+        }
+        return actieveIngerichteTalentenVoorPeriode;
     }
 
     @Override

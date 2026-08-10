@@ -3,7 +3,7 @@ package be.kdg.talenten.verdeling;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
-import be.kdg.talenten.service.AutomatischeVerdelingService;
+import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.testutil.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
