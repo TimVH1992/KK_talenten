@@ -51,6 +51,8 @@ public class VoorkeurTest {
         IngerichtTalent schakenBovenbouw = new IngerichtTalent(
                 schaken,
                 herfst,
+                schaken.getNaam(),
+                schaken.getBeschrijving(),
                 10,
                 Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
                 List.of(leerkracht)

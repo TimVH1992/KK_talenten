@@ -1,6 +1,7 @@
 package be.kdg.talenten.service;
 
 import be.kdg.talenten.domain.*;
+import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -48,10 +49,16 @@ public class VoorkeurenExcelServiceTest {
         Leerling jan = new Leerling("Jan", "Mertens", klas);
         Leerling sofie = new Leerling("Sofie", "VO", klas);
 
-        InMemoryLeerlingRepository repository =
+        InMemoryLeerlingRepository leerlingRepository =
                 new InMemoryLeerlingRepository(List.of(jan, sofie));
 
-        service = new VoorkeurenExcelService(repository);
+        InMemoryIngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(List.of());
+
+        service = new VoorkeurenExcelService(
+                leerlingRepository,
+                ingerichtTalentRepository
+        );
     }
 
     @Test
@@ -156,7 +163,7 @@ public class VoorkeurenExcelServiceTest {
                 kwalificatieKlas
         );
 
-        InMemoryLeerlingRepository repository =
+        InMemoryLeerlingRepository leerlingRepository =
                 new InMemoryLeerlingRepository(
                         List.of(
                                 new Leerling("Jan", "Mertens", klas),
@@ -165,8 +172,14 @@ public class VoorkeurenExcelServiceTest {
                         )
                 );
 
+        InMemoryIngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(List.of());
+
         VoorkeurenExcelService service =
-                new VoorkeurenExcelService(repository);
+                new VoorkeurenExcelService(
+                        leerlingRepository,
+                        ingerichtTalentRepository
+                );
 
         Path bestand = tempDir.resolve("voorkeuren.xlsx");
 

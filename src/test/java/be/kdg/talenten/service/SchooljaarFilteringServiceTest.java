@@ -75,6 +75,8 @@ class SchooljaarFilteringServiceTest {
         IngerichtTalent schakenVorig = new IngerichtTalent(
                 schaken,
                 vorig,
+                schaken.getNaam(),
+                schaken.getBeschrijving(),
                 10,
                 klas.getDoelgroep(),
                 List.of(leerkracht)
@@ -83,6 +85,8 @@ class SchooljaarFilteringServiceTest {
         IngerichtTalent schakenHerfst = new IngerichtTalent(
                 schaken,
                 herfst,
+                schaken.getNaam(),
+                schaken.getBeschrijving(),
                 10,
                 klas.getDoelgroep(),
                 List.of(leerkracht)
@@ -91,6 +95,8 @@ class SchooljaarFilteringServiceTest {
         IngerichtTalent kokenHerfst = new IngerichtTalent(
                 koken,
                 herfst,
+                koken.getNaam(),
+                koken.getBeschrijving(),
                 10,
                 klas.getDoelgroep(),
                 List.of(leerkracht)
@@ -221,6 +227,8 @@ class SchooljaarFilteringServiceTest {
         IngerichtTalent schakenVorig = new IngerichtTalent(
                 schaken,
                 vorig,
+                schaken.getNaam(),
+                schaken.getBeschrijving(),
                 10,
                 klas.getDoelgroep(),
                 List.of(leerkracht)
@@ -229,6 +237,8 @@ class SchooljaarFilteringServiceTest {
         IngerichtTalent kokenHerfst = new IngerichtTalent(
                 koken,
                 herfst,
+                koken.getNaam(),
+                koken.getBeschrijving(),
                 10,
                 klas.getDoelgroep(),
                 List.of(leerkracht)

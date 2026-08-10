@@ -35,11 +35,11 @@ public class IngerichtTalentRepositoryTest {
         Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
         Talent koken = new Talent("Koken", "Leren koken");
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, schaken.getNaam(), schaken.getBeschrijving(), 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
 
-        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
-        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
-        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
+        IngerichtTalent schakenWinter = new IngerichtTalent(schaken, winter, schaken.getNaam(), schaken.getBeschrijving(), 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
+        IngerichtTalent voetbalWinter = new IngerichtTalent(voetbal, winter, voetbal.getNaam(), voetbal.getBeschrijving(), 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
+        IngerichtTalent kokenWinter = new IngerichtTalent(koken, winter, koken.getNaam(), koken.getBeschrijving(), 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(leerkracht));
 
         InMemoryIngerichtTalentRepository inMemoryIngerichtTalentRepository = new InMemoryIngerichtTalentRepository(List.of(schakenHerfst, schakenWinter, voetbalWinter, kokenWinter));
 

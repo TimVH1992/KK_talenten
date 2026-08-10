@@ -1,6 +1,7 @@
 package be.kdg.talenten.tijdelijkeTestKlasses;
 
 import be.kdg.talenten.domain.*;
+import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.service.VoorkeurenExcelService;
 
@@ -33,22 +34,22 @@ public class VoorkeurenExcelServiceManualTest {
         Leerling jan = new Leerling("Jan", "Mertens", klas);
         Leerling sofie = new Leerling("Sofie", "VO", klas);
 
-        InMemoryLeerlingRepository repository =
+        InMemoryLeerlingRepository leerlingRepository =
                 new InMemoryLeerlingRepository(List.of(jan, sofie));
 
+        InMemoryIngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(List.of());
+
         VoorkeurenExcelService service =
-                new VoorkeurenExcelService(repository);
+                new VoorkeurenExcelService(
+                        leerlingRepository,
+                        ingerichtTalentRepository
+                );
 
         Path bestand = Path.of(
                 System.getenv("OneDrive"),
                 "Bureaublad",
                 "voorkeuren_test.xlsx"
-        );
-
-        service.genereerTemplate(
-                periode,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                bestand
         );
 
         service.genereerTemplate(

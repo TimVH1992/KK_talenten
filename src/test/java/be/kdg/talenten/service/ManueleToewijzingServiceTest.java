@@ -483,6 +483,8 @@ class ManueleToewijzingServiceTest {
         return new IngerichtTalent(
                 talent,
                 periode,
+                talent.getNaam(),
+                talent.getBeschrijving(),
                 maximumCapaciteit,
                 doelgroep,
                 List.of(testLeerkracht)

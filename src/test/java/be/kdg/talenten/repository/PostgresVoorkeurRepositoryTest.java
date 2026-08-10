@@ -172,6 +172,8 @@ public class PostgresVoorkeurRepositoryTest {
                         new IngerichtTalent(
                                 schaken,
                                 herfst,
+                                schaken.getNaam(),
+                                schaken.getBeschrijving(),
                                 10,
                                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                                 List.of(tom)
@@ -183,6 +185,8 @@ public class PostgresVoorkeurRepositoryTest {
                         new IngerichtTalent(
                                 voetbal,
                                 herfst,
+                                voetbal.getNaam(),
+                                voetbal.getBeschrijving(),
                                 10,
                                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                                 List.of(tom)
@@ -194,6 +198,8 @@ public class PostgresVoorkeurRepositoryTest {
                         new IngerichtTalent(
                                 schaken,
                                 winter,
+                                schaken.getNaam(),
+                                schaken.getBeschrijving(),
                                 10,
                                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                                 List.of(tom)
@@ -375,6 +381,8 @@ public class PostgresVoorkeurRepositoryTest {
                         new IngerichtTalent(
                                 talent,
                                 periode,
+                                talent.getNaam(),
+                                talent.getBeschrijving(),
                                 10,
                                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                                 List.of(leerkracht)

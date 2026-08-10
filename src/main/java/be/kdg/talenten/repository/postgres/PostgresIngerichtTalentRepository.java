@@ -9,9 +9,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostgresIngerichtTalentRepository implements IngerichtTalentRepository {
+
     @Override
     public IngerichtTalent save(IngerichtTalent ingerichtTalent) {
         if (ingerichtTalent == null) {
@@ -34,12 +37,15 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
 
         String ingerichtTalentSql = """
                 INSERT INTO ingerichte_talenten (
+                    naam,
+                    omschrijving,
                     maximum_capaciteit,
                     doelgroep,
+                    actief,
                     talent_id,
                     talenten_periode_id
                 )
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 RETURNING ingericht_talent_id
                 """;
 
@@ -58,14 +64,19 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                 long gegenereerdId;
 
                 try (PreparedStatement statement = connection.prepareStatement(ingerichtTalentSql)) {
-                    statement.setInt(1, ingerichtTalent.getMaxCapaciteit());
-                    statement.setString(2, ingerichtTalent.getDoelgroep().name());
-                    statement.setLong(3, ingerichtTalent.getTalent().getId());
-                    statement.setLong(4, ingerichtTalent.getTalentenPeriode().getId());
+                    statement.setString(1, ingerichtTalent.getNaam());
+                    statement.setString(2, ingerichtTalent.getOmschrijving());
+                    statement.setInt(3, ingerichtTalent.getMaxCapaciteit());
+                    statement.setString(4, ingerichtTalent.getDoelgroep().name());
+                    statement.setBoolean(5, ingerichtTalent.isActief());
+                    statement.setLong(6, ingerichtTalent.getTalent().getId());
+                    statement.setLong(7, ingerichtTalent.getTalentenPeriode().getId());
 
                     try (ResultSet resultSet = statement.executeQuery()) {
                         if (!resultSet.next()) {
-                            throw new IllegalStateException("PostgreSQL gaf geen ingericht_talent_id terug");
+                            throw new IllegalStateException(
+                                    "PostgreSQL gaf geen ingericht_talent_id terug"
+                            );
                         }
 
                         gegenereerdId = resultSet.getLong("ingericht_talent_id");
@@ -88,9 +99,12 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                         gegenereerdId,
                         ingerichtTalent.getTalent(),
                         ingerichtTalent.getTalentenPeriode(),
+                        ingerichtTalent.getNaam(),
+                        ingerichtTalent.getOmschrijving(),
                         ingerichtTalent.getMaxCapaciteit(),
                         ingerichtTalent.getDoelgroep(),
-                        ingerichtTalent.getLeerkrachten()
+                        ingerichtTalent.getLeerkrachten(),
+                        ingerichtTalent.isActief()
                 );
 
             } catch (SQLException | RuntimeException e) {
@@ -131,8 +145,11 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
         String sql = """
                 SELECT
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep,
+                    it.actief,
                     t.talent_id,
                     t.naam AS talent_naam,
                     t.beschrijving
@@ -140,43 +157,55 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                 JOIN talenten t
                     ON t.talent_id = it.talent_id
                 WHERE it.talenten_periode_id = ?
-                ORDER BY t.naam
+                ORDER BY it.naam
                 """;
 
-        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding()) {
 
-            statement.setLong(1, periode.getId());
+            Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent =
+                    zoekLeerkrachtenVoorPeriode(connection, periode.getId());
 
-            try (ResultSet resultSet = statement.executeQuery()) {
-                List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setLong(1, periode.getId());
 
-                while (resultSet.next()) {
-                    long ingerichtTalentId = resultSet.getLong("ingericht_talent_id");
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    List<IngerichtTalent> ingerichteTalenten = new ArrayList<>();
 
-                    Talent talent = new Talent(
-                            resultSet.getLong("talent_id"),
-                            resultSet.getString("talent_naam"),
-                            resultSet.getString("beschrijving")
-                    );
+                    while (resultSet.next()) {
+                        long ingerichtTalentId =
+                                resultSet.getLong("ingericht_talent_id");
 
-                    List<Leerkracht> leerkrachten =
-                            zoekLeerkrachtenVoorIngerichtTalent(connection, ingerichtTalentId);
+                        Talent talent = new Talent(
+                                resultSet.getLong("talent_id"),
+                                resultSet.getString("talent_naam"),
+                                resultSet.getString("beschrijving")
+                        );
 
-                    IngerichtTalent ingerichtTalent = new IngerichtTalent(
-                            ingerichtTalentId,
-                            talent,
-                            periode,
-                            resultSet.getInt("maximum_capaciteit"),
-                            Doelgroep.valueOf(resultSet.getString("doelgroep")),
-                            leerkrachten
-                    );
+                        List<Leerkracht> leerkrachten =
+                                zoekLeerkrachtenInMap(
+                                        leerkrachtenPerIngerichtTalent,
+                                        ingerichtTalentId
+                                );
 
-                    ingerichteTalenten.add(ingerichtTalent);
+                        IngerichtTalent ingerichtTalent = new IngerichtTalent(
+                                ingerichtTalentId,
+                                talent,
+                                periode,
+                                resultSet.getString("ingericht_talent_naam"),
+                                resultSet.getString("ingericht_talent_omschrijving"),
+                                resultSet.getInt("maximum_capaciteit"),
+                                Doelgroep.valueOf(resultSet.getString("doelgroep")),
+                                leerkrachten,
+                                resultSet.getBoolean("actief")
+                        );
+
+                        ingerichteTalenten.add(ingerichtTalent);
+                    }
+
+                    return ingerichteTalenten;
                 }
-
-                return ingerichteTalenten;
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De ingerichte talenten konden niet opgehaald worden",
@@ -190,47 +219,65 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
         if (id < 1) {
             throw new IllegalArgumentException("Id mag niet kleiner zijn dan 1");
         }
+
         String sql = """
                 SELECT
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep,
+                    it.actief,
+
                     t.talent_id,
                     t.naam AS talent_naam,
                     t.beschrijving,
+
                     tp.talenten_periode_id,
                     tp.naam AS periode_naam,
                     tp.startdatum,
                     tp.einddatum,
+
                     sj.schooljaar_id,
                     sj.naam AS schooljaar_naam,
                     sj.startdatum AS schooljaar_startdatum,
                     sj.einddatum AS schooljaar_einddatum,
-                    sj.actief
+                    sj.actief AS schooljaar_actief
+
                 FROM ingerichte_talenten it
-                JOIN talenten t ON (t.talent_id = it.talent_id)
-                JOIN talenten_periodes tp ON tp.talenten_periode_id = it.talenten_periode_id
-                JOIN schooljaren sj ON sj.schooljaar_id = tp.schooljaar_id
+                JOIN talenten t
+                    ON t.talent_id = it.talent_id
+                JOIN talenten_periodes tp
+                    ON tp.talenten_periode_id = it.talenten_periode_id
+                JOIN schooljaren sj
+                    ON sj.schooljaar_id = tp.schooljaar_id
                 WHERE it.ingericht_talent_id = ?
                 """;
 
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setLong(1,id);
+            statement.setLong(1, id);
 
-            try (ResultSet resultSet = statement.executeQuery()){
-                if (!resultSet.next()){
-                    throw new IllegalStateException("PostgreSQL kon geen ingerichtTalent vinden met id: " + id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new IllegalStateException(
+                            "PostgreSQL kon geen ingericht talent vinden met id: " + id
+                    );
                 }
-                Talent talent = new Talent(resultSet.getLong("talent_id"), resultSet.getString("talent_naam"), resultSet.getString("beschrijving"));
+
+                Talent talent = new Talent(
+                        resultSet.getLong("talent_id"),
+                        resultSet.getString("talent_naam"),
+                        resultSet.getString("beschrijving")
+                );
 
                 Schooljaar schooljaar = new Schooljaar(
                         resultSet.getLong("schooljaar_id"),
                         resultSet.getString("schooljaar_naam"),
                         resultSet.getDate("schooljaar_startdatum").toLocalDate(),
                         resultSet.getDate("schooljaar_einddatum").toLocalDate(),
-                        resultSet.getBoolean("actief")
+                        resultSet.getBoolean("schooljaar_actief")
                 );
 
                 TalentenPeriode periode = new TalentenPeriode(
@@ -241,25 +288,79 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                         schooljaar
                 );
 
-                List<Leerkracht> leerkrachten = zoekLeerkrachtenVoorIngerichtTalent(connection, id);
+                List<Leerkracht> leerkrachten =
+                        zoekLeerkrachtenVoorIngerichtTalent(connection, id);
 
-
-                IngerichtTalent ingerichtTalent = new IngerichtTalent(
+                return new IngerichtTalent(
                         id,
                         talent,
                         periode,
+                        resultSet.getString("ingericht_talent_naam"),
+                        resultSet.getString("ingericht_talent_omschrijving"),
                         resultSet.getInt("maximum_capaciteit"),
                         Doelgroep.valueOf(resultSet.getString("doelgroep")),
-                        leerkrachten);
-
-                return ingerichtTalent;
+                        leerkrachten,
+                        resultSet.getBoolean("actief")
+                );
             }
-        } catch (SQLException e){
-            throw new IllegalStateException("PostgreSQL kong geen Ingericht talent vinden op id met id : " + id, e);
-        }
 
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "PostgreSQL kon geen ingericht talent vinden met id: " + id,
+                    e
+            );
+        }
     }
 
+    private Map<Long, List<Leerkracht>> zoekLeerkrachtenVoorPeriode(
+            Connection connection,
+            long periodeId
+    ) throws SQLException {
+
+        String sql = """
+                SELECT
+                    itl.ingericht_talent_id,
+                    l.leerkracht_id,
+                    l.voornaam,
+                    l.achternaam
+                FROM ingericht_talent_leerkrachten itl
+                JOIN ingerichte_talenten it
+                    ON it.ingericht_talent_id = itl.ingericht_talent_id
+                JOIN leerkrachten l
+                    ON l.leerkracht_id = itl.leerkracht_id
+                WHERE it.talenten_periode_id = ?
+                ORDER BY
+                    itl.ingericht_talent_id,
+                    l.achternaam,
+                    l.voornaam
+                """;
+
+        Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent =
+                new HashMap<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, periodeId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    long ingerichtTalentId =
+                            resultSet.getLong("ingericht_talent_id");
+
+                    Leerkracht leerkracht =
+                            maakLeerkracht(resultSet);
+
+                    leerkrachtenPerIngerichtTalent
+                            .computeIfAbsent(
+                                    ingerichtTalentId,
+                                    key -> new ArrayList<>()
+                            )
+                            .add(leerkracht);
+                }
+            }
+        }
+
+        return leerkrachtenPerIngerichtTalent;
+    }
 
     private List<Leerkracht> zoekLeerkrachtenVoorIngerichtTalent(
             Connection connection,
@@ -285,13 +386,9 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                 List<Leerkracht> leerkrachten = new ArrayList<>();
 
                 while (resultSet.next()) {
-                    Leerkracht leerkracht = new Leerkracht(
-                            resultSet.getLong("leerkracht_id"),
-                            resultSet.getString("voornaam"),
-                            resultSet.getString("achternaam")
+                    leerkrachten.add(
+                            maakLeerkracht(resultSet)
                     );
-
-                    leerkrachten.add(leerkracht);
                 }
 
                 return leerkrachten;
@@ -299,5 +396,33 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
         }
     }
 
+    private Leerkracht maakLeerkracht(ResultSet resultSet)
+            throws SQLException {
 
+        return new Leerkracht(
+                resultSet.getLong("leerkracht_id"),
+                resultSet.getString("voornaam"),
+                resultSet.getString("achternaam")
+        );
+    }
+
+    private List<Leerkracht> zoekLeerkrachtenInMap(
+            Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent,
+            long ingerichtTalentId
+    ) {
+        List<Leerkracht> leerkrachten =
+                leerkrachtenPerIngerichtTalent.get(
+                        ingerichtTalentId
+                );
+
+        if (leerkrachten == null || leerkrachten.isEmpty()) {
+            throw new IllegalStateException(
+                    "Ingericht talent "
+                            + ingerichtTalentId
+                            + " heeft geen leerkracht in de databank"
+            );
+        }
+
+        return leerkrachten;
+    }
 }

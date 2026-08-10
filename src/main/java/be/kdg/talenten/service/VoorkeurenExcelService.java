@@ -1,6 +1,7 @@
 package be.kdg.talenten.service;
 
 import be.kdg.talenten.domain.*;
+import be.kdg.talenten.repository.IngerichtTalentRepository;
 import be.kdg.talenten.repository.LeerlingRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -13,12 +14,17 @@ import java.util.*;
 
 public class VoorkeurenExcelService {
     private final LeerlingRepository leerlingRepository;
+    private final IngerichtTalentRepository ingerichtTalentRepository;
 
-    public VoorkeurenExcelService(LeerlingRepository leerlingRepository){
+    public VoorkeurenExcelService(LeerlingRepository leerlingRepository, IngerichtTalentRepository ingerichtTalentRepository){
         if (leerlingRepository == null){
             throw new IllegalArgumentException("De leerlingrepository mag niet null zijn");
         }
+        if (ingerichtTalentRepository == null){
+            throw new IllegalArgumentException("De ingerichteTalentReposoitory mag niet null zijn");
+        }
         this.leerlingRepository = leerlingRepository;
+        this.ingerichtTalentRepository = ingerichtTalentRepository;
     }
 
     public void genereerTemplate(TalentenPeriode periode, Doelgroep doelgroep, Path bestand) {

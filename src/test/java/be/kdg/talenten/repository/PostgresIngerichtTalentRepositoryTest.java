@@ -68,7 +68,7 @@ class PostgresIngerichtTalentRepositoryTest {
         Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
         Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, "Schaken - Herfst", "Schaken voor de herfstperiode", 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
 
         // ACT
         IngerichtTalent opgeslagenIngerichtTalent = ingerichtTalentRepository.save(schakenHerfst);
@@ -79,6 +79,9 @@ class PostgresIngerichtTalentRepositoryTest {
         assertTrue(opgeslagenIngerichtTalent.getId() > 0);
         assertSame(schaken, opgeslagenIngerichtTalent.getTalent());
         assertSame(herfst, opgeslagenIngerichtTalent.getTalentenPeriode());
+        assertEquals("Schaken - Herfst", opgeslagenIngerichtTalent.getNaam());
+        assertEquals("Schaken voor de herfstperiode", opgeslagenIngerichtTalent.getOmschrijving());
+        assertTrue(opgeslagenIngerichtTalent.isActief());
         assertEquals(10, opgeslagenIngerichtTalent.getMaxCapaciteit());
         assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, opgeslagenIngerichtTalent.getDoelgroep());
         assertEquals(List.of(tim, sara), opgeslagenIngerichtTalent.getLeerkrachten());
@@ -105,9 +108,9 @@ class PostgresIngerichtTalentRepositoryTest {
         Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
         Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
 
-        IngerichtTalent schakenHerfst = ingerichtTalentRepository.save(new IngerichtTalent(schaken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
-        IngerichtTalent dansenHerfst = ingerichtTalentRepository.save(new IngerichtTalent(dansen, herfst, 6, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(sara)));
-        ingerichtTalentRepository.save(new IngerichtTalent(schaken, winter, 8, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
+        IngerichtTalent schakenHerfst = ingerichtTalentRepository.save(new IngerichtTalent(schaken, herfst, "Schaken - Herfst", "Schaken voor de herfstperiode", 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
+        IngerichtTalent dansenHerfst = ingerichtTalentRepository.save(new IngerichtTalent(dansen, herfst, "Dansen - Herfst", "Dansen voor de herfstperiode", 6, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(sara)));
+        ingerichtTalentRepository.save(new IngerichtTalent(schaken, winter, "Schaken - Winter", "Schaken voor de winterperiode", 8, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
 
         // ACT
         List<IngerichtTalent> resultaat = ingerichtTalentRepository.zoekVoorPeriode(herfst);
@@ -119,6 +122,9 @@ class PostgresIngerichtTalentRepositoryTest {
         IngerichtTalent opgehaaldSchaken = resultaat.stream().filter(ingerichtTalent -> ingerichtTalent.getTalent().getNaam().equals("Schaken")).findFirst().orElseThrow();
 
         assertEquals(dansenHerfst.getId(), opgehaaldDansen.getId());
+        assertEquals("Dansen - Herfst", opgehaaldDansen.getNaam());
+        assertEquals("Dansen voor de herfstperiode", opgehaaldDansen.getOmschrijving());
+        assertTrue(opgehaaldDansen.isActief());
         assertEquals("Dansen", opgehaaldDansen.getTalent().getNaam());
         assertEquals(6, opgehaaldDansen.getMaxCapaciteit());
         assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, opgehaaldDansen.getDoelgroep());
@@ -126,6 +132,9 @@ class PostgresIngerichtTalentRepositoryTest {
         assertEquals(sara.getId(), opgehaaldDansen.getLeerkrachten().getFirst().getId());
 
         assertEquals(schakenHerfst.getId(), opgehaaldSchaken.getId());
+        assertEquals("Schaken - Herfst", opgehaaldSchaken.getNaam());
+        assertEquals("Schaken voor de herfstperiode", opgehaaldSchaken.getOmschrijving());
+        assertTrue(opgehaaldSchaken.isActief());
         assertEquals("Schaken", opgehaaldSchaken.getTalent().getNaam());
         assertEquals(10, opgehaaldSchaken.getMaxCapaciteit());
         assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, opgehaaldSchaken.getDoelgroep());
@@ -145,7 +154,7 @@ class PostgresIngerichtTalentRepositoryTest {
         Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
         Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
 
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
+        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, "Schaken - Herfst", "Schaken voor de herfstperiode", 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
         IngerichtTalent opgeslagenIngerichtTalent = ingerichtTalentRepository.save(schakenHerfst);
 
         // ACT
@@ -154,6 +163,9 @@ class PostgresIngerichtTalentRepositoryTest {
         // ASSERT
         assertNotNull(gevondenIngerichtTalent);
         assertEquals(opgeslagenIngerichtTalent.getId(), gevondenIngerichtTalent.getId());
+        assertEquals("Schaken - Herfst", gevondenIngerichtTalent.getNaam());
+        assertEquals("Schaken voor de herfstperiode", gevondenIngerichtTalent.getOmschrijving());
+        assertTrue(gevondenIngerichtTalent.isActief());
 
         assertEquals(schaken.getId(), gevondenIngerichtTalent.getTalent().getId());
         assertEquals("Schaken", gevondenIngerichtTalent.getTalent().getNaam());
@@ -176,7 +188,7 @@ class PostgresIngerichtTalentRepositoryTest {
 
     private void controleerIngerichtTalentInDatabank(IngerichtTalent ingerichtTalent) throws SQLException {
         String sql = """
-                SELECT maximum_capaciteit, doelgroep, talent_id, talenten_periode_id
+                SELECT naam, omschrijving, maximum_capaciteit, doelgroep, actief, talent_id, talenten_periode_id
                 FROM ingerichte_talenten
                 WHERE ingericht_talent_id = ?
                 """;
@@ -188,8 +200,11 @@ class PostgresIngerichtTalentRepositoryTest {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 assertTrue(resultSet.next(), "Het ingerichte talent werd niet teruggevonden in de databank");
+                assertEquals("Schaken - Herfst", resultSet.getString("naam"));
+                assertEquals("Schaken voor de herfstperiode", resultSet.getString("omschrijving"));
                 assertEquals(10, resultSet.getInt("maximum_capaciteit"));
                 assertEquals("OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB", resultSet.getString("doelgroep"));
+                assertTrue(resultSet.getBoolean("actief"));
                 assertEquals(ingerichtTalent.getTalent().getId().longValue(), resultSet.getLong("talent_id"));
                 assertEquals(ingerichtTalent.getTalentenPeriode().getId().longValue(), resultSet.getLong("talenten_periode_id"));
                 assertFalse(resultSet.next(), "Er werden meerdere ingerichte talenten met hetzelfde ID gevonden");

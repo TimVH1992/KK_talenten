@@ -77,14 +77,14 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                         toewijzing.getLeerling(),
                         toewijzing.getIngerichtTalent(),
                         toewijzing.getToewijzingsType(),
-                        resultSet.getTimestamp("toegewezen_op")
-                                .toLocalDateTime(),
+                        resultSet.getTimestamp("toegewezen_op").toLocalDateTime(),
                         gewijzigdOp == null
                                 ? null
                                 : gewijzigdOp.toLocalDateTime(),
                         toewijzing.getVoorkeurNummer()
                 );
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De toewijzing kon niet opgeslagen worden",
@@ -94,9 +94,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
     }
 
     @Override
-    public List<Toewijzing> zoekVoorPeriode(
-            TalentenPeriode periode
-    ) {
+    public List<Toewijzing> zoekVoorPeriode(TalentenPeriode periode) {
         valideerOpgeslagenPeriode(periode);
 
         String sql = """
@@ -117,8 +115,11 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     k.doelgroep AS klas_doelgroep,
 
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep AS talent_doelgroep,
+                    it.actief AS ingericht_talent_actief,
                     it.talent_id,
 
                     t.naam AS talent_naam,
@@ -148,10 +149,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             try (PreparedStatement statement =
                          connection.prepareStatement(sql)) {
 
-                statement.setLong(
-                        1,
-                        periode.getId()
-                );
+                statement.setLong(1, periode.getId());
 
                 try (ResultSet resultSet =
                              statement.executeQuery()) {
@@ -172,6 +170,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     return toewijzingen;
                 }
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De toewijzingen konden niet opgehaald worden voor periode: "
@@ -209,8 +208,11 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     tw.gewijzigd_op,
 
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep AS talent_doelgroep,
+                    it.actief AS ingericht_talent_actief,
                     it.talent_id,
 
                     t.naam AS talent_naam,
@@ -236,15 +238,8 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             try (PreparedStatement statement =
                          connection.prepareStatement(sql)) {
 
-                statement.setLong(
-                        1,
-                        leerling.getId()
-                );
-
-                statement.setLong(
-                        2,
-                        periode.getId()
-                );
+                statement.setLong(1, leerling.getId());
+                statement.setLong(2, periode.getId());
 
                 try (ResultSet resultSet =
                              statement.executeQuery()) {
@@ -270,6 +265,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     return toewijzing;
                 }
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De toewijzing kon niet opgehaald worden voor leerling: "
@@ -306,10 +302,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            statement.setLong(
-                    1,
-                    ingerichtTalent.getId()
-            );
+            statement.setLong(1, ingerichtTalent.getId());
 
             try (ResultSet resultSet =
                          statement.executeQuery()) {
@@ -322,6 +315,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
 
                 return resultSet.getInt("aantal");
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "Het aantal toewijzingen kon niet opgehaald worden",
@@ -415,6 +409,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             }
 
             return toewijzing;
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De toewijzing kon niet gewijzigd worden",
@@ -476,6 +471,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                 connection.rollback();
                 throw e;
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De toewijzingen konden niet gezamenlijk opgeslagen worden",
@@ -617,8 +613,11 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     k.doelgroep AS klas_doelgroep,
 
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep AS talent_doelgroep,
+                    it.actief AS ingericht_talent_actief,
                     it.talent_id,
 
                     t.naam AS talent_naam,
@@ -657,15 +656,8 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             try (PreparedStatement statement =
                          connection.prepareStatement(sql)) {
 
-                statement.setLong(
-                        1,
-                        schooljaar.getId()
-                );
-
-                statement.setString(
-                        2,
-                        schooljaar.getNaam()
-                );
+                statement.setLong(1, schooljaar.getId());
+                statement.setString(2, schooljaar.getNaam());
 
                 try (ResultSet resultSet =
                              statement.executeQuery()) {
@@ -686,6 +678,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     return historischeToewijzingen;
                 }
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De historische toewijzingen konden niet opgehaald worden",
@@ -722,8 +715,11 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     tw.gewijzigd_op,
 
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep AS talent_doelgroep,
+                    it.actief AS ingericht_talent_actief,
                     it.talent_id,
 
                     t.naam AS talent_naam,
@@ -758,15 +754,8 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             try (PreparedStatement statement =
                          connection.prepareStatement(sql)) {
 
-                statement.setLong(
-                        1,
-                        leerling.getId()
-                );
-
-                statement.setLong(
-                        2,
-                        schooljaar.getId()
-                );
+                statement.setLong(1, leerling.getId());
+                statement.setLong(2, schooljaar.getId());
 
                 try (ResultSet resultSet =
                              statement.executeQuery()) {
@@ -788,6 +777,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     return toewijzingen;
                 }
             }
+
         } catch (SQLException e) {
             throw new IllegalStateException(
                     "De historische toewijzingen van de leerling konden niet opgehaald worden",
@@ -824,10 +814,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
         try (PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            statement.setLong(
-                    1,
-                    periodeId
-            );
+            statement.setLong(1, periodeId);
 
             try (ResultSet resultSet =
                          statement.executeQuery()) {
@@ -885,10 +872,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
         try (PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
-            statement.setLong(
-                    1,
-                    schooljaarId
-            );
+            statement.setLong(1, schooljaarId);
 
             try (ResultSet resultSet =
                          statement.executeQuery()) {
@@ -974,37 +958,14 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                 klas
         );
 
-        Talent talent = new Talent(
-                resultSet.getLong("talent_id"),
-                resultSet.getString("talent_naam"),
-                resultSet.getString("beschrijving")
-        );
-
-        long ingerichtTalentId =
-                resultSet.getLong(
-                        "ingericht_talent_id"
-                );
-
-        List<Leerkracht> leerkrachten =
-                zoekLeerkrachtenInMap(
-                        leerkrachtenPerIngerichtTalent,
-                        ingerichtTalentId
-                );
+        Talent talent = maakTalent(resultSet);
 
         IngerichtTalent ingerichtTalent =
-                new IngerichtTalent(
-                        ingerichtTalentId,
+                maakIngerichtTalent(
+                        resultSet,
                         talent,
                         periode,
-                        resultSet.getInt(
-                                "maximum_capaciteit"
-                        ),
-                        Doelgroep.valueOf(
-                                resultSet.getString(
-                                        "talent_doelgroep"
-                                )
-                        ),
-                        leerkrachten
+                        leerkrachtenPerIngerichtTalent
                 );
 
         return maakToewijzing(
@@ -1021,37 +982,14 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent
     ) throws SQLException {
 
-        Talent talent = new Talent(
-                resultSet.getLong("talent_id"),
-                resultSet.getString("talent_naam"),
-                resultSet.getString("beschrijving")
-        );
-
-        long ingerichtTalentId =
-                resultSet.getLong(
-                        "ingericht_talent_id"
-                );
-
-        List<Leerkracht> leerkrachten =
-                zoekLeerkrachtenInMap(
-                        leerkrachtenPerIngerichtTalent,
-                        ingerichtTalentId
-                );
+        Talent talent = maakTalent(resultSet);
 
         IngerichtTalent ingerichtTalent =
-                new IngerichtTalent(
-                        ingerichtTalentId,
+                maakIngerichtTalent(
+                        resultSet,
                         talent,
                         periode,
-                        resultSet.getInt(
-                                "maximum_capaciteit"
-                        ),
-                        Doelgroep.valueOf(
-                                resultSet.getString(
-                                        "talent_doelgroep"
-                                )
-                        ),
-                        leerkrachten
+                        leerkrachtenPerIngerichtTalent
                 );
 
         return maakToewijzing(
@@ -1086,11 +1024,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                 klas
         );
 
-        Talent talent = new Talent(
-                resultSet.getLong("talent_id"),
-                resultSet.getString("talent_naam"),
-                resultSet.getString("beschrijving")
-        );
+        Talent talent = maakTalent(resultSet);
 
         TalentenPeriode periode =
                 new TalentenPeriode(
@@ -1109,31 +1043,12 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                         schooljaar
                 );
 
-        long ingerichtTalentId =
-                resultSet.getLong(
-                        "ingericht_talent_id"
-                );
-
-        List<Leerkracht> leerkrachten =
-                zoekLeerkrachtenInMap(
-                        leerkrachtenPerIngerichtTalent,
-                        ingerichtTalentId
-                );
-
         IngerichtTalent ingerichtTalent =
-                new IngerichtTalent(
-                        ingerichtTalentId,
+                maakIngerichtTalent(
+                        resultSet,
                         talent,
                         periode,
-                        resultSet.getInt(
-                                "maximum_capaciteit"
-                        ),
-                        Doelgroep.valueOf(
-                                resultSet.getString(
-                                        "talent_doelgroep"
-                                )
-                        ),
-                        leerkrachten
+                        leerkrachtenPerIngerichtTalent
                 );
 
         return maakToewijzing(
@@ -1150,11 +1065,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent
     ) throws SQLException {
 
-        Talent talent = new Talent(
-                resultSet.getLong("talent_id"),
-                resultSet.getString("talent_naam"),
-                resultSet.getString("beschrijving")
-        );
+        Talent talent = maakTalent(resultSet);
 
         TalentenPeriode periode =
                 new TalentenPeriode(
@@ -1173,6 +1084,38 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                         schooljaar
                 );
 
+        IngerichtTalent ingerichtTalent =
+                maakIngerichtTalent(
+                        resultSet,
+                        talent,
+                        periode,
+                        leerkrachtenPerIngerichtTalent
+                );
+
+        return maakToewijzing(
+                resultSet,
+                leerling,
+                ingerichtTalent
+        );
+    }
+
+    private Talent maakTalent(ResultSet resultSet)
+            throws SQLException {
+
+        return new Talent(
+                resultSet.getLong("talent_id"),
+                resultSet.getString("talent_naam"),
+                resultSet.getString("beschrijving")
+        );
+    }
+
+    private IngerichtTalent maakIngerichtTalent(
+            ResultSet resultSet,
+            Talent talent,
+            TalentenPeriode periode,
+            Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent
+    ) throws SQLException {
+
         long ingerichtTalentId =
                 resultSet.getLong(
                         "ingericht_talent_id"
@@ -1184,26 +1127,28 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                         ingerichtTalentId
                 );
 
-        IngerichtTalent ingerichtTalent =
-                new IngerichtTalent(
-                        ingerichtTalentId,
-                        talent,
-                        periode,
-                        resultSet.getInt(
-                                "maximum_capaciteit"
-                        ),
-                        Doelgroep.valueOf(
-                                resultSet.getString(
-                                        "talent_doelgroep"
-                                )
-                        ),
-                        leerkrachten
-                );
-
-        return maakToewijzing(
-                resultSet,
-                leerling,
-                ingerichtTalent
+        return new IngerichtTalent(
+                ingerichtTalentId,
+                talent,
+                periode,
+                resultSet.getString(
+                        "ingericht_talent_naam"
+                ),
+                resultSet.getString(
+                        "ingericht_talent_omschrijving"
+                ),
+                resultSet.getInt(
+                        "maximum_capaciteit"
+                ),
+                Doelgroep.valueOf(
+                        resultSet.getString(
+                                "talent_doelgroep"
+                        )
+                ),
+                leerkrachten,
+                resultSet.getBoolean(
+                        "ingericht_talent_actief"
+                )
         );
     }
 

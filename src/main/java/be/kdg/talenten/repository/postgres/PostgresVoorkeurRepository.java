@@ -107,12 +107,16 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                     k.doelgroep AS klas_doelgroep,
 
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep AS talent_doelgroep,
+                    it.actief AS ingericht_talent_actief,
 
                     t.talent_id,
                     t.naam AS talent_naam,
                     t.beschrijving
+
                 FROM voorkeuren v
                 JOIN leerlingen l
                     ON l.leerling_id = v.leerling_id
@@ -176,12 +180,16 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                     v.voorkeur_nummer,
 
                     it.ingericht_talent_id,
+                    it.naam AS ingericht_talent_naam,
+                    it.omschrijving AS ingericht_talent_omschrijving,
                     it.maximum_capaciteit,
                     it.doelgroep AS talent_doelgroep,
+                    it.actief AS ingericht_talent_actief,
 
                     t.talent_id,
                     t.naam AS talent_naam,
                     t.beschrijving
+
                 FROM voorkeuren v
                 JOIN ingerichte_talenten it
                     ON it.ingericht_talent_id = v.ingericht_talent_id
@@ -254,31 +262,15 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                 klas
         );
 
-        Talent talent = new Talent(
-                resultSet.getLong("talent_id"),
-                resultSet.getString("talent_naam"),
-                resultSet.getString("beschrijving")
-        );
+        Talent talent = maakTalent(resultSet);
 
-        long ingerichtTalentId =
-                resultSet.getLong("ingericht_talent_id");
-
-        List<Leerkracht> leerkrachten =
-                zoekLeerkrachtenInMap(
-                        leerkrachtenPerIngerichtTalent,
-                        ingerichtTalentId
+        IngerichtTalent ingerichtTalent =
+                maakIngerichtTalent(
+                        resultSet,
+                        talent,
+                        periode,
+                        leerkrachtenPerIngerichtTalent
                 );
-
-        IngerichtTalent ingerichtTalent = new IngerichtTalent(
-                ingerichtTalentId,
-                talent,
-                periode,
-                resultSet.getInt("maximum_capaciteit"),
-                Doelgroep.valueOf(
-                        resultSet.getString("talent_doelgroep")
-                ),
-                leerkrachten
-        );
 
         return new Voorkeur(
                 resultSet.getLong("voorkeur_id"),
@@ -296,11 +288,41 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
             Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent
     ) throws SQLException {
 
-        Talent talent = new Talent(
+        Talent talent = maakTalent(resultSet);
+
+        IngerichtTalent ingerichtTalent =
+                maakIngerichtTalent(
+                        resultSet,
+                        talent,
+                        periode,
+                        leerkrachtenPerIngerichtTalent
+                );
+
+        return new Voorkeur(
+                resultSet.getLong("voorkeur_id"),
+                leerling,
+                periode,
+                ingerichtTalent,
+                resultSet.getInt("voorkeur_nummer")
+        );
+    }
+
+    private Talent maakTalent(ResultSet resultSet)
+            throws SQLException {
+
+        return new Talent(
                 resultSet.getLong("talent_id"),
                 resultSet.getString("talent_naam"),
                 resultSet.getString("beschrijving")
         );
+    }
+
+    private IngerichtTalent maakIngerichtTalent(
+            ResultSet resultSet,
+            Talent talent,
+            TalentenPeriode periode,
+            Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent
+    ) throws SQLException {
 
         long ingerichtTalentId =
                 resultSet.getLong("ingericht_talent_id");
@@ -311,23 +333,18 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                         ingerichtTalentId
                 );
 
-        IngerichtTalent ingerichtTalent = new IngerichtTalent(
+        return new IngerichtTalent(
                 ingerichtTalentId,
                 talent,
                 periode,
+                resultSet.getString("ingericht_talent_naam"),
+                resultSet.getString("ingericht_talent_omschrijving"),
                 resultSet.getInt("maximum_capaciteit"),
                 Doelgroep.valueOf(
                         resultSet.getString("talent_doelgroep")
                 ),
-                leerkrachten
-        );
-
-        return new Voorkeur(
-                resultSet.getLong("voorkeur_id"),
-                leerling,
-                periode,
-                ingerichtTalent,
-                resultSet.getInt("voorkeur_nummer")
+                leerkrachten,
+                resultSet.getBoolean("ingericht_talent_actief")
         );
     }
 

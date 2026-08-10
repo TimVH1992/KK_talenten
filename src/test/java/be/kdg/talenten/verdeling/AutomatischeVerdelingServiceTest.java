@@ -413,6 +413,8 @@ class AutomatischeVerdelingServiceTest {
         return new IngerichtTalent(
                 talent,
                 periode,
+                talent.getNaam(),
+                talent.getBeschrijving(),
                 maximumCapaciteit,
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                 List.of(testLeerkracht)

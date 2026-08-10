@@ -112,6 +112,8 @@ class PostgresToewijzingRepositoryTest {
                 new IngerichtTalent(
                         schaken,
                         herfst,
+                        schaken.getNaam(),
+                        schaken.getBeschrijving(),
                         10,
                         Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                         List.of(tim)
@@ -122,6 +124,8 @@ class PostgresToewijzingRepositoryTest {
                 new IngerichtTalent(
                         dansen,
                         herfst,
+                        dansen.getNaam(),
+                        dansen.getBeschrijving(),
                         6,
                         Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                         List.of(tim)
@@ -202,6 +206,8 @@ class PostgresToewijzingRepositoryTest {
                 new IngerichtTalent(
                         schaken,
                         winter,
+                        schaken.getNaam(),
+                        schaken.getBeschrijving(),
                         8,
                         Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                         List.of(tim)
@@ -486,6 +492,8 @@ class PostgresToewijzingRepositoryTest {
                         new IngerichtTalent(
                                 schaken,
                                 verleden,
+                                schaken.getNaam(),
+                                schaken.getBeschrijving(),
                                 10,
                                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                                 List.of(tim)

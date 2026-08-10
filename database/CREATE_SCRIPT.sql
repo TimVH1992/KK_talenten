@@ -124,6 +124,7 @@ CREATE TABLE leerkrachten (
                               leerkracht_id BIGINT GENERATED ALWAYS AS IDENTITY,
                               voornaam VARCHAR(100) NOT NULL,
                               achternaam VARCHAR(100) NOT NULL,
+                              actief BOOLEAN NOT NULL DEFAULT TRUE,
 
                               CONSTRAINT pk_leerkrachten
                                   PRIMARY KEY (leerkracht_id),
@@ -144,6 +145,7 @@ CREATE TABLE talenten (
                           talent_id BIGINT GENERATED ALWAYS AS IDENTITY,
                           naam VARCHAR(100) NOT NULL,
                           beschrijving TEXT NOT NULL,
+                          actief BOOLEAN NOT NULL DEFAULT TRUE,
 
                           CONSTRAINT pk_talenten
                               PRIMARY KEY (talent_id),
@@ -278,8 +280,11 @@ EXECUTE FUNCTION controleer_schooljaar_datums();
 
 CREATE TABLE ingerichte_talenten (
                                      ingericht_talent_id BIGINT GENERATED ALWAYS AS IDENTITY,
+                                     naam VARCHAR(100) NOT NULL,
+                                     omschrijving TEXT NOT NULL,
                                      maximum_capaciteit INTEGER NOT NULL,
                                      doelgroep VARCHAR(50) NOT NULL,
+                                     actief BOOLEAN NOT NULL DEFAULT TRUE,
                                      talent_id BIGINT NOT NULL,
                                      talenten_periode_id BIGINT NOT NULL,
 
@@ -294,7 +299,13 @@ CREATE TABLE ingerichte_talenten (
                                      CONSTRAINT fk_ingerichte_talenten_periode
                                          FOREIGN KEY (talenten_periode_id)
                                              REFERENCES talenten_periodes (talenten_periode_id)
-                                             ON DELETE RESTRICT,
+                                             ON DELETE CASCADE,
+
+                                     CONSTRAINT chk_ingerichte_talenten_naam
+                                         CHECK (btrim(naam) <> ''),
+
+                                     CONSTRAINT chk_ingerichte_talenten_omschrijving
+                                         CHECK (btrim(omschrijving) <> ''),
 
                                      CONSTRAINT chk_ingerichte_talenten_capaciteit
                                          CHECK (maximum_capaciteit > 0),
@@ -307,9 +318,11 @@ CREATE TABLE ingerichte_talenten (
                                                  )
                                              ),
 
-                                     CONSTRAINT uq_ingerichte_talenten_talent_periode_doelgroep
-                                         UNIQUE (talent_id, talenten_periode_id, doelgroep),
+    -- Zelfde naam mag niet tweemaal voorkomen binnen dezelfde periode.
+                                     CONSTRAINT uq_ingerichte_talenten_naam_periode
+                                         UNIQUE (talenten_periode_id, naam),
 
+    -- Nodig voor de samengestelde foreign keys in voorkeuren/toewijzingen.
                                      CONSTRAINT uq_ingerichte_talenten_id_periode
                                          UNIQUE (ingericht_talent_id, talenten_periode_id)
 );
@@ -457,6 +470,15 @@ CREATE INDEX idx_ingerichte_talenten_periode
 CREATE INDEX idx_ingerichte_talenten_talent
     ON ingerichte_talenten (talent_id);
 
+-- Handig voor voorkeurenformulieren:
+-- actieve ingerichte talenten per periode en doelgroep.
+CREATE INDEX idx_ingerichte_talenten_periode_doelgroep_actief
+    ON ingerichte_talenten (
+                            talenten_periode_id,
+                            doelgroep,
+                            actief
+        );
+
 CREATE INDEX idx_itl_leerkracht
     ON ingericht_talent_leerkrachten (leerkracht_id);
 
@@ -471,6 +493,5 @@ CREATE INDEX idx_toewijzingen_periode
 
 CREATE INDEX idx_toewijzingen_ingericht_talent
     ON toewijzingen (ingericht_talent_id);
-
 
 COMMIT;
