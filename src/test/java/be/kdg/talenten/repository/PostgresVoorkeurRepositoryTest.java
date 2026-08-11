@@ -13,6 +13,8 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class PostgresVoorkeurRepositoryTest {
 
     private Schooljaar schooljaar2025_2026;
@@ -84,7 +86,7 @@ public class PostgresVoorkeurRepositoryTest {
 
         // ASSERT
         Assertions.assertNotNull(opgeslagenVoorkeur);
-        Assertions.assertEquals(1, opgeslagenVoorkeur.getId());
+        assertEquals(1, opgeslagenVoorkeur.getId());
     }
 
     @Test
@@ -240,7 +242,7 @@ public class PostgresVoorkeurRepositoryTest {
                 voorkeurRepository.zoekVoorPeriode(herfst);
 
         // ASSERT
-        Assertions.assertEquals(2, resultaat.size());
+        assertEquals(2, resultaat.size());
 
         Voorkeur eersteVoorkeur =
                 resultaat.getFirst();
@@ -248,57 +250,57 @@ public class PostgresVoorkeurRepositoryTest {
         Voorkeur tweedeVoorkeur =
                 resultaat.get(1);
 
-        Assertions.assertEquals(
+        assertEquals(
                 opgeslagenSchakenHerfst.getId(),
                 eersteVoorkeur.getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 1,
                 eersteVoorkeur.getVoorkeurNummer()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 tim.getId(),
                 eersteVoorkeur.getLeerling().getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 herfst.getId(),
                 eersteVoorkeur.getTalentenPeriode().getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 schakenHerfst.getId(),
                 eersteVoorkeur.getIngerichtTalent().getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 opgeslagenVoetbalHerfst.getId(),
                 tweedeVoorkeur.getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 2,
                 tweedeVoorkeur.getVoorkeurNummer()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 tim.getId(),
                 tweedeVoorkeur.getLeerling().getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 herfst.getId(),
                 tweedeVoorkeur.getTalentenPeriode().getId()
         );
 
-        Assertions.assertEquals(
+        assertEquals(
                 voetbalHerfst.getId(),
                 tweedeVoorkeur.getIngerichtTalent().getId()
         );
 
-        Assertions.assertTrue(
+        assertTrue(
                 resultaat.stream()
                         .allMatch(voorkeur ->
                                 voorkeur.getTalentenPeriode()
@@ -404,6 +406,131 @@ public class PostgresVoorkeurRepositoryTest {
                 leerkracht,
                 ingerichtTalent,
                 voorkeur
+        );
+    }
+    @Test
+    void verwijderVoorLeerlingEnPeriodeVerwijdertAlleenVoorkeurenVanGevraagdeLeerlingEnPeriode() {
+        // ARRANGE
+        KlasRepository klasRepository = new PostgresKlasRepository();
+        LeerlingRepository leerlingRepository = new PostgresLeerlingRepository();
+        TalentRepository talentRepository = new PostgresTalentRepository();
+        TalentenPeriodeRepository periodeRepository = new PostgresTalentenPeriodeRepository();
+        LeerkrachtRepository leerkrachtRepository = new PostgresLeerkrachtRepository();
+        IngerichtTalentRepository ingerichtTalentRepository = new PostgresIngerichtTalentRepository();
+        VoorkeurRepository voorkeurRepository = new PostgresVoorkeurRepository();
+
+        Klas klas = klasRepository.save(
+                new Klas(
+                        "1AA",
+                        schooljaar2026_2027,
+                        1,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        Leerling jan = leerlingRepository.save(
+                new Leerling("Jan", "Peeters", klas)
+        );
+
+        Leerling julie = leerlingRepository.save(
+                new Leerling("Julie", "Martens", klas)
+        );
+
+        TalentenPeriode herfst = periodeRepository.save(
+                new TalentenPeriode(
+                        "Herfst",
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 10, 31),
+                        schooljaar2026_2027
+                )
+        );
+
+        TalentenPeriode winter = periodeRepository.save(
+                new TalentenPeriode(
+                        "Winter",
+                        LocalDate.of(2026, 11, 1),
+                        LocalDate.of(2026, 12, 20),
+                        schooljaar2026_2027
+                )
+        );
+
+        Talent schaken = talentRepository.save(
+                new Talent("Schaken", "Leren schaken")
+        );
+
+        Talent dansen = talentRepository.save(
+                new Talent("Dansen", "Leren dansen")
+        );
+
+        Talent koken = talentRepository.save(
+                new Talent("Koken", "Leren koken")
+        );
+
+        Leerkracht tom = leerkrachtRepository.save(
+                new Leerkracht("Tom", "Laforce")
+        );
+
+        IngerichtTalent schakenHerfst = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        schaken,
+                        herfst,
+                        "Schaken herfst",
+                        "Schaken in de herfst",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(tom)
+                )
+        );
+
+        IngerichtTalent dansenHerfst = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        dansen,
+                        herfst,
+                        "Dansen herfst",
+                        "Dansen in de herfst",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(tom)
+                )
+        );
+
+        IngerichtTalent kokenWinter = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        koken,
+                        winter,
+                        "Koken winter",
+                        "Koken in de winter",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(tom)
+                )
+        );
+
+        voorkeurRepository.save(new Voorkeur(jan, herfst, schakenHerfst, 1));
+        voorkeurRepository.save(new Voorkeur(jan, herfst, dansenHerfst, 2));
+        voorkeurRepository.save(new Voorkeur(julie, herfst, schakenHerfst, 1));
+        voorkeurRepository.save(new Voorkeur(jan, winter, kokenWinter, 1));
+
+        // ACT
+        voorkeurRepository.verwijderVoorLeerlingEnPeriode(jan, herfst);
+
+        // ASSERT
+        List<Voorkeur> janHerfst = voorkeurRepository.zoekVoorLeerlingEnPeriode(jan, herfst);
+        List<Voorkeur> julieHerfst = voorkeurRepository.zoekVoorLeerlingEnPeriode(julie, herfst);
+        List<Voorkeur> janWinter = voorkeurRepository.zoekVoorLeerlingEnPeriode(jan, winter);
+
+        Assertions.assertTrue(janHerfst.isEmpty());
+
+        Assertions.assertEquals(1, julieHerfst.size());
+        Assertions.assertEquals(
+                schakenHerfst.getId(),
+                julieHerfst.getFirst().getIngerichtTalent().getId()
+        );
+
+        Assertions.assertEquals(1, janWinter.size());
+        Assertions.assertEquals(
+                kokenWinter.getId(),
+                janWinter.getFirst().getIngerichtTalent().getId()
         );
     }
 }

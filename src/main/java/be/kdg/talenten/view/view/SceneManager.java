@@ -1,4 +1,4 @@
-package be.kdg.talenten.view;
+package be.kdg.talenten.view.view;
 
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -7,8 +7,8 @@ import javafx.stage.Stage;
 import java.net.URL;
 
 public final class SceneManager {
-    private static final double STANDAARD_BREEDTE = 1440;
-    private static final double STANDAARD_HOOGTE = 900;
+    private static final double STANDAARD_BREEDTE = 1280;
+    private static final double STANDAARD_HOOGTE = 800;
 
     private final Stage stage;
 
@@ -35,9 +35,10 @@ public final class SceneManager {
             stage.getScene().setRoot(root);
         }
 
-        stage.setMinWidth(1180);
-        stage.setMinHeight(720);
+        stage.setMinWidth(1000);
+        stage.setMinHeight(650);
         stage.show();
+        stage.setMaximized(true);
     }
 
     public void sluit() {

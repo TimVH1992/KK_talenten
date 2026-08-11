@@ -4,6 +4,7 @@ import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
+import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurImportProbleemRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
 import be.kdg.talenten.service.leerling.LeerlingDetailsService;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
@@ -138,12 +139,15 @@ class SchooljaarFilteringServiceTest {
                 new InMemoryToewijzingRepository(historiek);
         InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(alice));
 
-        AutomatischeVerdelingService service =
-                new AutomatischeVerdelingService(
-                        new InMemoryVoorkeurRepository(voorkeuren),
-                        toewijzingRepository,
-                        leerlingRepository
-                );
+        InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
+        InMemoryVoorkeurImportProbleemRepository probleemRepository = new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
+
+        AutomatischeVerdelingService service = new AutomatischeVerdelingService(
+                voorkeurRepository,
+                toewijzingRepository,
+                leerlingRepository,
+                probleemRepository
+        );
 
         // ACT
         VerdelingsResultaat resultaat =

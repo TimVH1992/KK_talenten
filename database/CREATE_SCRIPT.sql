@@ -453,6 +453,25 @@ CREATE TABLE toewijzingen (
                                   UNIQUE (leerling_id, talenten_periode_id)
 );
 
+-- =========================================================
+-- VOORKEUR_IMPORT_PROBLEMEN
+-- =========================================================
+
+CREATE TABLE voorkeur_import_problemen (
+                                           voorkeur_import_probleem_id BIGSERIAL PRIMARY KEY,
+                                           leerling_id BIGINT NOT NULL,
+                                           talenten_periode_id BIGINT NOT NULL,
+                                           reden TEXT NOT NULL,
+
+                                           CONSTRAINT fk_voorkeur_import_probleem_leerling
+                                               FOREIGN KEY (leerling_id)
+                                                   REFERENCES leerlingen(leerling_id),
+
+                                           CONSTRAINT fk_voorkeur_import_probleem_periode
+                                               FOREIGN KEY (talenten_periode_id)
+                                                   REFERENCES talenten_periodes(talenten_periode_id)
+);
+
 
 -- =========================================================
 -- INDEXEN

@@ -1,4 +1,4 @@
-package be.kdg.talenten.view.verdeling;
+package be.kdg.talenten.view.view.verdeling;
 
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
@@ -415,7 +415,7 @@ public class VerdelingView extends BorderPane {
         selectieBalk.getStyleClass().add("toolbar");
         selectieBalk.setPadding(new Insets(16));
 
-        VBox bovenkant = new VBox(18, titelBox, selectieBalk);
+        VBox bovenkant = new VBox(12, titelBox, statusLabel, selectieBalk);
         bovenkant.setPadding(new Insets(28, 28, 12, 28));
         setTop(bovenkant);
 
@@ -485,7 +485,7 @@ public class VerdelingView extends BorderPane {
         detailSplitPane.setDividerPositions(0.30, 0.72);
         detailSplitPane.setPrefHeight(205);
 
-        VBox onderkant = new VBox(8, geselecteerdeLeerlingLabel, detailSplitPane, statusLabel);
+        VBox onderkant = new VBox(8, geselecteerdeLeerlingLabel, detailSplitPane);
         onderkant.setPadding(new Insets(12, 28, 20, 28));
         onderkant.getStyleClass().add("bottom-panel");
         BorderPane.setMargin(onderkant, new Insets(0, 18, 18, 18));
@@ -774,6 +774,13 @@ public class VerdelingView extends BorderPane {
         if (!statusLabel.getStyleClass().contains("status-error")) {
             statusLabel.getStyleClass().add("status-error");
         }
+
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Fout");
+        alert.setHeaderText("De actie kon niet uitgevoerd worden");
+        alert.setContentText(melding);
+        maakAlertLeesbaar(alert);
+        alert.showAndWait();
     }
 
     public boolean vraagBevestiging(String titel, String boodschap) {
@@ -781,10 +788,17 @@ public class VerdelingView extends BorderPane {
         alert.setTitle(titel);
         alert.setHeaderText(titel);
         alert.setContentText(boodschap);
+        maakAlertLeesbaar(alert);
 
         return alert.showAndWait()
                 .filter(ButtonType.OK::equals)
                 .isPresent();
+    }
+
+    private void maakAlertLeesbaar(Alert alert) {
+        alert.getDialogPane().setPrefWidth(700);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+        alert.getDialogPane().setMaxWidth(850);
     }
 
     public void setWijzigingenToegestaan(boolean toegestaan) {

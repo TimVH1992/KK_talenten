@@ -1,4 +1,4 @@
-package be.kdg.talenten.view.main;
+package be.kdg.talenten.view.view.main;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -6,6 +6,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -88,7 +89,7 @@ public class MainView extends BorderPane {
 
     private void layoutNodes() {
         setLeft(maakSidebar());
-        setCenter(maakDashboard());
+        setCenter(maakScrollbaarDashboard());
         getStyleClass().add("app-background");
     }
 
@@ -144,6 +145,15 @@ public class MainView extends BorderPane {
         Region region = new Region();
         region.setPrefHeight(10);
         return region;
+    }
+
+    private ScrollPane maakScrollbaarDashboard() {
+        VBox dashboard = maakDashboard();
+        ScrollPane scrollPane = new ScrollPane(dashboard);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPannable(true);
+        scrollPane.getStyleClass().add("content-scroll-pane");
+        return scrollPane;
     }
 
     private VBox maakDashboard() {
@@ -227,6 +237,8 @@ public class MainView extends BorderPane {
         alert.setTitle("Nog niet geïmplementeerd");
         alert.setHeaderText(onderdeel);
         alert.setContentText("Dit beheerscherm is nog niet uitgewerkt. De backend- en verdelingsfunctionaliteit kan ondertussen wel gebruikt worden.");
+        alert.getDialogPane().setPrefWidth(650);
+        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.showAndWait();
     }
 

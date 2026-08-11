@@ -1,8 +1,9 @@
-package be.kdg.talenten.view.main;
+package be.kdg.talenten.view.view.main;
 
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.main.MainView;
 import be.kdg.talenten.view.verdeling.VerdelingPresenter;
 import be.kdg.talenten.view.verdeling.VerdelingView;
 import be.kdg.talenten.view.voorkeuren.VoorkeurenPresenter;
@@ -10,10 +11,10 @@ import be.kdg.talenten.view.voorkeuren.VoorkeurenView;
 
 public class MainPresenter {
     private final ApplicationConfig config;
-    private final MainView view;
+    private final be.kdg.talenten.view.main.MainView view;
     private final SceneManager sceneManager;
 
-    public MainPresenter(ApplicationConfig config, MainView view, SceneManager sceneManager) {
+    public MainPresenter(ApplicationConfig config, be.kdg.talenten.view.main.MainView view, SceneManager sceneManager) {
         if (config == null || view == null || sceneManager == null) {
             throw new IllegalArgumentException("Config, view en sceneManager mogen niet null zijn");
         }
@@ -69,7 +70,7 @@ public class MainPresenter {
     }
 
     private void toonHoofdmenu() {
-        MainView mainView = new MainView();
+        be.kdg.talenten.view.main.MainView mainView = new MainView();
         new MainPresenter(config, mainView, sceneManager);
         sceneManager.toon(mainView);
     }

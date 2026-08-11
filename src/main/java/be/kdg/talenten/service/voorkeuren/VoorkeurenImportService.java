@@ -72,6 +72,8 @@ public class VoorkeurenImportService {
                         String achternaam = row.getCell(1).getStringCellValue();
 
                         Leerling huidigeLeerling = zoekLeerling(leerlingen, voornaam, achternaam, klasNaam);
+                        voorkeurRepository.verwijderVoorLeerlingEnPeriode(huidigeLeerling, periode);
+                        voorkeurImportProbleemRepository.verwijderVoorLeerlingEnPeriode(huidigeLeerling, periode);
 
                         String[] keuzes = {keuze1, keuze2, keuze3};
                         List<String> reedsGebruikteKeuzes = new ArrayList<>();
