@@ -64,4 +64,18 @@ public class InMemoryVoorkeurImportProbleemRepository implements VoorkeurImportP
 
         return gevondenProblemen;
     }
+
+    @Override
+    public void verwijderVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn");
+        }
+        if (periode == null) {
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
+
+        opgeslagenProblemen.removeIf(probleem ->
+                probleem.getLeerling().equals(leerling)
+                        && probleem.getPeriode().equals(periode));
+    }
 }

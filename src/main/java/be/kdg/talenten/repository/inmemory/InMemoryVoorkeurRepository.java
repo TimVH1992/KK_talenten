@@ -37,7 +37,7 @@ public class InMemoryVoorkeurRepository implements VoorkeurRepository {
         List<Voorkeur> resultaat = new ArrayList<>();
 
         for (Voorkeur voorkeur : voorkeuren){
-            if (voorkeur.getTalentenPeriode() == periode) {
+            if (voorkeur.getTalentenPeriode().equals(periode)) {
                 resultaat.add(voorkeur);
             }
         }
@@ -57,5 +57,19 @@ public class InMemoryVoorkeurRepository implements VoorkeurRepository {
                 .filter(voorkeur -> voorkeur.getTalentenPeriode().equals(periode))
                 .sorted(Comparator.comparingInt(Voorkeur::getVoorkeurNummer))
                 .toList();
+    }
+
+    @Override
+    public void verwijderVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("De leerling mag niet null zijn");
+        }
+        if (periode == null) {
+            throw new IllegalArgumentException("De periode mag niet null zijn");
+        }
+
+        voorkeuren.removeIf(voorkeur ->
+                voorkeur.getLeerling().equals(leerling)
+                        && voorkeur.getTalentenPeriode().equals(periode));
     }
 }

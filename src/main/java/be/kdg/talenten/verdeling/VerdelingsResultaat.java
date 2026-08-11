@@ -2,6 +2,7 @@ package be.kdg.talenten.verdeling;
 
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.Toewijzing;
+import be.kdg.talenten.domain.VoorkeurImportProbleem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,10 +10,12 @@ import java.util.List;
 public class VerdelingsResultaat {
     private List<Toewijzing> toewijzingen;
     private List<Leerling> nietToegewezenLeerlingen;
+    private List<VoorkeurImportProbleem> importProblemen;
 
     public VerdelingsResultaat() {
         toewijzingen = new ArrayList<>();
         nietToegewezenLeerlingen = new ArrayList<>();
+        importProblemen = new ArrayList<>();
     }
 
     public void voegToewijzingToe(Toewijzing toewijzing){
@@ -45,5 +48,17 @@ public class VerdelingsResultaat {
 
     public boolean heeftNietToegewezenLeerlingen(){
         return !nietToegewezenLeerlingen.isEmpty();
+    }
+
+    public void voegImportProbleemToe(VoorkeurImportProbleem probleem) {
+        if (probleem == null) {
+            throw new IllegalArgumentException("Importprobleem mag niet null zijn");
+        }
+
+        importProblemen.add(probleem);
+    }
+
+    public List<VoorkeurImportProbleem> getImportProblemen() {
+        return importProblemen;
     }
 }

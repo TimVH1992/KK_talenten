@@ -239,6 +239,33 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
         }
     }
 
+    @Override
+    public void verwijderVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode) {
+        valideerOpgeslagenLeerling(leerling);
+        valideerOpgeslagenPeriode(periode);
+
+        String sql = """
+            DELETE FROM voorkeuren
+            WHERE leerling_id = ?
+              AND talenten_periode_id = ?
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, leerling.getId());
+            statement.setLong(2, periode.getId());
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De voorkeuren van de leerling konden niet verwijderd worden",
+                    e
+            );
+        }
+    }
+
     private Voorkeur maakVoorkeurVoorPeriode(
             ResultSet resultSet,
             TalentenPeriode periode,

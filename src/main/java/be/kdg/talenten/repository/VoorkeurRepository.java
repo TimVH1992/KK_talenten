@@ -10,4 +10,5 @@ public interface VoorkeurRepository {
     Voorkeur save(Voorkeur voorkeur);
     List<Voorkeur> zoekVoorPeriode(TalentenPeriode periode);
     List<Voorkeur> zoekVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode);
+    void verwijderVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode);
 }

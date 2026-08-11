@@ -12,4 +12,5 @@ public interface VoorkeurImportProbleemRepository {
     List<VoorkeurImportProbleem> zoekVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode);
 
     List<VoorkeurImportProbleem> zoekVoorPeriode(TalentenPeriode periode);
+    void verwijderVoorLeerlingEnPeriode(Leerling leerling, TalentenPeriode periode);
 }

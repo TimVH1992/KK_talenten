@@ -3,6 +3,7 @@ package be.kdg.talenten.verdeling;
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
+import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurImportProbleemRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.testutil.TestDataFactory;
@@ -58,11 +59,14 @@ class AutomatischeVerdelingServiceTest {
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
         InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(jan));
+        InMemoryVoorkeurImportProbleemRepository inMemoryVoorkeurImportProbleemRepository = new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
                 toewijzingRepository,
-                leerlingRepository
+                leerlingRepository,
+                inMemoryVoorkeurImportProbleemRepository
+
         );
 
         // ACT
@@ -132,11 +136,14 @@ class AutomatischeVerdelingServiceTest {
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(historischeToewijzingen);
         InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(jan));
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
                 toewijzingRepository,
-                leerlingRepository
+                leerlingRepository,
+                probleemRepository
         );
 
         // ACT
@@ -203,10 +210,14 @@ class AutomatischeVerdelingServiceTest {
                 new Toewijzing(julie, kokenWinter, ToewijzingsType.AUTOMATISCH, 3)
         );
 
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
+
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
                 toewijzingRepository,
-                leerlingRepository
+                leerlingRepository,
+                probleemRepository
         );
 
         // ACT
@@ -300,10 +311,14 @@ class AutomatischeVerdelingServiceTest {
                 new Toewijzing(julie, schakenWinter, ToewijzingsType.AUTOMATISCH, 3)
         );
 
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
+
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
                 toewijzingRepository,
-                leerlingRepository
+                leerlingRepository,
+                probleemRepository
         );
 
         // ACT
@@ -380,6 +395,7 @@ class AutomatischeVerdelingServiceTest {
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
         InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(alice));
+        InMemoryVoorkeurImportProbleemRepository probleemRepository = new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
 
         Toewijzing bestaandeToewijzing = new Toewijzing(
                 alice,
@@ -390,10 +406,13 @@ class AutomatischeVerdelingServiceTest {
 
         toewijzingRepository.save(bestaandeToewijzing);
 
+
+
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
                 toewijzingRepository,
-                leerlingRepository
+                leerlingRepository,
+                probleemRepository
         );
 
         // ACT + ASSERT
@@ -456,5 +475,67 @@ class AutomatischeVerdelingServiceTest {
         assertEquals(0, resultaat.getToewijzingen().size());
         assertEquals(1, resultaat.getNietToegewezenLeerlingen().size());
         assertEquals(jan, resultaat.getNietToegewezenLeerlingen().get(0));
+    }
+    @Test
+    void leerlingMetOnvolledigeVoorkeurenKrijgtImportprobleemMeeInVerdelingsResultaat() {
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2099, 9, 1);
+        LocalDate eindDatum = LocalDate.of(2099, 10, 31);
+
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+        Klas klas1AA = maakObservatieKlas(schooljaar);
+
+        Leerling sofie = new Leerling("Sofie", "Peeters", klas1AA);
+
+        TalentenPeriode herfst = new TalentenPeriode("Herfst", startDatum, eindDatum, schooljaar);
+
+        Talent schaken = new Talent("Schaken", "Leren schaken");
+        Talent koken = new Talent("Koken", "Leren koken");
+
+        IngerichtTalent schakenHerfst = richtTalentIn(schaken, herfst, 10);
+        IngerichtTalent kokenHerfst = richtTalentIn(koken, herfst, 10);
+
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(sofie, herfst, schakenHerfst, 1),
+                new Voorkeur(sofie, herfst, kokenHerfst, 2)
+        );
+
+        VoorkeurImportProbleem importProbleem = new VoorkeurImportProbleem(
+                sofie,
+                herfst,
+                "Keuze 3 is niet ingevuld"
+        );
+
+        InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
+        InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(sofie));
+
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
+
+        probleemRepository.save(importProbleem);
+
+        AutomatischeVerdelingService service = new AutomatischeVerdelingService(
+                voorkeurRepository,
+                toewijzingRepository,
+                leerlingRepository,
+                probleemRepository
+        );
+
+        // ACT
+        VerdelingsResultaat resultaat = service.voerAutomatischeVerdelingUit(herfst);
+
+        // ASSERT
+        assertEquals(0, resultaat.getAantalToewijzingen());
+        assertEquals(1, resultaat.getNietToegewezenLeerlingen().size());
+        assertSame(sofie, resultaat.getNietToegewezenLeerlingen().getFirst());
+
+        assertEquals(1, resultaat.getImportProblemen().size());
+
+        VoorkeurImportProbleem probleemUitResultaat = resultaat.getImportProblemen().getFirst();
+
+        assertSame(sofie, probleemUitResultaat.getLeerling());
+        assertSame(herfst, probleemUitResultaat.getPeriode());
+        assertEquals("Keuze 3 is niet ingevuld", probleemUitResultaat.getReden());
     }
 }
