@@ -1,6 +1,7 @@
 package be.kdg.talenten.verdeling;
 
 import be.kdg.talenten.domain.*;
+import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
@@ -56,10 +57,12 @@ class AutomatischeVerdelingServiceTest {
 
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(jan));
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
-                toewijzingRepository
+                toewijzingRepository,
+                leerlingRepository
         );
 
         // ACT
@@ -128,10 +131,12 @@ class AutomatischeVerdelingServiceTest {
 
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(historischeToewijzingen);
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(jan));
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
-                toewijzingRepository
+                toewijzingRepository,
+                leerlingRepository
         );
 
         // ACT
@@ -188,6 +193,7 @@ class AutomatischeVerdelingServiceTest {
 
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(jan));
 
         Toewijzing manueleToewijzing = toewijzingRepository.save(
                 new Toewijzing(jan, schakenWinter, ToewijzingsType.MANUEEL)
@@ -199,7 +205,8 @@ class AutomatischeVerdelingServiceTest {
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
-                toewijzingRepository
+                toewijzingRepository,
+                leerlingRepository
         );
 
         // ACT
@@ -283,6 +290,7 @@ class AutomatischeVerdelingServiceTest {
 
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(jan));
 
         Toewijzing herfstToewijzing = toewijzingRepository.save(
                 new Toewijzing(jan, schakenHerfst, ToewijzingsType.AUTOMATISCH, 1)
@@ -294,7 +302,8 @@ class AutomatischeVerdelingServiceTest {
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
-                toewijzingRepository
+                toewijzingRepository,
+                leerlingRepository
         );
 
         // ACT
@@ -370,6 +379,7 @@ class AutomatischeVerdelingServiceTest {
 
         InMemoryVoorkeurRepository voorkeurRepository = new InMemoryVoorkeurRepository(voorkeuren);
         InMemoryToewijzingRepository toewijzingRepository = new InMemoryToewijzingRepository(new ArrayList<>());
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(alice));
 
         Toewijzing bestaandeToewijzing = new Toewijzing(
                 alice,
@@ -382,7 +392,8 @@ class AutomatischeVerdelingServiceTest {
 
         AutomatischeVerdelingService service = new AutomatischeVerdelingService(
                 voorkeurRepository,
-                toewijzingRepository
+                toewijzingRepository,
+                leerlingRepository
         );
 
         // ACT + ASSERT
@@ -419,5 +430,31 @@ class AutomatischeVerdelingServiceTest {
                 Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
                 List.of(testLeerkracht)
         );
+    }
+    @Test
+    void leerlingZonderVoorkeurenWordtNietToegewezen() {
+        // ARRANGE
+        Schooljaar schooljaar = new Schooljaar("2026-2027", LocalDate.of(2026, 9, 1), LocalDate.of(2027, 6, 30));
+        TalentenPeriode periode = new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 21), schooljaar);
+
+        Doelgroep doelgroep = Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+
+        Klas klas = new Klas("1AA", schooljaar, 1, doelgroep);
+        Leerling jan = new Leerling("Jan", "Mertens", klas);
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(
+                List.of(jan),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // ASSERT
+        assertEquals(0, resultaat.getToewijzingen().size());
+        assertEquals(1, resultaat.getNietToegewezenLeerlingen().size());
+        assertEquals(jan, resultaat.getNietToegewezenLeerlingen().get(0));
     }
 }

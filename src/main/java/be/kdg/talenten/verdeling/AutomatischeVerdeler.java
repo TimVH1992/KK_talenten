@@ -5,9 +5,11 @@ import be.kdg.talenten.domain.*;
 import java.util.*;
 
 public class AutomatischeVerdeler {
+    private final List<Leerling> leerlingen;
     private final List<Voorkeur> voorkeuren;
     private final List<Toewijzing> historischeToewijzingen;
     private final List<Toewijzing> vasteToewijzingen;
+
     private static final int MAX_LEERLINGEN_PER_KLAS_PER_TALENT = 2;
 
     public AutomatischeVerdeler(List<Voorkeur> voorkeuren) {
@@ -19,6 +21,13 @@ public class AutomatischeVerdeler {
     }
 
     public AutomatischeVerdeler(List<Voorkeur> voorkeuren, List<Toewijzing> historischeToewijzingen, List<Toewijzing> vasteToewijzingen) {
+        this(haalLeerlingenUitVoorkeuren(voorkeuren), voorkeuren, historischeToewijzingen, vasteToewijzingen);
+    }
+
+    public AutomatischeVerdeler(List<Leerling> leerlingen, List<Voorkeur> voorkeuren, List<Toewijzing> historischeToewijzingen, List<Toewijzing> vasteToewijzingen) {
+        if (leerlingen == null) {
+            throw new IllegalArgumentException("Leerlingen mogen niet null zijn.");
+        }
         if (voorkeuren == null) {
             throw new IllegalArgumentException("Voorkeuren mogen niet null zijn.");
         }
@@ -29,6 +38,7 @@ public class AutomatischeVerdeler {
             throw new IllegalArgumentException("Vaste toewijzingen mogen niet null zijn.");
         }
 
+        this.leerlingen = leerlingen;
         this.voorkeuren = voorkeuren;
         this.historischeToewijzingen = historischeToewijzingen;
         this.vasteToewijzingen = vasteToewijzingen;
@@ -36,6 +46,7 @@ public class AutomatischeVerdeler {
 
     public VerdelingsResultaat verdeel() {
         VerdelingsResultaat verdelingsResultaat = new VerdelingsResultaat();
+
         Map<Leerling, List<Voorkeur>> voorkeurenPerLeerling = groepeerVoorkeurenPerLeerling();
         Map<IngerichtTalent, Integer> bezetting = new HashMap<>();
         Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas = new HashMap<>();
@@ -46,6 +57,12 @@ public class AutomatischeVerdeler {
 
         for (Leerling leerling : leerlingenInVolgorde) {
             List<Voorkeur> voorkeurenVanLeerling = voorkeurenPerLeerling.get(leerling);
+
+            if (voorkeurenVanLeerling.size() != 3) {
+                verdelingsResultaat.voegNietToegewezenLeerlingToe(leerling);
+                continue;
+            }
+
             voorkeurenVanLeerling.sort(Comparator.comparingInt(Voorkeur::getVoorkeurNummer));
 
             Toewijzing toewijzing = zoekToewijzingZonderHistoriek(leerling, voorkeurenVanLeerling, bezetting, bezettingPerKlas);
@@ -74,8 +91,10 @@ public class AutomatischeVerdeler {
 
     private void verhoogBezetting(Toewijzing toewijzing, Map<IngerichtTalent, Integer> bezetting, Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas) {
         IngerichtTalent ingerichtTalent = toewijzing.getIngerichtTalent();
+
         int huidigAantal = bezetting.getOrDefault(ingerichtTalent, 0);
         bezetting.put(ingerichtTalent, huidigAantal + 1);
+
         verhoogKlasBezetting(ingerichtTalent, toewijzing.getLeerling().getKlas(), bezettingPerKlas);
     }
 
@@ -89,6 +108,7 @@ public class AutomatischeVerdeler {
 
             if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)
                     && heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent, leerling.getKlas(), bezettingPerKlas)) {
+
                 return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
             }
         }
@@ -102,9 +122,11 @@ public class AutomatischeVerdeler {
 
             if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)
                     && heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent, leerling.getKlas(), bezettingPerKlas)) {
+
                 return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
             }
         }
+
         return null;
     }
 
@@ -129,6 +151,10 @@ public class AutomatischeVerdeler {
     private Map<Leerling, List<Voorkeur>> groepeerVoorkeurenPerLeerling() {
         Map<Leerling, List<Voorkeur>> voorkeurenPerLeerling = new LinkedHashMap<>();
 
+        for (Leerling leerling : leerlingen) {
+            voorkeurenPerLeerling.put(leerling, new ArrayList<>());
+        }
+
         for (Voorkeur voorkeur : voorkeuren) {
             Leerling leerling = voorkeur.getLeerling();
             voorkeurenPerLeerling.computeIfAbsent(leerling, l -> new ArrayList<>()).add(voorkeur);
@@ -139,7 +165,11 @@ public class AutomatischeVerdeler {
 
     private List<Leerling> bepaalLeerlingVolgorde(Map<Leerling, List<Voorkeur>> voorkeurenPerLeerling) {
         List<Leerling> leerlingen = new ArrayList<>(voorkeurenPerLeerling.keySet());
-        leerlingen.sort((leerling1, leerling2) -> Integer.compare(berekenVerdelingsPrioriteit(leerling2), berekenVerdelingsPrioriteit(leerling1)));
+
+        leerlingen.sort((leerling1, leerling2) ->
+                Integer.compare(berekenVerdelingsPrioriteit(leerling2), berekenVerdelingsPrioriteit(leerling1))
+        );
+
         return leerlingen;
     }
 
@@ -180,12 +210,30 @@ public class AutomatischeVerdeler {
         }
 
         int huidigAantalVanKlas = klasBezetting.getOrDefault(klas, 0);
+
         return huidigAantalVanKlas < MAX_LEERLINGEN_PER_KLAS_PER_TALENT;
     }
 
     private void verhoogKlasBezetting(IngerichtTalent ingerichtTalent, Klas klas, Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas) {
         Map<Klas, Integer> klasBezetting = bezettingPerKlas.computeIfAbsent(ingerichtTalent, talent -> new HashMap<>());
+
         int huidigAantalVanKlas = klasBezetting.getOrDefault(klas, 0);
         klasBezetting.put(klas, huidigAantalVanKlas + 1);
+    }
+
+    private static List<Leerling> haalLeerlingenUitVoorkeuren(List<Voorkeur> voorkeuren) {
+        if (voorkeuren == null) {
+            throw new IllegalArgumentException("Voorkeuren mogen niet null zijn.");
+        }
+
+        List<Leerling> leerlingen = new ArrayList<>();
+
+        for (Voorkeur voorkeur : voorkeuren) {
+            if (!leerlingen.contains(voorkeur.getLeerling())) {
+                leerlingen.add(voorkeur.getLeerling());
+            }
+        }
+
+        return leerlingen;
     }
 }

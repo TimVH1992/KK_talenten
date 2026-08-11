@@ -1,9 +1,7 @@
 package be.kdg.talenten.service.verdeling;
 
-import be.kdg.talenten.domain.TalentenPeriode;
-import be.kdg.talenten.domain.Toewijzing;
-import be.kdg.talenten.domain.ToewijzingsType;
-import be.kdg.talenten.domain.Voorkeur;
+import be.kdg.talenten.domain.*;
+import be.kdg.talenten.repository.LeerlingRepository;
 import be.kdg.talenten.repository.ToewijzingRepository;
 import be.kdg.talenten.repository.VoorkeurRepository;
 import be.kdg.talenten.verdeling.AutomatischeVerdeler;
@@ -15,16 +13,22 @@ import java.util.List;
 public class AutomatischeVerdelingService {
     private final VoorkeurRepository voorkeurRepository;
     private final ToewijzingRepository toewijzingRepository;
+    private final LeerlingRepository leerlingRepository;
 
-    public AutomatischeVerdelingService(VoorkeurRepository voorkeurRepository, ToewijzingRepository toewijzingRepository) {
+    public AutomatischeVerdelingService(VoorkeurRepository voorkeurRepository, ToewijzingRepository toewijzingRepository, LeerlingRepository leerlingRepository) {
         if (voorkeurRepository == null) {
             throw new IllegalArgumentException("De voorkeurRepository mag niet null zijn");
         }
         if (toewijzingRepository == null) {
             throw new IllegalArgumentException("De toewijzingRepository mag niet null zijn");
         }
+        if (leerlingRepository == null) {
+            throw new IllegalArgumentException("De leerlingRepository mag niet null zijn");
+        }
+
         this.voorkeurRepository = voorkeurRepository;
         this.toewijzingRepository = toewijzingRepository;
+        this.leerlingRepository = leerlingRepository;
     }
 
     public boolean heeftBestaandeToewijzingen(TalentenPeriode talentenPeriode) {
@@ -34,22 +38,27 @@ public class AutomatischeVerdelingService {
 
     public VerdelingsResultaat voerAutomatischeVerdelingUit(TalentenPeriode talentenPeriode) {
         valideerTalentenPeriode(talentenPeriode);
+
         if (talentenPeriode.getEindDatum().isBefore(LocalDate.now())) {
             throw new IllegalStateException("Een afgelopen talentenperiode mag niet meer automatisch verdeeld worden.");
         }
 
+        List<Leerling> leerlingen = leerlingRepository.zoekVoorSchooljaar(talentenPeriode.getSchooljaar());
         List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
+
         List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingenVoorSchooljaar(talentenPeriode.getSchooljaar()).stream()
                 .filter(toewijzing -> toewijzing.getIngerichtTalent().getTalentenPeriode().getSchooljaar().equals(talentenPeriode.getSchooljaar()))
                 .toList();
+
         List<Toewijzing> manueleToewijzingen = toewijzingRepository.zoekVoorPeriode(talentenPeriode).stream()
                 .filter(toewijzing -> toewijzing.getToewijzingsType() == ToewijzingsType.MANUEEL)
                 .toList();
 
-        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren, historischeToewijzingen, manueleToewijzingen);
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(leerlingen, voorkeuren, historischeToewijzingen, manueleToewijzingen);
         VerdelingsResultaat resultaat = verdeler.verdeel();
 
         toewijzingRepository.vervangAutomatischeToewijzingenVoorPeriode(talentenPeriode, resultaat.getToewijzingen());
+
         return resultaat;
     }
 

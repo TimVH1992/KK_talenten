@@ -296,15 +296,12 @@ class ManueleToewijzingServiceTest {
         IngerichtTalent schakenHerfst = richtTalentIn(schaken, herfst, 10);
         IngerichtTalent voetbalHerfst = richtTalentIn(voetbal, herfst, 10);
 
-        List<Voorkeur> voorkeuren = new ArrayList<>();
-        voorkeuren.add(new Voorkeur(jan, herfst, schakenHerfst, 1));
-
-        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(voorkeuren);
-        VerdelingsResultaat resultaat = verdeler.verdeel();
-
-        Toewijzing automatischeToewijzing = resultaat.getToewijzingen().getFirst();
-
-        assertEquals(1, automatischeToewijzing.getVoorkeurNummer());
+        Toewijzing automatischeToewijzing = new Toewijzing(
+                jan,
+                schakenHerfst,
+                ToewijzingsType.AUTOMATISCH,
+                1
+        );
 
         InMemoryToewijzingRepository repository = maakLeegToewijzingRepository();
         repository.save(automatischeToewijzing);
@@ -315,8 +312,7 @@ class ManueleToewijzingServiceTest {
         service.wijzigToewijzing(herfst, jan, voetbalHerfst);
 
         // ASSERT
-        Toewijzing gewijzigdeToewijzing =
-                repository.zoekToewijzingVoorLeerlingEnPeriode(jan, herfst);
+        Toewijzing gewijzigdeToewijzing = repository.zoekToewijzingVoorLeerlingEnPeriode(jan, herfst);
 
         assertNotNull(gewijzigdeToewijzing);
         assertSame(voetbalHerfst, gewijzigdeToewijzing.getIngerichtTalent());

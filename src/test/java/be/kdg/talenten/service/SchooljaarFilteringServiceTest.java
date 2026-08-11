@@ -2,6 +2,7 @@ package be.kdg.talenten.service;
 
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
+import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
 import be.kdg.talenten.service.leerling.LeerlingDetailsService;
@@ -74,11 +75,25 @@ class SchooljaarFilteringServiceTest {
                 "Kookvaardigheden"
         );
 
+        Talent voetbal = new Talent(
+                "Voetbal",
+                "Voetbaltraining"
+        );
+
         IngerichtTalent schakenVorig = new IngerichtTalent(
                 schaken,
                 vorig,
                 schaken.getNaam(),
                 schaken.getBeschrijving(),
+                10,
+                klas.getDoelgroep(),
+                List.of(leerkracht)
+        );
+        IngerichtTalent voetbalHerfst = new IngerichtTalent(
+                voetbal,
+                herfst,
+                voetbal.getNaam(),
+                voetbal.getBeschrijving(),
                 10,
                 klas.getDoelgroep(),
                 List.of(leerkracht)
@@ -105,18 +120,9 @@ class SchooljaarFilteringServiceTest {
         );
 
         List<Voorkeur> voorkeuren = List.of(
-                new Voorkeur(
-                        alice,
-                        herfst,
-                        schakenHerfst,
-                        1
-                ),
-                new Voorkeur(
-                        alice,
-                        herfst,
-                        kokenHerfst,
-                        2
-                )
+                new Voorkeur(alice, herfst, schakenHerfst, 1),
+                new Voorkeur(alice, herfst, kokenHerfst, 2),
+                new Voorkeur(alice, herfst, voetbalHerfst, 3)
         );
 
         List<Toewijzing> historiek = List.of(
@@ -130,11 +136,13 @@ class SchooljaarFilteringServiceTest {
 
         InMemoryToewijzingRepository toewijzingRepository =
                 new InMemoryToewijzingRepository(historiek);
+        InMemoryLeerlingRepository leerlingRepository = new InMemoryLeerlingRepository(List.of(alice));
 
         AutomatischeVerdelingService service =
                 new AutomatischeVerdelingService(
                         new InMemoryVoorkeurRepository(voorkeuren),
-                        toewijzingRepository
+                        toewijzingRepository,
+                        leerlingRepository
                 );
 
         // ACT

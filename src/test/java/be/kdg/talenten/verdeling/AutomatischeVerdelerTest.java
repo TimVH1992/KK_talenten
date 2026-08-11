@@ -825,6 +825,15 @@ class AutomatischeVerdelerTest {
                 "Leren schaken"
         );
 
+        Talent koken = new Talent("Koken", "Leren koken");
+        Talent voetbal = new Talent("Voetbal", "Voetbaltraining");
+
+        IngerichtTalent kokenObservatie = richtTalentIn(koken, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB);
+        IngerichtTalent voetbalObservatie = richtTalentIn(voetbal, herfst, 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB);
+
+        IngerichtTalent kokenKwalificatie = richtTalentIn(koken, herfst, 10, Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB);
+        IngerichtTalent voetbalKwalificatie = richtTalentIn(voetbal, herfst, 10, Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB);
+
         IngerichtTalent schakenObservatie = richtTalentIn(
                 schaken,
                 herfst,
@@ -840,18 +849,13 @@ class AutomatischeVerdelerTest {
         );
 
         List<Voorkeur> voorkeuren = List.of(
-                new Voorkeur(
-                        jan,
-                        herfst,
-                        schakenObservatie,
-                        1
-                ),
-                new Voorkeur(
-                        sara,
-                        herfst,
-                        schakenKwalificatie,
-                        1
-                )
+                new Voorkeur(jan, herfst, schakenObservatie, 1),
+                new Voorkeur(jan, herfst, kokenObservatie, 2),
+                new Voorkeur(jan, herfst, voetbalObservatie, 3),
+
+                new Voorkeur(sara, herfst, schakenKwalificatie, 1),
+                new Voorkeur(sara, herfst, kokenKwalificatie, 2),
+                new Voorkeur(sara, herfst, voetbalKwalificatie, 3)
         );
 
         AutomatischeVerdeler verdeler =
@@ -954,5 +958,42 @@ class AutomatischeVerdelerTest {
                 )
                 .findFirst()
                 .orElseThrow();
+    }
+    @Test
+    void leerlingMetMinderDanDrieVoorkeurenWordtNietAutomatischToegewezen() {
+        // ARRANGE
+        Schooljaar schooljaar = new Schooljaar("2026-2027", LocalDate.of(2026, 9, 1), LocalDate.of(2027, 6, 30));
+        TalentenPeriode periode = new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 21), schooljaar);
+
+        Doelgroep doelgroep = Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+
+        Klas klas = new Klas("1AA", schooljaar, 1, doelgroep);
+        Leerling sofie = new Leerling("Sofie", "Peeters", klas);
+
+        Leerkracht leerkracht = new Leerkracht("Tom", "Peeters");
+
+        Talent voetbal = new Talent("Voetbal", "Balsport");
+        Talent schaken = new Talent("Schaken", "Strategisch denkspel");
+
+        IngerichtTalent voetbalObservatie = new IngerichtTalent(
+                voetbal, periode, "Voetbal observatie", "Voetbal voor observatie", 10, doelgroep, List.of(leerkracht)
+        );
+
+        IngerichtTalent schakenObservatie = new IngerichtTalent(
+                schaken, periode, "Schaken observatie", "Schaken voor observatie", 10, doelgroep, List.of(leerkracht)
+        );
+
+        Voorkeur voorkeur1 = new Voorkeur(sofie, periode, voetbalObservatie, 1);
+        Voorkeur voorkeur2 = new Voorkeur(sofie, periode, schakenObservatie, 2);
+
+        AutomatischeVerdeler verdeler = new AutomatischeVerdeler(List.of(voorkeur1, voorkeur2));
+
+        // ACT
+        VerdelingsResultaat resultaat = verdeler.verdeel();
+
+        // ASSERT
+        assertEquals(0, resultaat.getToewijzingen().size());
+        assertEquals(1, resultaat.getNietToegewezenLeerlingen().size());
+        assertEquals(sofie, resultaat.getNietToegewezenLeerlingen().get(0));
     }
 }

@@ -7,6 +7,7 @@ import be.kdg.talenten.service.voorkeuren.VoorkeurenExcelService;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class VoorkeurenExcelServiceManualTest {
@@ -25,38 +26,70 @@ public class VoorkeurenExcelServiceManualTest {
                 schooljaar
         );
 
-        Klas klas = new Klas(
-                "1AA",
-                schooljaar,
-                1,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        Doelgroep doelgroep =
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+
+        // =================================================
+        // 5 KLASSEN - 5 LEERLINGEN PER KLAS
+        // =================================================
+
+        List<Klas> klassen = List.of(
+                new Klas("1AA", schooljaar, 1, doelgroep),
+                new Klas("1AB", schooljaar, 1, doelgroep),
+                new Klas("1AC", schooljaar, 1, doelgroep),
+                new Klas("1AD", schooljaar, 1, doelgroep),
+                new Klas("1AE", schooljaar, 1, doelgroep)
         );
 
-        Leerling jan = new Leerling(
+        String[] voornamen = {
                 "Jan",
-                "Mertens",
-                klas
-        );
-
-        Leerling sofie = new Leerling(
                 "Sofie",
-                "VO",
-                klas
-        );
+                "Lucas",
+                "Emma",
+                "Noah"
+        };
 
-        InMemoryLeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(
-                        List.of(jan, sofie)
+        List<Leerling> leerlingen = new ArrayList<>();
+
+        for (int klasIndex = 0; klasIndex < klassen.size(); klasIndex++) {
+            Klas klas = klassen.get(klasIndex);
+
+            for (int leerlingIndex = 0; leerlingIndex < 5; leerlingIndex++) {
+                Leerling leerling = new Leerling(
+                        voornamen[leerlingIndex],
+                        "Test" + (klasIndex + 1) + (leerlingIndex + 1),
+                        klas
                 );
 
-        // -------------------------------------------------
-        // INGERICHTE TALENTEN VOOR DE DROPDOWN
-        // -------------------------------------------------
+                leerlingen.add(leerling);
+            }
+        }
 
-        Leerkracht leerkracht = new Leerkracht(
+        InMemoryLeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(leerlingen);
+
+        // =================================================
+        // LEERKRACHTEN
+        // =================================================
+
+        Leerkracht tom = new Leerkracht(
                 "Tom",
                 "Peeters"
         );
+
+        Leerkracht els = new Leerkracht(
+                "Els",
+                "Janssens"
+        );
+
+        Leerkracht bart = new Leerkracht(
+                "Bart",
+                "Mertens"
+        );
+
+        // =================================================
+        // 10 TALENTEN
+        // =================================================
 
         Talent voetbal = new Talent(
                 "Voetbal",
@@ -68,15 +101,59 @@ public class VoorkeurenExcelServiceManualTest {
                 "Strategisch denkspel"
         );
 
+        Talent koken = new Talent(
+                "Koken",
+                "Gerechten leren bereiden"
+        );
+
+        Talent dans = new Talent(
+                "Dans",
+                "Dans en beweging"
+        );
+
+        Talent muziek = new Talent(
+                "Muziek",
+                "Muzikale vaardigheden ontwikkelen"
+        );
+
+        Talent houtbewerking = new Talent(
+                "Houtbewerking",
+                "Werken met hout"
+        );
+
+        Talent fotografie = new Talent(
+                "Fotografie",
+                "Creatief leren fotograferen"
+        );
+
+        Talent fietsen = new Talent(
+                "Fietsen",
+                "Fietsvaardigheid en techniek"
+        );
+
+        Talent tekenen = new Talent(
+                "Tekenen",
+                "Creatief tekenen"
+        );
+
+        Talent natuur = new Talent(
+                "Natuur",
+                "Ontdekken en werken in de natuur"
+        );
+
+        // =================================================
+        // 10 INGERICHTE TALENTEN
+        // =================================================
+
         IngerichtTalent voetbalObservatie =
                 new IngerichtTalent(
                         voetbal,
                         periode,
                         "Voetbal observatie",
-                        "Voetbal voor de observatiefase",
+                        "Voetbal voor leerlingen uit de observatiefase",
                         12,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                        List.of(leerkracht)
+                        doelgroep,
+                        List.of(tom)
                 );
 
         IngerichtTalent schakenObservatie =
@@ -84,19 +161,119 @@ public class VoorkeurenExcelServiceManualTest {
                         schaken,
                         periode,
                         "Schaken observatie",
-                        "Schaken voor de observatiefase",
+                        "Schaken en strategisch denken",
                         10,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                        List.of(leerkracht)
+                        doelgroep,
+                        List.of(els)
+                );
+
+        IngerichtTalent kokenObservatie =
+                new IngerichtTalent(
+                        koken,
+                        periode,
+                        "Koken basis",
+                        "Eenvoudige gerechten leren bereiden",
+                        8,
+                        doelgroep,
+                        List.of(bart)
+                );
+
+        IngerichtTalent dansObservatie =
+                new IngerichtTalent(
+                        dans,
+                        periode,
+                        "Dans en beweging",
+                        "Dans, ritme en beweging",
+                        12,
+                        doelgroep,
+                        List.of(els)
+                );
+
+        IngerichtTalent muziekObservatie =
+                new IngerichtTalent(
+                        muziek,
+                        periode,
+                        "Muziekatelier",
+                        "Kennismaken met muziek en instrumenten",
+                        10,
+                        doelgroep,
+                        List.of(tom, els)
+                );
+
+        IngerichtTalent houtbewerkingObservatie =
+                new IngerichtTalent(
+                        houtbewerking,
+                        periode,
+                        "Houtatelier",
+                        "Basisvaardigheden houtbewerking",
+                        8,
+                        doelgroep,
+                        List.of(bart)
+                );
+
+        IngerichtTalent fotografieObservatie =
+                new IngerichtTalent(
+                        fotografie,
+                        periode,
+                        "Fotografie",
+                        "Creatief fotograferen met oog voor compositie",
+                        10,
+                        doelgroep,
+                        List.of(els)
+                );
+
+        IngerichtTalent fietsenObservatie =
+                new IngerichtTalent(
+                        fietsen,
+                        periode,
+                        "Fietsatelier",
+                        "Fietsvaardigheid en eenvoudige techniek",
+                        12,
+                        doelgroep,
+                        List.of(tom)
+                );
+
+        IngerichtTalent tekenenObservatie =
+                new IngerichtTalent(
+                        tekenen,
+                        periode,
+                        "Creatief tekenen",
+                        "Tekenen en creatieve technieken",
+                        10,
+                        doelgroep,
+                        List.of(els)
+                );
+
+        IngerichtTalent natuurObservatie =
+                new IngerichtTalent(
+                        natuur,
+                        periode,
+                        "Natuuratelier",
+                        "Activiteiten rond natuur en buitenleven",
+                        10,
+                        doelgroep,
+                        List.of(bart)
                 );
 
         InMemoryIngerichtTalentRepository ingerichtTalentRepository =
                 new InMemoryIngerichtTalentRepository(
                         List.of(
                                 voetbalObservatie,
-                                schakenObservatie
+                                schakenObservatie,
+                                kokenObservatie,
+                                dansObservatie,
+                                muziekObservatie,
+                                houtbewerkingObservatie,
+                                fotografieObservatie,
+                                fietsenObservatie,
+                                tekenenObservatie,
+                                natuurObservatie
                         )
                 );
+
+        // =================================================
+        // EXCEL GENEREREN
+        // =================================================
 
         VoorkeurenExcelService service =
                 new VoorkeurenExcelService(
@@ -112,7 +289,7 @@ public class VoorkeurenExcelServiceManualTest {
 
         service.genereerTemplate(
                 periode,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                doelgroep,
                 bestand
         );
 

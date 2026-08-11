@@ -4,7 +4,7 @@
 
 ### BR-001
 
-Een leerling geeft per talentenperiode exact drie voorkeuren op.
+Een leerling heeft maximaal 3 voorkeuren per periode. Een leerling komt pas in aanmerking voor automatische verdeling wanneer exact 3 geldige, verschillende voorkeuren geregistreerd zijn.
 
 ### BR-002
 

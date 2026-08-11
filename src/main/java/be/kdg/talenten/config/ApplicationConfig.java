@@ -40,7 +40,7 @@ public final class ApplicationConfig {
         voorkeurRepository = new PostgresVoorkeurRepository(leerlingRepository, ingerichtTalentRepository);
         toewijzingRepository = new PostgresToewijzingRepository(leerlingRepository, ingerichtTalentRepository);
 
-        automatischeVerdelingService = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository);
+        automatischeVerdelingService = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository, leerlingRepository);
         manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository);
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
         schooljaarService = new SchooljaarService(schooljaarRepository);
