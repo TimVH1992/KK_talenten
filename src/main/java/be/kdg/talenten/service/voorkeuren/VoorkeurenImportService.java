@@ -63,19 +63,23 @@ public class VoorkeurenImportService {
 
                     for (int rijIndex = 1; rijIndex <= sheet.getLastRowNum(); rijIndex++) {
                         Row row = sheet.getRow(rijIndex);
-                        if (row == null){
+
+                        if (row == null) {
                             continue;
                         }
+
                         String klasNaam = sheet.getSheetName();
-                        String voornaam = row.getCell(0).getStringCellValue();
-                        String achternaam = row.getCell(1).getStringCellValue();
+                        String voornaam = leesCelAlsTekst(row, 0);
+                        String achternaam = leesCelAlsTekst(row, 1);
 
                         if (voornaam.isBlank() && achternaam.isBlank()) {
                             continue;
                         }
-                        String keuze1 = row.getCell(2).getStringCellValue();
-                        String keuze2 = row.getCell(3).getStringCellValue();
-                        String keuze3 = row.getCell(4).getStringCellValue();
+
+                        String keuze1 = leesCelAlsTekst(row, 2);
+                        String keuze2 = leesCelAlsTekst(row, 3);
+                        String keuze3 = leesCelAlsTekst(row, 4);
+
 
                         Leerling huidigeLeerling = zoekLeerling(leerlingen, voornaam, achternaam, klasNaam);
                         voorkeurRepository.verwijderVoorLeerlingEnPeriode(huidigeLeerling, periode);
@@ -139,11 +143,13 @@ public class VoorkeurenImportService {
         }
         return null;
     }
+
     private void registreerProbleem(List<VoorkeurImportProbleem> problemen, Leerling leerling, TalentenPeriode periode, String reden) {
         VoorkeurImportProbleem probleem = new VoorkeurImportProbleem(leerling, periode, reden);
         problemen.add(probleem);
         voorkeurImportProbleemRepository.save(probleem);
     }
+
     private String leesCelAlsTekst(Row row, int kolomIndex) {
         if (row == null) {
             return "";

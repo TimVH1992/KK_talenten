@@ -1070,5 +1070,114 @@ public class VoorkeurenImportServiceTest {
 
         assertTrue(probleemRepository.zoekVoorLeerlingEnPeriode(sofie, periode).isEmpty());
     }
+    @Test
+    void importeerBestandSlaatLegeRijenOver(@TempDir Path tempDir) throws IOException {
+        // ARRANGE
+        Schooljaar schooljaar = new Schooljaar(
+                "2026-2027",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2027, 6, 30)
+        );
+
+        TalentenPeriode periode = new TalentenPeriode(
+                "Herfst",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 12, 21),
+                schooljaar
+        );
+
+        Doelgroep doelgroep = Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+        Klas klas = new Klas("1AA", schooljaar, 1, doelgroep);
+        Leerling jan = new Leerling("Jan", "Peeters", klas);
+
+        Leerkracht leerkracht = new Leerkracht("Tom", "Peeters");
+
+        IngerichtTalent schaken = new IngerichtTalent(
+                new Talent("Schaken", "Strategisch denkspel"),
+                periode,
+                "Schaken observatie",
+                "Schaken voor observatie",
+                10,
+                doelgroep,
+                List.of(leerkracht)
+        );
+
+        IngerichtTalent koken = new IngerichtTalent(
+                new Talent("Koken", "Leren koken"),
+                periode,
+                "Koken basis",
+                "Koken voor observatie",
+                10,
+                doelgroep,
+                List.of(leerkracht)
+        );
+
+        IngerichtTalent voetbal = new IngerichtTalent(
+                new Talent("Voetbal", "Balsport"),
+                periode,
+                "Voetbal observatie",
+                "Voetbal voor observatie",
+                10,
+                doelgroep,
+                List.of(leerkracht)
+        );
+
+        InMemoryLeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(List.of(jan));
+
+        InMemoryIngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(List.of(schaken, koken, voetbal));
+
+        InMemoryVoorkeurRepository voorkeurRepository =
+                new InMemoryVoorkeurRepository(new ArrayList<>());
+
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>());
+
+        VoorkeurenExcelService excelService =
+                new VoorkeurenExcelService(leerlingRepository, ingerichtTalentRepository);
+
+        VoorkeurenImportService importService =
+                new VoorkeurenImportService(
+                        leerlingRepository,
+                        ingerichtTalentRepository,
+                        voorkeurRepository,
+                        probleemRepository
+                );
+
+        Path bestand = tempDir.resolve("voorkeuren_met_lege_rijen.xlsx");
+
+        excelService.genereerTemplate(periode, doelgroep, bestand);
+
+        try (InputStream inputStream = Files.newInputStream(bestand);
+             XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
+
+            Sheet sheet = workbook.getSheet("1AA");
+
+            Row leerlingRij = sheet.getRow(1);
+            leerlingRij.getCell(2).setCellValue("Schaken observatie");
+            leerlingRij.getCell(3).setCellValue("Koken basis");
+            leerlingRij.getCell(4).setCellValue("Voetbal observatie");
+
+            // Een lege rij die wel bestaat
+            sheet.createRow(10);
+
+            // Daardoor zitten tussen rij 2 en rij 11 ook null-rijen.
+
+            try (OutputStream outputStream = Files.newOutputStream(bestand)) {
+                workbook.write(outputStream);
+            }
+        }
+
+        // ACT
+        VoorkeurenImportResultaat resultaat =
+                importService.importeer(bestand, periode, doelgroep);
+
+        // ASSERT
+        List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(periode);
+
+        assertEquals(3, voorkeuren.size());
+        assertTrue(resultaat.getProblemen().isEmpty());
+    }
 
 }
