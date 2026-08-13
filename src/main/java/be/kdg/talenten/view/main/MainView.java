@@ -32,6 +32,7 @@ public class MainView extends BorderPane {
     private Button snelVoorkeurenButton;
     private Button snelVerdelingButton;
     private Button snelOverzichtButton;
+    private Button talentenBeheerButton;
 
     private Label actiefSchooljaarLabel;
 
@@ -177,7 +178,7 @@ public class MainView extends BorderPane {
         Label beheerTitel = new Label("Beheerfuncties");
         beheerTitel.getStyleClass().add("section-heading");
 
-        Label beheerUitleg = new Label("De kernflow voor voorkeuren, automatische verdeling, manuele correcties en overzichten werkt. Onderstaande CRUD-schermen kunnen later verder worden afgewerkt.");
+        Label beheerUitleg = new Label("De kernflow voor voorkeuren, automatische verdeling, manuele correcties en overzichten werkt. Talentenbeheer is toegevoegd; de overige CRUD-schermen kunnen later verder worden afgewerkt.");
         beheerUitleg.setWrapText(true);
         beheerUitleg.getStyleClass().add("muted-label");
 
@@ -188,12 +189,19 @@ public class MainView extends BorderPane {
         String[] titels = {"Leerlingen", "Klassen", "Leerkrachten", "Talenten", "Talentenperiodes", "Ingerichte talenten"};
         for (int i = 0; i < beheerButtons.size(); i++) {
             String onderdeel = titels[i];
-            Button tegel = new Button(onderdeel + "\nNog niet volledig geïmplementeerd");
+            String status = onderdeel.equals("Talenten") ? "Beheren" : "Nog niet volledig geïmplementeerd";
+            Button tegel = new Button(onderdeel + "\n" + status);
             tegel.setWrapText(true);
             tegel.setMaxWidth(Double.MAX_VALUE);
             tegel.setPrefHeight(86);
             tegel.getStyleClass().add("placeholder-card-button");
-            tegel.setOnAction(event -> toonNietBeschikbaar(onderdeel));
+
+            if (onderdeel.equals("Talenten")) {
+                talentenBeheerButton = tegel;
+            } else {
+                tegel.setOnAction(event -> toonNietBeschikbaar(onderdeel));
+            }
+
             beheerGrid.add(tegel, i % 3, i / 3);
         }
         for (int i = 0; i < 3; i++) {
@@ -209,7 +217,7 @@ public class MainView extends BorderPane {
 
         Label statusTitel = new Label("Projectstatus");
         statusTitel.getStyleClass().add("section-heading");
-        Label statusTekst = new Label("✓ Exceltemplates genereren   ✓ Voorkeuren importeren   ✓ Automatische verdeling   ✓ Manuele toewijzing   ✓ PostgreSQL persistentie");
+        Label statusTekst = new Label("✓ Exceltemplates genereren   ✓ Voorkeuren importeren   ✓ Automatische verdeling   ✓ Manuele toewijzing   ✓ Talenten beheren   ✓ PostgreSQL persistentie");
         statusTekst.setWrapText(true);
         statusTekst.getStyleClass().add("status-success");
         VBox statusCard = new VBox(10, statusTitel, statusTekst);
@@ -292,5 +300,9 @@ public class MainView extends BorderPane {
 
     public Button getSnelOverzichtButton() {
         return snelOverzichtButton;
+    }
+
+    public Button getTalentenBeheerButton() {
+        return talentenBeheerButton;
     }
 }

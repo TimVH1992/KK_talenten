@@ -14,7 +14,8 @@ DROP TABLE IF EXISTS
     talenten,
     talenten_periodes,
     schooljaren,
-    klassen
+    klassen,
+    voorkeur_import_problemen
     CASCADE;
 
 DROP FUNCTION IF EXISTS controleer_talentenperiode_binnen_schooljaar();
@@ -145,7 +146,6 @@ CREATE TABLE talenten (
                           talent_id BIGINT GENERATED ALWAYS AS IDENTITY,
                           naam VARCHAR(100) NOT NULL,
                           beschrijving TEXT NOT NULL,
-                          actief BOOLEAN NOT NULL DEFAULT TRUE,
 
                           CONSTRAINT pk_talenten
                               PRIMARY KEY (talent_id),
