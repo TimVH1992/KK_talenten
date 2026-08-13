@@ -5,6 +5,7 @@ import be.kdg.talenten.repository.IngerichtTalentRepository;
 import be.kdg.talenten.repository.LeerlingRepository;
 import be.kdg.talenten.repository.VoorkeurImportProbleemRepository;
 import be.kdg.talenten.repository.VoorkeurRepository;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,13 +63,19 @@ public class VoorkeurenImportService {
 
                     for (int rijIndex = 1; rijIndex <= sheet.getLastRowNum(); rijIndex++) {
                         Row row = sheet.getRow(rijIndex);
-                        String keuze1 = row.getCell(2).getStringCellValue();
-                        String keuze2 = row.getCell(3).getStringCellValue();
-                        String keuze3 = row.getCell(4).getStringCellValue();
-
+                        if (row == null){
+                            continue;
+                        }
                         String klasNaam = sheet.getSheetName();
                         String voornaam = row.getCell(0).getStringCellValue();
                         String achternaam = row.getCell(1).getStringCellValue();
+
+                        if (voornaam.isBlank() && achternaam.isBlank()) {
+                            continue;
+                        }
+                        String keuze1 = row.getCell(2).getStringCellValue();
+                        String keuze2 = row.getCell(3).getStringCellValue();
+                        String keuze3 = row.getCell(4).getStringCellValue();
 
                         Leerling huidigeLeerling = zoekLeerling(leerlingen, voornaam, achternaam, klasNaam);
                         voorkeurRepository.verwijderVoorLeerlingEnPeriode(huidigeLeerling, periode);
@@ -137,5 +143,18 @@ public class VoorkeurenImportService {
         VoorkeurImportProbleem probleem = new VoorkeurImportProbleem(leerling, periode, reden);
         problemen.add(probleem);
         voorkeurImportProbleemRepository.save(probleem);
+    }
+    private String leesCelAlsTekst(Row row, int kolomIndex) {
+        if (row == null) {
+            return "";
+        }
+
+        Cell cell = row.getCell(kolomIndex);
+
+        if (cell == null) {
+            return "";
+        }
+
+        return cell.toString().trim();
     }
 }
