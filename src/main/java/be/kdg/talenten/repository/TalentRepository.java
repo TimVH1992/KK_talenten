@@ -7,4 +7,7 @@ import java.util.List;
 public interface TalentRepository {
     Talent save (Talent talent);
     List<Talent> zoekAlle();
+    Talent zoekOpId(long id);
+    void update(Talent talent);
+
 }

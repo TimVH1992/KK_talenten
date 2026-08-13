@@ -23,6 +23,17 @@ public class Talent {
         this.beschrijving = beschrijving;
     }
 
+    public void wijzigGegevens(String naam, String beschrijving){
+        if (naam == null || naam.isBlank()){
+            throw new IllegalArgumentException("naam mag niet null zijn");
+        }
+        if (beschrijving == null || beschrijving.isBlank()){
+            throw new IllegalArgumentException("beschrijving mag niet null zijn");
+        }
+        this.naam = naam;
+        this.beschrijving = beschrijving;
+    }
+
     public String getNaam() {
         return naam;
     }
