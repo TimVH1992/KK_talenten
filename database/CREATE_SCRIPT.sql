@@ -514,3 +514,12 @@ CREATE INDEX idx_toewijzingen_ingericht_talent
     ON toewijzingen (ingericht_talent_id);
 
 COMMIT;
+
+-- =========================================================
+-- INITIËLE DATA
+-- =========================================================
+
+INSERT INTO schooljaren (naam, startdatum, einddatum, actief)
+VALUES ('2026-2027', '2026-09-01', '2027-06-30', TRUE);
+
+COMMIT;

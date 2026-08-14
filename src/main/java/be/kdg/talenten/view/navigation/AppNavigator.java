@@ -14,11 +14,12 @@ import be.kdg.talenten.view.main.MainPresenter;
 import be.kdg.talenten.view.main.MainView;
 import be.kdg.talenten.view.talent.TalentPresenter;
 import be.kdg.talenten.view.talent.TalentView;
+import be.kdg.talenten.view.talentenperiode.TalentenPeriodePresenter;
+import be.kdg.talenten.view.talentenperiode.TalentenPeriodeView;
 import be.kdg.talenten.view.verdeling.VerdelingPresenter;
 import be.kdg.talenten.view.verdeling.VerdelingView;
 import be.kdg.talenten.view.voorkeuren.VoorkeurenPresenter;
 import be.kdg.talenten.view.voorkeuren.VoorkeurenView;
-import javafx.scene.control.Alert;
 
 public class AppNavigator {
     private final ApplicationConfig config;
@@ -43,7 +44,7 @@ public class AppNavigator {
         sidebar.getKlassenButton().setOnAction(event -> toonKlassen());
         sidebar.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
         sidebar.getTalentenButton().setOnAction(event -> toonTalenten());
-        sidebar.getTalentenperiodesButton().setOnAction(event -> toonNietBeschikbaar("Talentenperiodes beheren"));
+        sidebar.getTalentenperiodesButton().setOnAction(event -> toonTalentenperiodes());
         sidebar.getIngerichteTalentenButton().setOnAction(event -> toonIngerichteTalenten());
         sidebar.getVoorkeurenButton().setOnAction(event -> toonVoorkeuren());
         sidebar.getVerdeelButton().setOnAction(event -> toonVerdeling());
@@ -79,6 +80,12 @@ public class AppNavigator {
         sceneManager.toon(view);
     }
 
+    public void toonTalentenperiodes() {
+        TalentenPeriodeView view = new TalentenPeriodeView();
+        new TalentenPeriodePresenter(config, view, sceneManager);
+        sceneManager.toon(view);
+    }
+
     public void toonIngerichteTalenten() {
         IngerichtTalentView view = new IngerichtTalentView();
         new IngerichtTalentPresenter(config, view, sceneManager);
@@ -95,13 +102,5 @@ public class AppNavigator {
         VerdelingView view = new VerdelingView();
         new VerdelingPresenter(config, view, sceneManager, this::toonDashboard);
         sceneManager.toon(view);
-    }
-
-    private void toonNietBeschikbaar(String onderdeel) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Nog niet beschikbaar");
-        alert.setHeaderText(onderdeel);
-        alert.setContentText("Dit beheerscherm is nog niet geïmplementeerd.");
-        alert.showAndWait();
     }
 }
