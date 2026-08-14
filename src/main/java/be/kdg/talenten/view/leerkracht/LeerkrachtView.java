@@ -2,7 +2,6 @@ package be.kdg.talenten.view.leerkracht;
 
 import be.kdg.talenten.domain.Leerkracht;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;

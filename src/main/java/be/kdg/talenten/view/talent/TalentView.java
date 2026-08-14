@@ -2,7 +2,6 @@ package be.kdg.talenten.view.talent;
 
 import be.kdg.talenten.domain.Talent;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
