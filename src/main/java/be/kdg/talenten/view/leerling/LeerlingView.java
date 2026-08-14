@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.leerling;
 
+import be.kdg.talenten.view.navigation.AppSidebar;
+
 import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
@@ -26,6 +28,7 @@ import javafx.util.StringConverter;
 import java.util.List;
 
 public class LeerlingView extends BorderPane {
+    private final AppSidebar sidebar;
     private Button dashboardButton;
     private Button leerlingenButton;
     private Button klassenButton;
@@ -50,6 +53,7 @@ public class LeerlingView extends BorderPane {
     private Label statusLabel;
 
     public LeerlingView() {
+        sidebar = new AppSidebar(AppSidebar.Sectie.LEERLINGEN, "Leerlingen beheren");
         initialiseNodes();
         layoutNodes();
     }
@@ -166,7 +170,7 @@ public class LeerlingView extends BorderPane {
     }
 
     private void layoutNodes() {
-        setLeft(maakSidebar());
+        setLeft(sidebar);
         setCenter(maakInhoud());
         getStyleClass().add("app-background");
     }
@@ -433,5 +437,9 @@ public class LeerlingView extends BorderPane {
 
     public Button getAnnulerenButton() {
         return annulerenButton;
+    }
+
+    public AppSidebar getSidebar() {
+        return sidebar;
     }
 }

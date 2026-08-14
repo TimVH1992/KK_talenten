@@ -2,6 +2,8 @@ package be.kdg.talenten.view.main;
 
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Schooljaar;
+import be.kdg.talenten.view.ingerichttalent.IngerichtTalentPresenter;
+import be.kdg.talenten.view.ingerichttalent.IngerichtTalentView;
 import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.leerling.LeerlingPresenter;
 import be.kdg.talenten.view.leerling.LeerlingView;
@@ -46,8 +48,10 @@ public class MainPresenter {
         view.getTalentenButton().setOnAction(event -> toonTalenten());
         view.getTalentenBeheerButton().setOnAction(event -> toonTalenten());
         view.getLeerkrachtenBeheerButton().setOnAction(event -> toonLeerkrachten());
+        view.getLeerlingenBeheerButton().setOnAction(event -> toonLeerlingen());
+        view.getIngerichteTalentenBeheerButton().setOnAction(event -> toonIngerichteTalenten());
         view.getTalentenperiodesButton().setOnAction(event -> view.toonNietBeschikbaar("Talentenperiodes beheren"));
-        view.getIngerichteTalentenButton().setOnAction(event -> view.toonNietBeschikbaar("Ingerichte talenten beheren"));
+        view.getIngerichteTalentenButton().setOnAction(event -> toonIngerichteTalenten());
 
         view.getAfsluitenButton().setOnAction(event -> sceneManager.sluit());
     }
@@ -86,6 +90,12 @@ public class MainPresenter {
         TalentView talentView = new TalentView();
         new TalentPresenter(config, talentView, sceneManager, this::toonHoofdmenu);
         sceneManager.toon(talentView);
+    }
+
+    private void toonIngerichteTalenten() {
+        IngerichtTalentView ingerichtTalentView = new IngerichtTalentView();
+        new IngerichtTalentPresenter(config, ingerichtTalentView, sceneManager);
+        sceneManager.toon(ingerichtTalentView);
     }
 
     private void toonVerdeling() {

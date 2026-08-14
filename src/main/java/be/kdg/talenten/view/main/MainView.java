@@ -32,8 +32,10 @@ public class MainView extends BorderPane {
     private Button snelVoorkeurenButton;
     private Button snelVerdelingButton;
     private Button snelOverzichtButton;
+    private Button leerlingenBeheerButton;
     private Button talentenBeheerButton;
     private Button leerkrachtenBeheerButton;
+    private Button ingerichteTalentenBeheerButton;
 
     private Label actiefSchooljaarLabel;
 
@@ -179,7 +181,7 @@ public class MainView extends BorderPane {
         Label beheerTitel = new Label("Beheerfuncties");
         beheerTitel.getStyleClass().add("section-heading");
 
-        Label beheerUitleg = new Label("De kernflow voor voorkeuren, automatische verdeling, manuele correcties en overzichten werkt. Talenten- en leerkrachtenbeheer zijn toegevoegd; de overige CRUD-schermen kunnen later verder worden afgewerkt.");
+        Label beheerUitleg = new Label("De kernflow voor voorkeuren en verdeling werkt. Leerlingen, leerkrachten, talenten en ingerichte talenten kunnen rechtstreeks beheerd worden.");
         beheerUitleg.setWrapText(true);
         beheerUitleg.getStyleClass().add("muted-label");
 
@@ -190,17 +192,21 @@ public class MainView extends BorderPane {
         String[] titels = {"Leerlingen", "Klassen", "Leerkrachten", "Talenten", "Talentenperiodes", "Ingerichte talenten"};
         for (int i = 0; i < beheerButtons.size(); i++) {
             String onderdeel = titels[i];
-            String status = onderdeel.equals("Talenten") || onderdeel.equals("Leerkrachten") ? "Beheren" : "Nog niet volledig geïmplementeerd";
+            String status = onderdeel.equals("Leerlingen") || onderdeel.equals("Talenten") || onderdeel.equals("Leerkrachten") || onderdeel.equals("Ingerichte talenten") ? "Beheren" : "Nog niet volledig geïmplementeerd";
             Button tegel = new Button(onderdeel + "\n" + status);
             tegel.setWrapText(true);
             tegel.setMaxWidth(Double.MAX_VALUE);
             tegel.setPrefHeight(86);
             tegel.getStyleClass().add("placeholder-card-button");
 
-            if (onderdeel.equals("Talenten")) {
+            if (onderdeel.equals("Leerlingen")) {
+                leerlingenBeheerButton = tegel;
+            } else if (onderdeel.equals("Talenten")) {
                 talentenBeheerButton = tegel;
             } else if (onderdeel.equals("Leerkrachten")) {
                 leerkrachtenBeheerButton = tegel;
+            } else if (onderdeel.equals("Ingerichte talenten")) {
+                ingerichteTalentenBeheerButton = tegel;
             } else {
                 tegel.setOnAction(event -> toonNietBeschikbaar(onderdeel));
             }
@@ -220,7 +226,7 @@ public class MainView extends BorderPane {
 
         Label statusTitel = new Label("Projectstatus");
         statusTitel.getStyleClass().add("section-heading");
-        Label statusTekst = new Label("✓ Exceltemplates genereren   ✓ Voorkeuren importeren   ✓ Automatische verdeling   ✓ Manuele toewijzing   ✓ Talenten beheren   ✓ Leerkrachten beheren   ✓ PostgreSQL persistentie");
+        Label statusTekst = new Label("✓ Exceltemplates genereren   ✓ Voorkeuren importeren   ✓ Automatische verdeling   ✓ Manuele toewijzing   ✓ Leerlingen beheren   ✓ Talenten beheren   ✓ Leerkrachten beheren   ✓ Ingerichte talenten beheren   ✓ PostgreSQL persistentie");
         statusTekst.setWrapText(true);
         statusTekst.getStyleClass().add("status-success");
         VBox statusCard = new VBox(10, statusTitel, statusTekst);
@@ -311,5 +317,13 @@ public class MainView extends BorderPane {
 
     public Button getLeerkrachtenBeheerButton() {
         return leerkrachtenBeheerButton;
+    }
+
+    public Button getLeerlingenBeheerButton() {
+        return leerlingenBeheerButton;
+    }
+
+    public Button getIngerichteTalentenBeheerButton() {
+        return ingerichteTalentenBeheerButton;
     }
 }

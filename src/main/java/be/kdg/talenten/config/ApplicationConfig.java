@@ -38,6 +38,7 @@ public final class ApplicationConfig {
     private final TalentService talentService;
     private final LeerkrachtService leerkrachtService;
     private final LeerlingService leerlingService;
+    private final IngerichtTalentService ingerichtTalentService;
 
 
     public ApplicationConfig() {
@@ -67,6 +68,7 @@ public final class ApplicationConfig {
         talentService = new TalentService(talentRepository);
         leerkrachtService = new LeerkrachtService(leerkrachtRepository);
         leerlingService = new LeerlingService(leerlingRepository);
+        ingerichtTalentService = new IngerichtTalentService(ingerichtTalentRepository);
 
     }
 
@@ -115,5 +117,8 @@ public final class ApplicationConfig {
 
     public LeerlingService getLeerlingService() {
         return leerlingService;
+    }
+    public IngerichtTalentService getIngerichtTalentService() {
+        return ingerichtTalentService;
     }
 }

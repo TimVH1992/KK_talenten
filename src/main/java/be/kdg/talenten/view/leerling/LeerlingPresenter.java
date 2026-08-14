@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.leerling;
 
+import be.kdg.talenten.view.navigation.AppNavigator;
+
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
@@ -45,6 +47,8 @@ public class LeerlingPresenter {
         this.leerlingService = config.getLeerlingService();
         this.schooljaarService = config.getSchooljaarService();
         this.klasService = config.getKlasService();
+
+        new AppNavigator(config, sceneManager).koppelSidebar(view.getSidebar());
 
         addEventHandlers();
         laadSchooljaren();
@@ -121,7 +125,7 @@ public class LeerlingPresenter {
 
     private void laadGegevensVoorSchooljaar(Schooljaar schooljaar) {
         try {
-            List<Klas> klassen = klasService.zoekAlle().stream()
+            List<Klas> klassen = klasService.geefAlleKlassen().stream()
                     .filter(klas -> klas.getSchooljaar().equals(schooljaar))
                     .sorted(Comparator.comparing(Klas::getNaam))
                     .toList();

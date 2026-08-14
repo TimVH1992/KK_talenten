@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.verdeling;
 
+import be.kdg.talenten.view.navigation.AppSidebar;
+
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Schooljaar;
@@ -38,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class VerdelingView extends BorderPane {
+    private final AppSidebar sidebar;
     private final DateTimeFormatter datumFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private Button terugButton;
@@ -66,6 +69,7 @@ public class VerdelingView extends BorderPane {
     private Label statusLabel;
 
     public VerdelingView() {
+        sidebar = new AppSidebar(AppSidebar.Sectie.TOEWIJZINGEN_BEKIJKEN, "Verdeling en toewijzingen");
         initialiseNodes();
         layoutNodes();
         setWijzigingenToegestaan(false);
@@ -394,7 +398,7 @@ public class VerdelingView extends BorderPane {
     }
 
     private void layoutNodes() {
-        setLeft(maakSidebar());
+        setLeft(sidebar);
 
         Label titel = new Label("Toewijzingen bekijken");
         titel.getStyleClass().add("page-title");
@@ -839,5 +843,9 @@ public class VerdelingView extends BorderPane {
 
     public Button getVerplaatsLeerlingButton() {
         return verplaatsLeerlingButton;
+    }
+
+    public AppSidebar getSidebar() {
+        return sidebar;
     }
 }

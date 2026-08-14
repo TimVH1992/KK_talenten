@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.leerkracht;
 
+import be.kdg.talenten.view.navigation.AppNavigator;
+
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Leerkracht;
 import be.kdg.talenten.service.beheer.LeerkrachtService;
@@ -20,6 +22,8 @@ public class LeerkrachtPresenter {
         this.view = view;
         this.terugNaarHoofdmenu = terugNaarHoofdmenu;
         this.leerkrachtService = config.getLeerkrachtService();
+
+        new AppNavigator(config, sceneManager).koppelSidebar(view.getSidebar());
 
         addEventHandlers();
         laadLeerkrachten();

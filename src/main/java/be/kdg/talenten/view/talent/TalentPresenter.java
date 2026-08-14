@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.talent;
 
+import be.kdg.talenten.view.navigation.AppNavigator;
+
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Talent;
 import be.kdg.talenten.service.beheer.TalentService;
@@ -20,6 +22,8 @@ public class TalentPresenter {
         this.view = view;
         this.terugNaarHoofdmenu = terugNaarHoofdmenu;
         this.talentService = config.getTalentService();
+
+        new AppNavigator(config, sceneManager).koppelSidebar(view.getSidebar());
 
         addEventHandlers();
         laadTalenten();

@@ -484,6 +484,107 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
         }
     }
 
+    @Override
+    public void update(IngerichtTalent ingerichtTalent) {
+        if (ingerichtTalent == null) {
+            throw new IllegalArgumentException("Ingericht talent mag niet null zijn");
+        }
+        if (ingerichtTalent.getId() == null || ingerichtTalent.getId() < 1) {
+            throw new IllegalStateException("Het ingerichte talent heeft geen bestaand id");
+        }
+
+        for (Leerkracht leerkracht : ingerichtTalent.getLeerkrachten()) {
+            if (leerkracht.getId() == null || leerkracht.getId() < 1) {
+                throw new IllegalStateException("Alle leerkrachten moeten eerst opgeslagen zijn");
+            }
+        }
+
+        String updateSql = """
+            UPDATE ingerichte_talenten
+            SET naam = ?,
+                omschrijving = ?,
+                maximum_capaciteit = ?,
+                actief = ?
+            WHERE ingericht_talent_id = ?
+            """;
+
+        String verwijderLeerkrachtenSql = """
+            DELETE FROM ingericht_talent_leerkrachten
+            WHERE ingericht_talent_id = ?
+            """;
+
+        String voegLeerkrachtToeSql = """
+            INSERT INTO ingericht_talent_leerkrachten (
+                ingericht_talent_id,
+                leerkracht_id
+            )
+            VALUES (?, ?)
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding()) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement statement = connection.prepareStatement(updateSql)) {
+                    statement.setString(1, ingerichtTalent.getNaam());
+                    statement.setString(2, ingerichtTalent.getOmschrijving());
+                    statement.setInt(3, ingerichtTalent.getMaxCapaciteit());
+                    statement.setBoolean(4, ingerichtTalent.isActief());
+                    statement.setLong(5, ingerichtTalent.getId());
+
+                    int aantalAangepasteRijen = statement.executeUpdate();
+
+                    if (aantalAangepasteRijen == 0) {
+                        throw new IllegalStateException(
+                                "Geen ingericht talent gevonden met id: " + ingerichtTalent.getId()
+                        );
+                    }
+                }
+
+                try (PreparedStatement statement = connection.prepareStatement(verwijderLeerkrachtenSql)) {
+                    statement.setLong(1, ingerichtTalent.getId());
+                    statement.executeUpdate();
+                }
+
+                if (!ingerichtTalent.getLeerkrachten().isEmpty()) {
+                    try (PreparedStatement statement = connection.prepareStatement(voegLeerkrachtToeSql)) {
+                        for (Leerkracht leerkracht : ingerichtTalent.getLeerkrachten()) {
+                            statement.setLong(1, ingerichtTalent.getId());
+                            statement.setLong(2, leerkracht.getId());
+                            statement.addBatch();
+                        }
+
+                        statement.executeBatch();
+                    }
+                }
+
+                connection.commit();
+
+            } catch (SQLException | RuntimeException e) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackException) {
+                    e.addSuppressed(rollbackException);
+                }
+
+                if (e instanceof SQLException sqlException) {
+                    throw new IllegalStateException(
+                            "Het ingerichte talent kon niet aangepast worden",
+                            sqlException
+                    );
+                }
+
+                throw (RuntimeException) e;
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "Er kon geen databankverbinding gemaakt worden",
+                    e
+            );
+        }
+    }
+
     private Leerkracht maakLeerkracht(ResultSet resultSet)
             throws SQLException {
 
@@ -494,23 +595,7 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
         );
     }
 
-    private List<Leerkracht> zoekLeerkrachtenInMap(
-            Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent,
-            long ingerichtTalentId
-    ) {
-        List<Leerkracht> leerkrachten =
-                leerkrachtenPerIngerichtTalent.get(
-                        ingerichtTalentId
-                );
-
-        if (leerkrachten == null || leerkrachten.isEmpty()) {
-            throw new IllegalStateException(
-                    "Ingericht talent "
-                            + ingerichtTalentId
-                            + " heeft geen leerkracht in de databank"
-            );
-        }
-
-        return leerkrachten;
+    private List<Leerkracht> zoekLeerkrachtenInMap(Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent, long ingerichtTalentId) {
+        return leerkrachtenPerIngerichtTalent.getOrDefault(ingerichtTalentId, List.of());
     }
 }

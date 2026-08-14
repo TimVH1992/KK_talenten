@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.voorkeuren;
 
+import be.kdg.talenten.view.navigation.AppNavigator;
+
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Schooljaar;
@@ -36,6 +38,8 @@ public class VoorkeurenPresenter {
         this.talentenPeriodeService = config.getTalentenPeriodeService();
         this.excelService = config.getVoorkeurenExcelService();
         this.importService = config.getVoorkeurenImportService();
+
+        new AppNavigator(config, sceneManager).koppelSidebar(view.getSidebar());
 
         addEventHandlers();
         laadSchooljaren();

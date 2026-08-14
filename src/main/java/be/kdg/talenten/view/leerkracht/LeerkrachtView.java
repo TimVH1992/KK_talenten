@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.leerkracht;
 
+import be.kdg.talenten.view.navigation.AppSidebar;
+
 import be.kdg.talenten.domain.Leerkracht;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.Insets;
@@ -20,6 +22,7 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 
 public class LeerkrachtView extends BorderPane {
+    private final AppSidebar sidebar;
     private Button terugButton;
     private Button nieuweLeerkrachtButton;
     private TableView<Leerkracht> leerkrachtenTable;
@@ -31,6 +34,7 @@ public class LeerkrachtView extends BorderPane {
     private Label statusLabel;
 
     public LeerkrachtView() {
+        sidebar = new AppSidebar(AppSidebar.Sectie.LEERKRACHTEN, "Leerkrachten beheren");
         initialiseNodes();
         layoutNodes();
     }
@@ -85,7 +89,7 @@ public class LeerkrachtView extends BorderPane {
     }
 
     private void layoutNodes() {
-        setLeft(maakSidebar());
+        setLeft(sidebar);
         setCenter(maakInhoud());
         getStyleClass().add("app-background");
     }
@@ -274,5 +278,9 @@ public class LeerkrachtView extends BorderPane {
 
     public Button getAnnulerenButton() {
         return annulerenButton;
+    }
+
+    public AppSidebar getSidebar() {
+        return sidebar;
     }
 }

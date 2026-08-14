@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.verdeling;
 
+import be.kdg.talenten.view.navigation.AppNavigator;
+
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
@@ -70,6 +72,8 @@ public class VerdelingPresenter {
         this.automatischeVerdelingService = config.getAutomatischeVerdelingService();
         this.manueleToewijzingService = config.getManueleToewijzingService();
         this.leerlingDetailsService = config.getLeerlingDetailsService();
+
+        new AppNavigator(config, sceneManager).koppelSidebar(view.getSidebar());
 
         addEventHandlers();
         laadSchooljaren();
@@ -277,7 +281,7 @@ public class VerdelingPresenter {
         try {
             klassenWordenGeladen = true;
 
-            List<Klas> klassen = klasService.zoekAlle().stream()
+            List<Klas> klassen = klasService.geefAlleKlassen().stream()
                     .filter(klas ->
                             klas.getSchooljaar()
                                     .equals(schooljaar.getNaam())

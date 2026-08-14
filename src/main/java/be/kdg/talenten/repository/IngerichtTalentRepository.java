@@ -12,4 +12,5 @@ public interface IngerichtTalentRepository {
             Doelgroep doelgroep
     );
     IngerichtTalent zoekOpId(long id);
+    void update(IngerichtTalent ingerichtTalent);
 }

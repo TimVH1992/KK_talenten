@@ -18,6 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PostgresIngerichtTalentRepositoryTest {
+
     private Schooljaar schooljaar2025_2026;
     private Schooljaar schooljaar2026_2027;
 
@@ -26,6 +27,11 @@ class PostgresIngerichtTalentRepositoryTest {
     private PostgresLeerkrachtRepository leerkrachtRepository;
     private PostgresIngerichtTalentRepository ingerichtTalentRepository;
 
+    private Talent opgeslagenTalent;
+    private TalentenPeriode opgeslagenPeriode;
+    private Leerkracht opgeslagenLeerkracht;
+    private Leerkracht tweedeOpgeslagenLeerkracht;
+
     @BeforeEach
     void setUp() throws SQLException {
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
@@ -33,6 +39,7 @@ class PostgresIngerichtTalentRepositoryTest {
 
             statement.executeUpdate("""
                     TRUNCATE TABLE
+                        voorkeur_import_problemen,
                         ingericht_talent_leerkrachten,
                         voorkeuren,
                         toewijzingen,
@@ -48,27 +55,63 @@ class PostgresIngerichtTalentRepositoryTest {
         }
 
         PostgresSchooljaarRepository schooljaarRepository = new PostgresSchooljaarRepository();
-        schooljaar2025_2026 = schooljaarRepository.save(new Schooljaar("2025-2026", LocalDate.of(2025, 7, 1), LocalDate.of(2026, 6, 30)));
-        schooljaar2026_2027 = schooljaarRepository.save(new Schooljaar("2026-2027", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 6, 30), true));
+
+        schooljaar2025_2026 = schooljaarRepository.save(
+                new Schooljaar(
+                        "2025-2026",
+                        LocalDate.of(2025, 7, 1),
+                        LocalDate.of(2026, 6, 30)
+                )
+        );
+
+        schooljaar2026_2027 = schooljaarRepository.save(
+                new Schooljaar(
+                        "2026-2027",
+                        LocalDate.of(2026, 7, 1),
+                        LocalDate.of(2027, 6, 30),
+                        true
+                )
+        );
 
         talentRepository = new PostgresTalentRepository();
         periodeRepository = new PostgresTalentenPeriodeRepository();
         leerkrachtRepository = new PostgresLeerkrachtRepository();
         ingerichtTalentRepository = new PostgresIngerichtTalentRepository();
+
+        opgeslagenTalent = talentRepository.save(
+                new Talent("Schaken", "Leren schaken")
+        );
+
+        opgeslagenPeriode = periodeRepository.save(
+                new TalentenPeriode(
+                        "Herfst",
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 10, 31),
+                        schooljaar2026_2027
+                )
+        );
+
+        opgeslagenLeerkracht = leerkrachtRepository.save(
+                new Leerkracht("Tim", "Van Herreweghe")
+        );
+
+        tweedeOpgeslagenLeerkracht = leerkrachtRepository.save(
+                new Leerkracht("Sara", "Janssens")
+        );
     }
 
     @Test
     void saveSlaatIngerichtTalentEnLeerkrachtenOp() throws SQLException {
         // ARRANGE
-        Talent schaken = talentRepository.save(new Talent("Schaken", "Leren schaken"));
-
-        TalentenPeriode herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31),
-                schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))));
-
-        Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
-        Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
-
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, "Schaken - Herfst", "Schaken voor de herfstperiode", 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
+        IngerichtTalent schakenHerfst = new IngerichtTalent(
+                opgeslagenTalent,
+                opgeslagenPeriode,
+                "Schaken - Herfst",
+                "Schaken voor de herfstperiode",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(opgeslagenLeerkracht, tweedeOpgeslagenLeerkracht)
+        );
 
         // ACT
         IngerichtTalent opgeslagenIngerichtTalent = ingerichtTalentRepository.save(schakenHerfst);
@@ -77,49 +120,122 @@ class PostgresIngerichtTalentRepositoryTest {
         assertNotNull(opgeslagenIngerichtTalent);
         assertNotNull(opgeslagenIngerichtTalent.getId());
         assertTrue(opgeslagenIngerichtTalent.getId() > 0);
-        assertSame(schaken, opgeslagenIngerichtTalent.getTalent());
-        assertSame(herfst, opgeslagenIngerichtTalent.getTalentenPeriode());
+
+        assertSame(opgeslagenTalent, opgeslagenIngerichtTalent.getTalent());
+        assertSame(opgeslagenPeriode, opgeslagenIngerichtTalent.getTalentenPeriode());
+
         assertEquals("Schaken - Herfst", opgeslagenIngerichtTalent.getNaam());
         assertEquals("Schaken voor de herfstperiode", opgeslagenIngerichtTalent.getOmschrijving());
-        assertTrue(opgeslagenIngerichtTalent.isActief());
         assertEquals(10, opgeslagenIngerichtTalent.getMaxCapaciteit());
         assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, opgeslagenIngerichtTalent.getDoelgroep());
-        assertEquals(List.of(tim, sara), opgeslagenIngerichtTalent.getLeerkrachten());
+        assertTrue(opgeslagenIngerichtTalent.isActief());
+
+        assertEquals(
+                List.of(opgeslagenLeerkracht, tweedeOpgeslagenLeerkracht),
+                opgeslagenIngerichtTalent.getLeerkrachten()
+        );
 
         controleerIngerichtTalentInDatabank(opgeslagenIngerichtTalent);
 
         List<Long> gekoppeldeLeerkrachtIds = haalGekoppeldeLeerkrachtIdsOp(opgeslagenIngerichtTalent.getId());
 
         assertEquals(2, gekoppeldeLeerkrachtIds.size());
-        assertEquals(List.of(tim.getId(), sara.getId()), gekoppeldeLeerkrachtIds);
+        assertEquals(
+                List.of(opgeslagenLeerkracht.getId(), tweedeOpgeslagenLeerkracht.getId()),
+                gekoppeldeLeerkrachtIds
+        );
+    }
+
+    @Test
+    void saveEnZoekOpIdWerktZonderLeerkracht() {
+        // ARRANGE
+        IngerichtTalent ingerichtTalent = new IngerichtTalent(
+                opgeslagenTalent,
+                opgeslagenPeriode,
+                "Schaken zonder leerkracht",
+                "Nog geen leerkracht toegewezen",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of()
+        );
+
+        // ACT
+        IngerichtTalent opgeslagen = ingerichtTalentRepository.save(ingerichtTalent);
+        IngerichtTalent resultaat = ingerichtTalentRepository.zoekOpId(opgeslagen.getId());
+
+        // ASSERT
+        assertNotNull(resultaat);
+        assertEquals(opgeslagen.getId(), resultaat.getId());
+        assertTrue(resultaat.getLeerkrachten().isEmpty());
     }
 
     @Test
     void zoekVoorPeriodeGeeftAlleenIngerichteTalentenVanGevraagdePeriode() {
         // ARRANGE
-        Talent schaken = talentRepository.save(new Talent("Schaken", "Leren schaken"));
-        Talent dansen = talentRepository.save(new Talent("Dansen", "Leren dansen"));
+        Talent dansen = talentRepository.save(
+                new Talent("Dansen", "Leren dansen")
+        );
 
-        TalentenPeriode herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31),
-                schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))));
-        TalentenPeriode winter = periodeRepository.save(new TalentenPeriode("Winter", LocalDate.of(2026, 11, 1), LocalDate.of(2026, 12, 20),
-                schooljaarVoorPeriode(LocalDate.of(2026, 11, 1))));
+        TalentenPeriode winter = periodeRepository.save(
+                new TalentenPeriode(
+                        "Winter",
+                        LocalDate.of(2026, 11, 1),
+                        LocalDate.of(2026, 12, 20),
+                        schooljaar2026_2027
+                )
+        );
 
-        Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
-        Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
+        IngerichtTalent schakenHerfst = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        opgeslagenTalent,
+                        opgeslagenPeriode,
+                        "Schaken - Herfst",
+                        "Schaken voor de herfstperiode",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(opgeslagenLeerkracht)
+                )
+        );
 
-        IngerichtTalent schakenHerfst = ingerichtTalentRepository.save(new IngerichtTalent(schaken, herfst, "Schaken - Herfst", "Schaken voor de herfstperiode", 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
-        IngerichtTalent dansenHerfst = ingerichtTalentRepository.save(new IngerichtTalent(dansen, herfst, "Dansen - Herfst", "Dansen voor de herfstperiode", 6, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(sara)));
-        ingerichtTalentRepository.save(new IngerichtTalent(schaken, winter, "Schaken - Winter", "Schaken voor de winterperiode", 8, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim)));
+        IngerichtTalent dansenHerfst = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        dansen,
+                        opgeslagenPeriode,
+                        "Dansen - Herfst",
+                        "Dansen voor de herfstperiode",
+                        6,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(tweedeOpgeslagenLeerkracht)
+                )
+        );
+
+        ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        opgeslagenTalent,
+                        winter,
+                        "Schaken - Winter",
+                        "Schaken voor de winterperiode",
+                        8,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(opgeslagenLeerkracht)
+                )
+        );
 
         // ACT
-        List<IngerichtTalent> resultaat = ingerichtTalentRepository.zoekVoorPeriode(herfst);
+        List<IngerichtTalent> resultaat = ingerichtTalentRepository.zoekVoorPeriode(opgeslagenPeriode);
 
         // ASSERT
         assertEquals(2, resultaat.size());
 
-        IngerichtTalent opgehaaldDansen = resultaat.stream().filter(ingerichtTalent -> ingerichtTalent.getTalent().getNaam().equals("Dansen")).findFirst().orElseThrow();
-        IngerichtTalent opgehaaldSchaken = resultaat.stream().filter(ingerichtTalent -> ingerichtTalent.getTalent().getNaam().equals("Schaken")).findFirst().orElseThrow();
+        IngerichtTalent opgehaaldDansen = resultaat.stream()
+                .filter(ingerichtTalent -> ingerichtTalent.getTalent().getNaam().equals("Dansen"))
+                .findFirst()
+                .orElseThrow();
+
+        IngerichtTalent opgehaaldSchaken = resultaat.stream()
+                .filter(ingerichtTalent -> ingerichtTalent.getTalent().getNaam().equals("Schaken"))
+                .findFirst()
+                .orElseThrow();
 
         assertEquals(dansenHerfst.getId(), opgehaaldDansen.getId());
         assertEquals("Dansen - Herfst", opgehaaldDansen.getNaam());
@@ -127,9 +243,8 @@ class PostgresIngerichtTalentRepositoryTest {
         assertTrue(opgehaaldDansen.isActief());
         assertEquals("Dansen", opgehaaldDansen.getTalent().getNaam());
         assertEquals(6, opgehaaldDansen.getMaxCapaciteit());
-        assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, opgehaaldDansen.getDoelgroep());
         assertEquals(1, opgehaaldDansen.getLeerkrachten().size());
-        assertEquals(sara.getId(), opgehaaldDansen.getLeerkrachten().getFirst().getId());
+        assertEquals(tweedeOpgeslagenLeerkracht.getId(), opgehaaldDansen.getLeerkrachten().getFirst().getId());
 
         assertEquals(schakenHerfst.getId(), opgehaaldSchaken.getId());
         assertEquals("Schaken - Herfst", opgehaaldSchaken.getNaam());
@@ -137,53 +252,269 @@ class PostgresIngerichtTalentRepositoryTest {
         assertTrue(opgehaaldSchaken.isActief());
         assertEquals("Schaken", opgehaaldSchaken.getTalent().getNaam());
         assertEquals(10, opgehaaldSchaken.getMaxCapaciteit());
-        assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, opgehaaldSchaken.getDoelgroep());
         assertEquals(1, opgehaaldSchaken.getLeerkrachten().size());
-        assertEquals(tim.getId(), opgehaaldSchaken.getLeerkrachten().getFirst().getId());
+        assertEquals(opgeslagenLeerkracht.getId(), opgehaaldSchaken.getLeerkrachten().getFirst().getId());
 
-        assertTrue(resultaat.stream().allMatch(ingerichtTalent -> ingerichtTalent.getTalentenPeriode().getId().equals(herfst.getId())));
-        assertFalse(resultaat.stream().anyMatch(ingerichtTalent -> ingerichtTalent.getTalentenPeriode().getId().equals(winter.getId())));
+        assertTrue(resultaat.stream().allMatch(
+                ingerichtTalent -> ingerichtTalent.getTalentenPeriode().getId().equals(opgeslagenPeriode.getId())
+        ));
+
+        assertFalse(resultaat.stream().anyMatch(
+                ingerichtTalent -> ingerichtTalent.getTalentenPeriode().getId().equals(winter.getId())
+        ));
     }
 
     @Test
     void zoekOpIdGeeftVolledigIngerichtTalentTerug() {
         // ARRANGE
-        Talent schaken = talentRepository.save(new Talent("Schaken", "Leren schaken"));
-        TalentenPeriode herfst = periodeRepository.save(new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 31),
-                schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))));
-        Leerkracht tim = leerkrachtRepository.save(new Leerkracht("Tim", "Van Herreweghe"));
-        Leerkracht sara = leerkrachtRepository.save(new Leerkracht("Sara", "Janssens"));
-
-        IngerichtTalent schakenHerfst = new IngerichtTalent(schaken, herfst, "Schaken - Herfst", "Schaken voor de herfstperiode", 10, Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of(tim, sara));
-        IngerichtTalent opgeslagenIngerichtTalent = ingerichtTalentRepository.save(schakenHerfst);
+        IngerichtTalent opgeslagen = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        opgeslagenTalent,
+                        opgeslagenPeriode,
+                        "Schaken - Herfst",
+                        "Schaken voor de herfstperiode",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(opgeslagenLeerkracht, tweedeOpgeslagenLeerkracht)
+                )
+        );
 
         // ACT
-        IngerichtTalent gevondenIngerichtTalent = ingerichtTalentRepository.zoekOpId(opgeslagenIngerichtTalent.getId());
+        IngerichtTalent gevonden = ingerichtTalentRepository.zoekOpId(opgeslagen.getId());
 
         // ASSERT
-        assertNotNull(gevondenIngerichtTalent);
-        assertEquals(opgeslagenIngerichtTalent.getId(), gevondenIngerichtTalent.getId());
-        assertEquals("Schaken - Herfst", gevondenIngerichtTalent.getNaam());
-        assertEquals("Schaken voor de herfstperiode", gevondenIngerichtTalent.getOmschrijving());
-        assertTrue(gevondenIngerichtTalent.isActief());
+        assertNotNull(gevonden);
+        assertEquals(opgeslagen.getId(), gevonden.getId());
+        assertEquals("Schaken - Herfst", gevonden.getNaam());
+        assertEquals("Schaken voor de herfstperiode", gevonden.getOmschrijving());
+        assertTrue(gevonden.isActief());
 
-        assertEquals(schaken.getId(), gevondenIngerichtTalent.getTalent().getId());
-        assertEquals("Schaken", gevondenIngerichtTalent.getTalent().getNaam());
-        assertEquals("Leren schaken", gevondenIngerichtTalent.getTalent().getBeschrijving());
+        assertEquals(opgeslagenTalent.getId(), gevonden.getTalent().getId());
+        assertEquals("Schaken", gevonden.getTalent().getNaam());
+        assertEquals("Leren schaken", gevonden.getTalent().getBeschrijving());
 
-        assertEquals(herfst.getId(), gevondenIngerichtTalent.getTalentenPeriode().getId());
-        assertEquals("Herfst", gevondenIngerichtTalent.getTalentenPeriode().getNaam());
-        assertEquals(LocalDate.of(2026, 9, 1), gevondenIngerichtTalent.getTalentenPeriode().getStartDatum());
-        assertEquals(LocalDate.of(2026, 10, 31), gevondenIngerichtTalent.getTalentenPeriode().getEindDatum());
+        assertEquals(opgeslagenPeriode.getId(), gevonden.getTalentenPeriode().getId());
+        assertEquals("Herfst", gevonden.getTalentenPeriode().getNaam());
+        assertEquals(LocalDate.of(2026, 9, 1), gevonden.getTalentenPeriode().getStartDatum());
+        assertEquals(LocalDate.of(2026, 10, 31), gevonden.getTalentenPeriode().getEindDatum());
 
-        assertEquals(10, gevondenIngerichtTalent.getMaxCapaciteit());
-        assertEquals(Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, gevondenIngerichtTalent.getDoelgroep());
+        assertEquals(10, gevonden.getMaxCapaciteit());
+        assertEquals(
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                gevonden.getDoelgroep()
+        );
 
-        List<Long> gevondenLeerkrachtIds = gevondenIngerichtTalent.getLeerkrachten().stream().map(Leerkracht::getId).toList();
+        List<Long> gevondenLeerkrachtIds = gevonden.getLeerkrachten()
+                .stream()
+                .map(Leerkracht::getId)
+                .toList();
 
         assertEquals(2, gevondenLeerkrachtIds.size());
-        assertTrue(gevondenLeerkrachtIds.contains(tim.getId()));
-        assertTrue(gevondenLeerkrachtIds.contains(sara.getId()));
+        assertTrue(gevondenLeerkrachtIds.contains(opgeslagenLeerkracht.getId()));
+        assertTrue(gevondenLeerkrachtIds.contains(tweedeOpgeslagenLeerkracht.getId()));
+    }
+
+    @Test
+    void zoekOpIdMetOngeldigIdGeeftException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ingerichtTalentRepository.zoekOpId(0)
+        );
+    }
+
+    @Test
+    void zoekActieveVoorPeriodeEnDoelgroepGeeftAlleenActieveTalentenVanJuisteDoelgroep() {
+        // ARRANGE
+        Talent voetbal = talentRepository.save(
+                new Talent("Voetbal", "Balsport")
+        );
+
+        Talent lassen = talentRepository.save(
+                new Talent("Lassen", "Leren lassen")
+        );
+
+        IngerichtTalent voetbalObservatie = new IngerichtTalent(
+                voetbal,
+                opgeslagenPeriode,
+                "Voetbal observatie",
+                "Voetbal voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(opgeslagenLeerkracht)
+        );
+
+        IngerichtTalent schakenObservatie = new IngerichtTalent(
+                opgeslagenTalent,
+                opgeslagenPeriode,
+                "Schaken observatie",
+                "Schaken voor de observatiefase",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(opgeslagenLeerkracht)
+        );
+
+        schakenObservatie.deactiveer();
+
+        IngerichtTalent lassenKwalificatie = new IngerichtTalent(
+                lassen,
+                opgeslagenPeriode,
+                "Lassen kwalificatie",
+                "Lassen voor de kwalificatiefase",
+                10,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                List.of(opgeslagenLeerkracht)
+        );
+
+        IngerichtTalent opgeslagenVoetbal = ingerichtTalentRepository.save(voetbalObservatie);
+
+        ingerichtTalentRepository.save(schakenObservatie);
+        ingerichtTalentRepository.save(lassenKwalificatie);
+
+        // ACT
+        List<IngerichtTalent> resultaat = ingerichtTalentRepository.zoekActieveVoorPeriodeEnDoelgroep(
+                opgeslagenPeriode,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        // ASSERT
+        assertEquals(1, resultaat.size());
+
+        IngerichtTalent gevonden = resultaat.getFirst();
+
+        assertEquals(opgeslagenVoetbal.getId(), gevonden.getId());
+        assertEquals("Voetbal observatie", gevonden.getNaam());
+        assertTrue(gevonden.isActief());
+        assertEquals(
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                gevonden.getDoelgroep()
+        );
+    }
+
+    @Test
+    void updateWijzigtNaamOmschrijvingCapaciteitEnActief() {
+        // ARRANGE
+        IngerichtTalent opgeslagen = ingerichtTalentRepository.save(
+                maakStandaardIngerichtTalent()
+        );
+
+        opgeslagen.wijzigGegevens(
+                "Schaken gevorderd",
+                "Schaken voor gevorderde leerlingen",
+                15
+        );
+
+        opgeslagen.deactiveer();
+
+        // ACT
+        ingerichtTalentRepository.update(opgeslagen);
+
+        // ASSERT
+        IngerichtTalent resultaat = ingerichtTalentRepository.zoekOpId(opgeslagen.getId());
+
+        assertEquals("Schaken gevorderd", resultaat.getNaam());
+        assertEquals("Schaken voor gevorderde leerlingen", resultaat.getOmschrijving());
+        assertEquals(15, resultaat.getMaxCapaciteit());
+        assertFalse(resultaat.isActief());
+    }
+
+    @Test
+    void updateKanTweedeLeerkrachtToevoegen() {
+        // ARRANGE
+        IngerichtTalent opgeslagen = ingerichtTalentRepository.save(
+                maakStandaardIngerichtTalent()
+        );
+
+        opgeslagen.voegLeerkrachtToe(tweedeOpgeslagenLeerkracht);
+
+        // ACT
+        ingerichtTalentRepository.update(opgeslagen);
+
+        // ASSERT
+        IngerichtTalent resultaat = ingerichtTalentRepository.zoekOpId(opgeslagen.getId());
+
+        assertEquals(2, resultaat.getLeerkrachten().size());
+        assertTrue(resultaat.getLeerkrachten().contains(opgeslagenLeerkracht));
+        assertTrue(resultaat.getLeerkrachten().contains(tweedeOpgeslagenLeerkracht));
+    }
+
+    @Test
+    void updateKanLeerkrachtVerwijderen() {
+        // ARRANGE
+        IngerichtTalent opgeslagen = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        opgeslagenTalent,
+                        opgeslagenPeriode,
+                        "Schaken beginners",
+                        "Leren schaken",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(opgeslagenLeerkracht, tweedeOpgeslagenLeerkracht)
+                )
+        );
+
+        opgeslagen.verwijderLeerkracht(opgeslagenLeerkracht);
+
+        // ACT
+        ingerichtTalentRepository.update(opgeslagen);
+
+        // ASSERT
+        IngerichtTalent resultaat = ingerichtTalentRepository.zoekOpId(opgeslagen.getId());
+
+        assertEquals(1, resultaat.getLeerkrachten().size());
+        assertEquals(
+                tweedeOpgeslagenLeerkracht.getId(),
+                resultaat.getLeerkrachten().getFirst().getId()
+        );
+    }
+
+    @Test
+    void updateKanAlleLeerkrachtenVerwijderen() {
+        // ARRANGE
+        IngerichtTalent opgeslagen = ingerichtTalentRepository.save(
+                maakStandaardIngerichtTalent()
+        );
+
+        opgeslagen.verwijderLeerkracht(opgeslagenLeerkracht);
+
+        // ACT
+        ingerichtTalentRepository.update(opgeslagen);
+
+        // ASSERT
+        IngerichtTalent resultaat = ingerichtTalentRepository.zoekOpId(opgeslagen.getId());
+
+        assertTrue(resultaat.getLeerkrachten().isEmpty());
+    }
+
+    @Test
+    void updateMetNullGeeftException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ingerichtTalentRepository.update(null)
+        );
+    }
+
+    @Test
+    void updateVanNietOpgeslagenIngerichtTalentGeeftException() {
+        // ARRANGE
+        IngerichtTalent ingerichtTalent = maakStandaardIngerichtTalent();
+
+        // ACT & ASSERT
+        assertThrows(
+                IllegalStateException.class,
+                () -> ingerichtTalentRepository.update(ingerichtTalent)
+        );
+    }
+
+    private IngerichtTalent maakStandaardIngerichtTalent() {
+        return new IngerichtTalent(
+                opgeslagenTalent,
+                opgeslagenPeriode,
+                "Schaken beginners",
+                "Leren schaken",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of(opgeslagenLeerkracht)
+        );
     }
 
     private void controleerIngerichtTalentInDatabank(IngerichtTalent ingerichtTalent) throws SQLException {
@@ -200,14 +531,30 @@ class PostgresIngerichtTalentRepositoryTest {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 assertTrue(resultSet.next(), "Het ingerichte talent werd niet teruggevonden in de databank");
+
                 assertEquals("Schaken - Herfst", resultSet.getString("naam"));
                 assertEquals("Schaken voor de herfstperiode", resultSet.getString("omschrijving"));
                 assertEquals(10, resultSet.getInt("maximum_capaciteit"));
-                assertEquals("OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB", resultSet.getString("doelgroep"));
+                assertEquals(
+                        "OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB",
+                        resultSet.getString("doelgroep")
+                );
                 assertTrue(resultSet.getBoolean("actief"));
-                assertEquals(ingerichtTalent.getTalent().getId().longValue(), resultSet.getLong("talent_id"));
-                assertEquals(ingerichtTalent.getTalentenPeriode().getId().longValue(), resultSet.getLong("talenten_periode_id"));
-                assertFalse(resultSet.next(), "Er werden meerdere ingerichte talenten met hetzelfde ID gevonden");
+
+                assertEquals(
+                        ingerichtTalent.getTalent().getId().longValue(),
+                        resultSet.getLong("talent_id")
+                );
+
+                assertEquals(
+                        ingerichtTalent.getTalentenPeriode().getId().longValue(),
+                        resultSet.getLong("talenten_periode_id")
+                );
+
+                assertFalse(
+                        resultSet.next(),
+                        "Er werden meerdere ingerichte talenten met hetzelfde ID gevonden"
+                );
             }
         }
     }
@@ -235,96 +582,5 @@ class PostgresIngerichtTalentRepositoryTest {
                 return leerkrachtIds;
             }
         }
-    }
-    @Test
-    void zoekActieveVoorPeriodeEnDoelgroepGeeftAlleenActieveTalentenVanJuisteDoelgroep() {
-        // ARRANGE
-        Talent voetbal = talentRepository.save(
-                new Talent("Voetbal", "Balsport")
-        );
-
-        Talent schaken = talentRepository.save(
-                new Talent("Schaken", "Strategisch denkspel")
-        );
-
-        Talent lassen = talentRepository.save(
-                new Talent("Lassen", "Leren lassen")
-        );
-
-        TalentenPeriode herfst = periodeRepository.save(
-                new TalentenPeriode(
-                        "Herfst",
-                        LocalDate.of(2026, 9, 1),
-                        LocalDate.of(2026, 10, 31),
-                        schooljaarVoorPeriode(LocalDate.of(2026, 9, 1))
-                )
-        );
-
-        Leerkracht tim = leerkrachtRepository.save(
-                new Leerkracht("Tim", "Van Herreweghe")
-        );
-
-        IngerichtTalent voetbalObservatie = new IngerichtTalent(
-                voetbal,
-                herfst,
-                "Voetbal observatie",
-                "Voetbal voor de observatiefase",
-                10,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                List.of(tim)
-        );
-
-        IngerichtTalent schakenObservatie = new IngerichtTalent(
-                schaken,
-                herfst,
-                "Schaken observatie",
-                "Schaken voor de observatiefase",
-                10,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                List.of(tim)
-        );
-
-        schakenObservatie.deactiveer();
-
-        IngerichtTalent lassenKwalificatie = new IngerichtTalent(
-                lassen,
-                herfst,
-                "Lassen kwalificatie",
-                "Lassen voor de kwalificatiefase",
-                10,
-                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
-                List.of(tim)
-        );
-
-        IngerichtTalent opgeslagenVoetbal =
-                ingerichtTalentRepository.save(voetbalObservatie);
-
-        ingerichtTalentRepository.save(schakenObservatie);
-        ingerichtTalentRepository.save(lassenKwalificatie);
-
-        // ACT
-        List<IngerichtTalent> resultaat =
-                ingerichtTalentRepository.zoekActieveVoorPeriodeEnDoelgroep(
-                        herfst,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
-                );
-
-        // ASSERT
-        assertEquals(1, resultaat.size());
-
-        IngerichtTalent gevonden = resultaat.getFirst();
-
-        assertEquals(opgeslagenVoetbal.getId(), gevonden.getId());
-        assertEquals("Voetbal observatie", gevonden.getNaam());
-        assertTrue(gevonden.isActief());
-
-        assertEquals(
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                gevonden.getDoelgroep()
-        );
-    }
-
-    private Schooljaar schooljaarVoorPeriode(LocalDate startDatum) {
-        return startDatum.getMonthValue() >= 7 ? schooljaar2026_2027 : schooljaar2025_2026;
     }
 }

@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.talent;
 
+import be.kdg.talenten.view.navigation.AppSidebar;
+
 import be.kdg.talenten.domain.Talent;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.Insets;
@@ -21,6 +23,7 @@ import javafx.scene.layout.VBox;
 import java.util.List;
 
 public class TalentView extends BorderPane {
+    private final AppSidebar sidebar;
     private Button terugButton;
     private Button nieuwTalentButton;
     private TableView<Talent> talentenTable;
@@ -32,6 +35,7 @@ public class TalentView extends BorderPane {
     private Label statusLabel;
 
     public TalentView() {
+        sidebar = new AppSidebar(AppSidebar.Sectie.TALENTEN, "Talenten beheren");
         initialiseNodes();
         layoutNodes();
     }
@@ -87,7 +91,7 @@ public class TalentView extends BorderPane {
     }
 
     private void layoutNodes() {
-        setLeft(maakSidebar());
+        setLeft(sidebar);
         setCenter(maakInhoud());
         getStyleClass().add("app-background");
     }
@@ -276,5 +280,9 @@ public class TalentView extends BorderPane {
 
     public Button getAnnulerenButton() {
         return annulerenButton;
+    }
+
+    public AppSidebar getSidebar() {
+        return sidebar;
     }
 }

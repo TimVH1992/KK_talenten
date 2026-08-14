@@ -3,8 +3,10 @@ package be.kdg.talenten.repository;
 import be.kdg.talenten.database.DatabaseConnectionFactory;
 import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Klas;
+import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.repository.postgres.PostgresKlasRepository;
+import be.kdg.talenten.repository.postgres.PostgresLeerlingRepository;
 import be.kdg.talenten.repository.postgres.PostgresSchooljaarRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,8 @@ import java.util.List;
 class PostgresKlasRepositoryTest {
 
     private KlasRepository repository;
+    private LeerlingRepository leerlingRepository;
+
     private Schooljaar schooljaar2026_2027;
 
     @BeforeEach
@@ -30,6 +34,7 @@ class PostgresKlasRepositoryTest {
 
             statement.executeUpdate("""
                     TRUNCATE TABLE
+                        voorkeur_import_problemen,
                         ingericht_talent_leerkrachten,
                         voorkeuren,
                         toewijzingen,
@@ -57,6 +62,7 @@ class PostgresKlasRepositoryTest {
         );
 
         repository = new PostgresKlasRepository();
+        leerlingRepository = new PostgresLeerlingRepository();
     }
 
     @Test
@@ -206,6 +212,200 @@ class PostgresKlasRepositoryTest {
         Assertions.assertEquals(
                 Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
                 werkelijk.get(3).getDoelgroep()
+        );
+    }
+
+    @Test
+    void zoekOpIdGeeftJuisteKlasTerug() {
+        // ARRANGE
+        Klas opgeslagenKlas = repository.save(
+                new Klas(
+                        "2AA",
+                        schooljaar2026_2027,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        // ACT
+        Klas resultaat = repository.zoekOpId(opgeslagenKlas.getId());
+
+        // ASSERT
+        Assertions.assertNotNull(resultaat);
+        Assertions.assertEquals(opgeslagenKlas.getId(), resultaat.getId());
+        Assertions.assertEquals("2AA", resultaat.getNaam());
+        Assertions.assertEquals(2, resultaat.getLeerjaar());
+        Assertions.assertEquals(
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                resultaat.getDoelgroep()
+        );
+        Assertions.assertEquals(
+                schooljaar2026_2027.getId(),
+                resultaat.getSchooljaar().getId()
+        );
+    }
+
+    @Test
+    void zoekOpIdMetOngeldigIdGeeftException() {
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.zoekOpId(0)
+        );
+    }
+
+    @Test
+    void zoekOpIdMetNietBestaandIdGeeftException() {
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.zoekOpId(999)
+        );
+    }
+
+    @Test
+    void updateWijzigtNaamLeerjaarEnDoelgroepVanKlas() {
+        // ARRANGE
+        Klas opgeslagenKlas = repository.save(
+                new Klas(
+                        "2AA",
+                        schooljaar2026_2027,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        opgeslagenKlas.wijzigGegevens(
+                "3AB",
+                3,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+        );
+
+        // ACT
+        repository.update(opgeslagenKlas);
+
+        // ASSERT
+        Klas resultaat = repository.zoekOpId(opgeslagenKlas.getId());
+
+        Assertions.assertEquals(opgeslagenKlas.getId(), resultaat.getId());
+        Assertions.assertEquals("3AB", resultaat.getNaam());
+        Assertions.assertEquals(3, resultaat.getLeerjaar());
+        Assertions.assertEquals(
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                resultaat.getDoelgroep()
+        );
+
+        // Schooljaar mag niet gewijzigd zijn
+        Assertions.assertEquals(
+                schooljaar2026_2027.getId(),
+                resultaat.getSchooljaar().getId()
+        );
+    }
+
+    @Test
+    void updateMetNullGeeftException() {
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.update(null)
+        );
+    }
+
+    @Test
+    void updateVanNietOpgeslagenKlasGeeftException() {
+        // ARRANGE
+        Klas klas = new Klas(
+                "2AA",
+                schooljaar2026_2027,
+                2,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.update(klas)
+        );
+    }
+
+    @Test
+    void deleteVerwijdertLegeKlas() {
+        // ARRANGE
+        Klas opgeslagenKlas = repository.save(
+                new Klas(
+                        "2AA",
+                        schooljaar2026_2027,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        // ACT
+        repository.delete(opgeslagenKlas);
+
+        // ASSERT
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.zoekOpId(opgeslagenKlas.getId())
+        );
+    }
+
+    @Test
+    void deleteVanKlasMetLeerlingenGeeftException() {
+        // ARRANGE
+        Klas opgeslagenKlas = repository.save(
+                new Klas(
+                        "2AA",
+                        schooljaar2026_2027,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        leerlingRepository.save(
+                new Leerling(
+                        "Jan",
+                        "Peeters",
+                        opgeslagenKlas
+                )
+        );
+
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.delete(opgeslagenKlas)
+        );
+
+        // De klas moet nog steeds bestaan
+        Klas resultaat = repository.zoekOpId(opgeslagenKlas.getId());
+
+        Assertions.assertNotNull(resultaat);
+        Assertions.assertEquals("2AA", resultaat.getNaam());
+    }
+
+    @Test
+    void deleteMetNullGeeftException() {
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.delete(null)
+        );
+    }
+
+    @Test
+    void deleteVanNietOpgeslagenKlasGeeftException() {
+        // ARRANGE
+        Klas klas = new Klas(
+                "2AA",
+                schooljaar2026_2027,
+                2,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.delete(klas)
         );
     }
 }

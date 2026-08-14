@@ -1,5 +1,7 @@
 package be.kdg.talenten.view.voorkeuren;
 
+import be.kdg.talenten.view.navigation.AppSidebar;
+
 import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.domain.TalentenPeriode;
@@ -32,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class VoorkeurenView extends BorderPane {
+    private final AppSidebar sidebar;
     private final DateTimeFormatter datumFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private Button terugButton;
@@ -44,6 +47,7 @@ public class VoorkeurenView extends BorderPane {
     private TableView<VoorkeurImportProbleem> problemenTable;
 
     public VoorkeurenView() {
+        sidebar = new AppSidebar(AppSidebar.Sectie.VOORKEUREN, "Voorkeuren beheren");
         initialiseNodes();
         layoutNodes();
     }
@@ -136,7 +140,7 @@ public class VoorkeurenView extends BorderPane {
     }
 
     private void layoutNodes() {
-        setLeft(maakSidebar());
+        setLeft(sidebar);
         setCenter(maakInhoud());
         getStyleClass().add("app-background");
     }
@@ -399,5 +403,9 @@ public class VoorkeurenView extends BorderPane {
 
     public Button getImporteerButton() {
         return importeerButton;
+    }
+
+    public AppSidebar getSidebar() {
+        return sidebar;
     }
 }

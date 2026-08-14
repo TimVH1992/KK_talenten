@@ -119,8 +119,8 @@ public class IngerichtTalent {
     }
 
     private static void valideerLeerkrachten(List<Leerkracht> leerkrachten) {
-        if (leerkrachten == null || leerkrachten.isEmpty()) {
-            throw new IllegalArgumentException("Een ingericht talent moet minstens één leerkracht hebben.");
+        if (leerkrachten == null) {
+            throw new IllegalArgumentException("De lijst van leerkrachten mag niet null zijn.");
         }
 
         if (leerkrachten.size() > 2) {
@@ -151,6 +151,13 @@ public class IngerichtTalent {
 
         leerkrachten.add(leerkracht);
     }
+    public void verwijderLeerkracht(Leerkracht leerkracht) {
+        if (leerkracht == null) {
+            throw new IllegalArgumentException("Leerkracht mag niet null zijn.");
+        }
+
+        leerkrachten.remove(leerkracht);
+    }
 
     public void wijzigNaam(String naam) {
         valideerNaam(naam);
@@ -160,6 +167,19 @@ public class IngerichtTalent {
     public void wijzigOmschrijving(String omschrijving) {
         valideerOmschrijving(omschrijving);
         this.omschrijving = omschrijving;
+    }
+
+    public void wijzigGegevens(String naam, String omschrijving, int maxCapaciteit) {
+        valideerNaam(naam);
+        valideerOmschrijving(omschrijving);
+
+        if (maxCapaciteit < 1) {
+            throw new IllegalArgumentException("De maximumcapaciteit moet minstens 1 zijn.");
+        }
+
+        this.naam = naam;
+        this.omschrijving = omschrijving;
+        this.maxCapaciteit = maxCapaciteit;
     }
 
     public void setMaxCapaciteit(int maxCapaciteit) {
