@@ -45,7 +45,7 @@ public class AppSidebar extends VBox {
 
         Sectie genormaliseerdeSectie = normaliseerVerdelingsSectie(actieveSectie);
 
-        dashboardButton = maakNavigatieButton("⌂  Dashboard", Sectie.DASHBOARD, genormaliseerdeSectie);
+        dashboardButton = maakNavigatieButton("⌂  Overzicht", Sectie.DASHBOARD, genormaliseerdeSectie);
         leerlingenButton = maakNavigatieButton("○  Leerlingen", Sectie.LEERLINGEN, genormaliseerdeSectie);
         klassenButton = maakNavigatieButton("▣  Klassen", Sectie.KLASSEN, genormaliseerdeSectie);
         leerkrachtenButton = maakNavigatieButton("○  Leerkrachten", Sectie.LEERKRACHTEN, genormaliseerdeSectie);
