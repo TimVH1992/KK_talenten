@@ -12,4 +12,5 @@ public interface LeerlingRepository {
     Leerling save(Leerling leerling);
     Leerling zoekOpId(long id);
     List<Leerling> zoekVoorSchooljaar(Schooljaar schooljaar);
+    void update(Leerling leerling);
 }

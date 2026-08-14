@@ -1,5 +1,6 @@
 package be.kdg.talenten.config;
 
+import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
 import be.kdg.talenten.service.beheer.*;
@@ -36,6 +37,7 @@ public final class ApplicationConfig {
 
     private final TalentService talentService;
     private final LeerkrachtService leerkrachtService;
+    private final LeerlingService leerlingService;
 
 
     public ApplicationConfig() {
@@ -64,6 +66,7 @@ public final class ApplicationConfig {
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
         talentService = new TalentService(talentRepository);
         leerkrachtService = new LeerkrachtService(leerkrachtRepository);
+        leerlingService = new LeerlingService(leerlingRepository);
 
     }
 
@@ -108,5 +111,9 @@ public final class ApplicationConfig {
 
     public LeerkrachtService getLeerkrachtService(){
         return leerkrachtService;
+    }
+
+    public LeerlingService getLeerlingService() {
+        return leerlingService;
     }
 }

@@ -244,4 +244,44 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                 resultSet.getBoolean("schooljaar_actief")
         );
     }
+
+    @Override
+    public void update(Leerling leerling) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("Leerling mag niet null zijn");
+        }
+        if (leerling.getId() == null || leerling.getId() < 1) {
+            throw new IllegalStateException("De leerling heeft geen bestaand id");
+        }
+        if (leerling.getKlas() == null || leerling.getKlas().getId() == null) {
+            throw new IllegalStateException("De klas van de leerling moet opgeslagen zijn");
+        }
+
+        String sql = """
+            UPDATE leerlingen
+            SET voornaam = ?, achternaam = ?, klas_id = ?
+            WHERE leerling_id = ?
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, leerling.getVoornaam());
+            statement.setString(2, leerling.getAchternaam());
+            statement.setLong(3, leerling.getKlas().getId());
+            statement.setLong(4, leerling.getId());
+
+            int aantalAangepasteRijen = statement.executeUpdate();
+
+            if (aantalAangepasteRijen == 0) {
+                throw new IllegalStateException("Geen leerling gevonden met id: " + leerling.getId());
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De leerling " + leerling + " kon niet aangepast worden",
+                    e
+            );
+        }
+    }
 }

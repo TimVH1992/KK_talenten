@@ -10,10 +10,11 @@ import java.util.Comparator;
 import java.util.List;
 
 public class InMemoryLeerlingRepository implements LeerlingRepository {
-    private List<Leerling> leerlingen;
+
+    private final List<Leerling> leerlingen;
 
     public InMemoryLeerlingRepository(List<Leerling> leerlingen) {
-        if (leerlingen == null){
+        if (leerlingen == null) {
             throw new IllegalArgumentException("Leerlingen mag niet null zijn");
         }
         this.leerlingen = leerlingen;
@@ -21,29 +22,37 @@ public class InMemoryLeerlingRepository implements LeerlingRepository {
 
     @Override
     public List<Leerling> zoekVoorKlas(Klas klas) {
-        List<Leerling> leerlingenPerKlas = new ArrayList<>();
-        if (klas == null){
+        if (klas == null) {
             throw new IllegalArgumentException("De klas mag niet null zijn");
         }
-        for (Leerling leerling : leerlingen){
-            if (leerling.getKlas().equals(klas)){
+
+        List<Leerling> leerlingenPerKlas = new ArrayList<>();
+
+        for (Leerling leerling : leerlingen) {
+            if (leerling.getKlas().equals(klas)) {
                 leerlingenPerKlas.add(leerling);
             }
         }
+
         return leerlingenPerKlas;
     }
 
     @Override
     public Leerling save(Leerling leerling) {
-        if (leerling == null){
+        if (leerling == null) {
             throw new IllegalArgumentException("Leerling mag niet null zijn");
         }
+
         leerlingen.add(leerling);
         return leerling;
     }
 
     @Override
     public Leerling zoekOpId(long id) {
+        if (id < 1) {
+            throw new IllegalArgumentException("Id moet groter zijn dan 0");
+        }
+
         for (Leerling leerling : leerlingen) {
             if (leerling.getId() != null && leerling.getId() == id) {
                 return leerling;
@@ -52,6 +61,7 @@ public class InMemoryLeerlingRepository implements LeerlingRepository {
 
         throw new IllegalStateException("Geen leerling gevonden met ID " + id);
     }
+
     @Override
     public List<Leerling> zoekVoorSchooljaar(Schooljaar schooljaar) {
         if (schooljaar == null) {
@@ -65,5 +75,26 @@ public class InMemoryLeerlingRepository implements LeerlingRepository {
                         .thenComparing(Leerling::getAchternaam)
                         .thenComparing(Leerling::getVoornaam))
                 .toList();
+    }
+
+    @Override
+    public void update(Leerling leerling) {
+        if (leerling == null) {
+            throw new IllegalArgumentException("Leerling mag niet null zijn");
+        }
+        if (leerling.getId() == null || leerling.getId() < 1) {
+            throw new IllegalStateException("De leerling heeft geen bestaand id");
+        }
+
+        for (int i = 0; i < leerlingen.size(); i++) {
+            Leerling opgeslagenLeerling = leerlingen.get(i);
+
+            if (opgeslagenLeerling.getId() != null && opgeslagenLeerling.getId().equals(leerling.getId())) {
+                leerlingen.set(i, leerling);
+                return;
+            }
+        }
+
+        throw new IllegalStateException("Geen leerling gevonden met id: " + leerling.getId());
     }
 }

@@ -154,4 +154,67 @@ public class PostgresLeerlingRepositoryTest {
                 gevondenLeerling.getKlas().getSchooljaar()
         );
     }
+    @Test
+    void updateWijzigtGegevensEnKlasVanLeerling() {
+        // ARRANGE
+
+
+        Klas klas2A = klasRepository.save(
+                new Klas(
+                        "2A",
+                        schooljaar2026_2027,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        Klas klas2B = klasRepository.save(
+                new Klas(
+                        "2B",
+                        schooljaar2026_2027,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        Leerling opgeslagenLeerling = repository.save(
+                new Leerling("Jan", "Peeters", klas2A)
+        );
+
+        opgeslagenLeerling.wijzigGegevens(
+                "Janne",
+                "Peeters",
+                klas2B
+        );
+
+        // ACT
+        repository.update(opgeslagenLeerling);
+
+        // ASSERT
+        Leerling resultaat = repository.zoekOpId(opgeslagenLeerling.getId());
+
+        Assertions.assertEquals("Janne", resultaat.getVoornaam());
+        Assertions.assertEquals("Peeters", resultaat.getAchternaam());
+        Assertions.assertEquals(klas2B.getId(), resultaat.getKlas().getId());
+        Assertions.assertEquals("2B", resultaat.getKlas().getNaam());
+    }
+    @Test
+    void updateMetNullLeerlingGeeftException() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> repository.update(null)
+        );
+    }
+
+    @Test
+    void updateVanNietOpgeslagenLeerlingGeeftException() {
+        // ARRANGE: wel een opgeslagen klas nodig
+        Leerling leerling = new Leerling("Jan", "Peeters", klas);
+
+        // ACT & ASSERT
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.update(leerling)
+        );
+    }
 }
