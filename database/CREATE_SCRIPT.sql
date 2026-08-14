@@ -513,8 +513,6 @@ CREATE INDEX idx_toewijzingen_periode
 CREATE INDEX idx_toewijzingen_ingericht_talent
     ON toewijzingen (ingericht_talent_id);
 
-COMMIT;
-
 -- =========================================================
 -- INITIËLE DATA
 -- =========================================================
