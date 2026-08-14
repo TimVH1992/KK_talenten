@@ -4,6 +4,8 @@ import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.ingerichttalent.IngerichtTalentPresenter;
 import be.kdg.talenten.view.ingerichttalent.IngerichtTalentView;
+import be.kdg.talenten.view.klas.KlasPresenter;
+import be.kdg.talenten.view.klas.KlasView;
 import be.kdg.talenten.view.leerling.LeerlingPresenter;
 import be.kdg.talenten.view.leerling.LeerlingView;
 import be.kdg.talenten.view.leerkracht.LeerkrachtPresenter;
@@ -38,15 +40,13 @@ public class AppNavigator {
 
         sidebar.getDashboardButton().setOnAction(event -> toonDashboard());
         sidebar.getLeerlingenButton().setOnAction(event -> toonLeerlingen());
-        sidebar.getKlassenButton().setOnAction(event -> toonNietBeschikbaar("Klassen beheren"));
+        sidebar.getKlassenButton().setOnAction(event -> toonKlassen());
         sidebar.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
         sidebar.getTalentenButton().setOnAction(event -> toonTalenten());
         sidebar.getTalentenperiodesButton().setOnAction(event -> toonNietBeschikbaar("Talentenperiodes beheren"));
         sidebar.getIngerichteTalentenButton().setOnAction(event -> toonIngerichteTalenten());
         sidebar.getVoorkeurenButton().setOnAction(event -> toonVoorkeuren());
-        sidebar.getAutomatischeVerdelingButton().setOnAction(event -> toonVerdeling());
-        sidebar.getVerdelingBekijkenButton().setOnAction(event -> toonVerdeling());
-        sidebar.getManueleToewijzingenButton().setOnAction(event -> toonVerdeling());
+        sidebar.getVerdeelButton().setOnAction(event -> toonVerdeling());
     }
 
     public void toonDashboard() {
@@ -58,6 +58,12 @@ public class AppNavigator {
     public void toonLeerlingen() {
         LeerlingView view = new LeerlingView();
         new LeerlingPresenter(config, view, sceneManager);
+        sceneManager.toon(view);
+    }
+
+    public void toonKlassen() {
+        KlasView view = new KlasView();
+        new KlasPresenter(config, view, sceneManager);
         sceneManager.toon(view);
     }
 

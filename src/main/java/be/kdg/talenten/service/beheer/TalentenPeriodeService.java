@@ -4,26 +4,54 @@ import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.repository.TalentenPeriodeRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class TalentenPeriodeService {
-    private final TalentenPeriodeRepository talentenPeriodeRepository;
 
-    public TalentenPeriodeService(TalentenPeriodeRepository talentenPeriodeRepository) {
-        if (talentenPeriodeRepository == null) {
+    private final TalentenPeriodeRepository periodeRepository;
+
+    public TalentenPeriodeService(TalentenPeriodeRepository periodeRepository) {
+        if (periodeRepository == null) {
             throw new IllegalArgumentException("TalentenPeriodeRepository mag niet null zijn");
         }
-        this.talentenPeriodeRepository = talentenPeriodeRepository;
+
+        this.periodeRepository = periodeRepository;
     }
 
     public List<TalentenPeriode> zoekAlle() {
-        return talentenPeriodeRepository.zoekAlle();
+        return periodeRepository.zoekAlle();
     }
 
-    public List<TalentenPeriode> zoekVoorSchooljaar(Schooljaar schooljaar) {
-        if (schooljaar == null) {
-            throw new IllegalArgumentException("Schooljaar mag niet null zijn");
+    public List<TalentenPeriode> geefPeriodesVoorSchooljaar(Schooljaar schooljaar) {
+        return periodeRepository.zoekVoorSchooljaar(schooljaar);
+    }
+
+    public TalentenPeriode maakPeriode(String naam, LocalDate startDatum, LocalDate eindDatum, Schooljaar schooljaar) {
+        TalentenPeriode periode = new TalentenPeriode(
+                naam,
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
+
+        return periodeRepository.save(periode);
+    }
+
+    public void wijzigPeriode(TalentenPeriode periode, String naam, LocalDate startDatum, LocalDate eindDatum) {
+        if (periode == null) {
+            throw new IllegalArgumentException("Talentenperiode mag niet null zijn");
         }
-        return talentenPeriodeRepository.zoekVoorSchooljaar(schooljaar);
+
+        periode.wijzigGegevens(naam, startDatum, eindDatum);
+        periodeRepository.update(periode);
+    }
+
+    public void verwijderPeriode(TalentenPeriode periode) {
+        if (periode == null) {
+            throw new IllegalArgumentException("Talentenperiode mag niet null zijn");
+        }
+
+        periodeRepository.delete(periode);
     }
 }

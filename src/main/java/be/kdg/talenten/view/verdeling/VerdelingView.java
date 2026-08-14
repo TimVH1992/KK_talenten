@@ -69,7 +69,7 @@ public class VerdelingView extends BorderPane {
     private Label statusLabel;
 
     public VerdelingView() {
-        sidebar = new AppSidebar(AppSidebar.Sectie.TOEWIJZINGEN_BEKIJKEN, "Verdeling en toewijzingen");
+        sidebar = new AppSidebar(AppSidebar.Sectie.VERDELEN, "Verdelen en toewijzingen");
         initialiseNodes();
         layoutNodes();
         setWijzigingenToegestaan(false);
@@ -400,10 +400,10 @@ public class VerdelingView extends BorderPane {
     private void layoutNodes() {
         setLeft(sidebar);
 
-        Label titel = new Label("Toewijzingen bekijken");
+        Label titel = new Label("Verdelen");
         titel.getStyleClass().add("page-title");
 
-        Label ondertitel = new Label("Bekijk, herverdeel en corrigeer de talententoewijzingen binnen de geselecteerde periode.");
+        Label ondertitel = new Label("Voer de automatische verdeling uit, bekijk toewijzingen en pas ze waar nodig manueel aan.");
         ondertitel.getStyleClass().add("page-subtitle");
 
         VBox titelBox = new VBox(4, titel, ondertitel);

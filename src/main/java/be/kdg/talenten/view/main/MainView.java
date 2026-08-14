@@ -36,6 +36,7 @@ public class MainView extends BorderPane {
     private Button talentenBeheerButton;
     private Button leerkrachtenBeheerButton;
     private Button ingerichteTalentenBeheerButton;
+    private Button klassenBeheerButton;
 
     private Label actiefSchooljaarLabel;
 
@@ -53,9 +54,10 @@ public class MainView extends BorderPane {
         talentenperiodesButton = maakNavigatieButton("◷  Talentenperiodes", false);
         ingerichteTalentenButton = maakNavigatieButton("▤  Ingerichte talenten", false);
         voorkeurenButton = maakNavigatieButton("⇩  Voorkeuren importeren", false);
-        automatischeVerdelingButton = maakNavigatieButton("◎  Automatische verdeling", false);
-        verdelingBekijkenButton = maakNavigatieButton("♙  Toewijzingen bekijken", false);
-        manueleToewijzingenButton = maakNavigatieButton("↔  Manuele toewijzingen", false);
+        automatischeVerdelingButton = maakNavigatieButton("↔  Verdelen", false);
+        // Behouden voor broncompatibiliteit; deze twee knoppen worden niet meer afzonderlijk in de sidebar getoond.
+        verdelingBekijkenButton = automatischeVerdelingButton;
+        manueleToewijzingenButton = automatischeVerdelingButton;
 
         afsluitenButton = new Button("Applicatie afsluiten");
         afsluitenButton.getStyleClass().add("sidebar-exit-button");
@@ -120,9 +122,7 @@ public class MainView extends BorderPane {
                 ingerichteTalentenButton,
                 maakMenuTussenruimte(),
                 voorkeurenButton,
-                automatischeVerdelingButton,
-                verdelingBekijkenButton,
-                manueleToewijzingenButton
+                automatischeVerdelingButton
         );
         menu.setPadding(new Insets(12));
 
@@ -192,7 +192,7 @@ public class MainView extends BorderPane {
         String[] titels = {"Leerlingen", "Klassen", "Leerkrachten", "Talenten", "Talentenperiodes", "Ingerichte talenten"};
         for (int i = 0; i < beheerButtons.size(); i++) {
             String onderdeel = titels[i];
-            String status = onderdeel.equals("Leerlingen") || onderdeel.equals("Talenten") || onderdeel.equals("Leerkrachten") || onderdeel.equals("Ingerichte talenten") ? "Beheren" : "Nog niet volledig geïmplementeerd";
+            String status = onderdeel.equals("Leerlingen") || onderdeel.equals("Klassen") || onderdeel.equals("Talenten") || onderdeel.equals("Leerkrachten") || onderdeel.equals("Ingerichte talenten") ? "Beheren" : "Nog niet volledig geïmplementeerd";
             Button tegel = new Button(onderdeel + "\n" + status);
             tegel.setWrapText(true);
             tegel.setMaxWidth(Double.MAX_VALUE);
@@ -201,6 +201,8 @@ public class MainView extends BorderPane {
 
             if (onderdeel.equals("Leerlingen")) {
                 leerlingenBeheerButton = tegel;
+            } else if (onderdeel.equals("Klassen")) {
+                klassenBeheerButton = tegel;
             } else if (onderdeel.equals("Talenten")) {
                 talentenBeheerButton = tegel;
             } else if (onderdeel.equals("Leerkrachten")) {
@@ -226,7 +228,7 @@ public class MainView extends BorderPane {
 
         Label statusTitel = new Label("Projectstatus");
         statusTitel.getStyleClass().add("section-heading");
-        Label statusTekst = new Label("✓ Exceltemplates genereren   ✓ Voorkeuren importeren   ✓ Automatische verdeling   ✓ Manuele toewijzing   ✓ Leerlingen beheren   ✓ Talenten beheren   ✓ Leerkrachten beheren   ✓ Ingerichte talenten beheren   ✓ PostgreSQL persistentie");
+        Label statusTekst = new Label("✓ Exceltemplates genereren   ✓ Voorkeuren importeren   ✓ Verdelen en toewijzingen   ✓ Leerlingen beheren   ✓ Klassen beheren   ✓ Talenten beheren   ✓ Leerkrachten beheren   ✓ Ingerichte talenten beheren   ✓ PostgreSQL persistentie");
         statusTekst.setWrapText(true);
         statusTekst.getStyleClass().add("status-success");
         VBox statusCard = new VBox(10, statusTitel, statusTekst);
@@ -325,5 +327,9 @@ public class MainView extends BorderPane {
 
     public Button getIngerichteTalentenBeheerButton() {
         return ingerichteTalentenBeheerButton;
+    }
+
+    public Button getKlassenBeheerButton() {
+        return klassenBeheerButton;
     }
 }

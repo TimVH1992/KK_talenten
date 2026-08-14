@@ -4,6 +4,8 @@ import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.view.ingerichttalent.IngerichtTalentPresenter;
 import be.kdg.talenten.view.ingerichttalent.IngerichtTalentView;
+import be.kdg.talenten.view.klas.KlasPresenter;
+import be.kdg.talenten.view.klas.KlasView;
 import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.leerling.LeerlingPresenter;
 import be.kdg.talenten.view.leerling.LeerlingView;
@@ -43,12 +45,13 @@ public class MainPresenter {
         view.getSnelOverzichtButton().setOnAction(event -> toonVerdeling());
 
         view.getLeerlingenButton().setOnAction(event -> toonLeerlingen());
-        view.getKlassenButton().setOnAction(event -> view.toonNietBeschikbaar("Klassen beheren"));
+        view.getKlassenButton().setOnAction(event -> toonKlassen());
         view.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
         view.getTalentenButton().setOnAction(event -> toonTalenten());
         view.getTalentenBeheerButton().setOnAction(event -> toonTalenten());
         view.getLeerkrachtenBeheerButton().setOnAction(event -> toonLeerkrachten());
         view.getLeerlingenBeheerButton().setOnAction(event -> toonLeerlingen());
+        view.getKlassenBeheerButton().setOnAction(event -> toonKlassen());
         view.getIngerichteTalentenBeheerButton().setOnAction(event -> toonIngerichteTalenten());
         view.getTalentenperiodesButton().setOnAction(event -> view.toonNietBeschikbaar("Talentenperiodes beheren"));
         view.getIngerichteTalentenButton().setOnAction(event -> toonIngerichteTalenten());
@@ -78,6 +81,13 @@ public class MainPresenter {
         LeerlingView leerlingView = new LeerlingView();
         new LeerlingPresenter(config, leerlingView, sceneManager);
         sceneManager.toon(leerlingView);
+    }
+
+
+    private void toonKlassen() {
+        KlasView klasView = new KlasView();
+        new KlasPresenter(config, klasView, sceneManager);
+        sceneManager.toon(klasView);
     }
 
     private void toonLeerkrachten() {

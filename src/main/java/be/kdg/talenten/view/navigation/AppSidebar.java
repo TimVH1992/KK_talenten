@@ -21,6 +21,8 @@ public class AppSidebar extends VBox {
         TALENTENPERIODES,
         INGERICHTE_TALENTEN,
         VOORKEUREN,
+        VERDELEN,
+        // Behouden voor broncompatibiliteit met oudere views.
         AUTOMATISCHE_VERDELING,
         TOEWIJZINGEN_BEKIJKEN,
         MANUELE_TOEWIJZINGEN
@@ -34,26 +36,24 @@ public class AppSidebar extends VBox {
     private final Button talentenperiodesButton;
     private final Button ingerichteTalentenButton;
     private final Button voorkeurenButton;
-    private final Button automatischeVerdelingButton;
-    private final Button verdelingBekijkenButton;
-    private final Button manueleToewijzingenButton;
+    private final Button verdeelButton;
 
     public AppSidebar(Sectie actieveSectie, String subtitel) {
         if (actieveSectie == null) {
             throw new IllegalArgumentException("Actieve sectie mag niet null zijn");
         }
 
-        dashboardButton = maakNavigatieButton("⌂  Dashboard", Sectie.DASHBOARD, actieveSectie);
-        leerlingenButton = maakNavigatieButton("○  Leerlingen", Sectie.LEERLINGEN, actieveSectie);
-        klassenButton = maakNavigatieButton("▣  Klassen", Sectie.KLASSEN, actieveSectie);
-        leerkrachtenButton = maakNavigatieButton("○  Leerkrachten", Sectie.LEERKRACHTEN, actieveSectie);
-        talentenButton = maakNavigatieButton("✦  Talenten", Sectie.TALENTEN, actieveSectie);
-        talentenperiodesButton = maakNavigatieButton("◷  Talentenperiodes", Sectie.TALENTENPERIODES, actieveSectie);
-        ingerichteTalentenButton = maakNavigatieButton("▤  Ingerichte talenten", Sectie.INGERICHTE_TALENTEN, actieveSectie);
-        voorkeurenButton = maakNavigatieButton("⇩  Voorkeuren importeren", Sectie.VOORKEUREN, actieveSectie);
-        automatischeVerdelingButton = maakNavigatieButton("◎  Automatische verdeling", Sectie.AUTOMATISCHE_VERDELING, actieveSectie);
-        verdelingBekijkenButton = maakNavigatieButton("♙  Toewijzingen bekijken", Sectie.TOEWIJZINGEN_BEKIJKEN, actieveSectie);
-        manueleToewijzingenButton = maakNavigatieButton("↔  Manuele toewijzingen", Sectie.MANUELE_TOEWIJZINGEN, actieveSectie);
+        Sectie genormaliseerdeSectie = normaliseerVerdelingsSectie(actieveSectie);
+
+        dashboardButton = maakNavigatieButton("⌂  Dashboard", Sectie.DASHBOARD, genormaliseerdeSectie);
+        leerlingenButton = maakNavigatieButton("○  Leerlingen", Sectie.LEERLINGEN, genormaliseerdeSectie);
+        klassenButton = maakNavigatieButton("▣  Klassen", Sectie.KLASSEN, genormaliseerdeSectie);
+        leerkrachtenButton = maakNavigatieButton("○  Leerkrachten", Sectie.LEERKRACHTEN, genormaliseerdeSectie);
+        talentenButton = maakNavigatieButton("✦  Talenten", Sectie.TALENTEN, genormaliseerdeSectie);
+        talentenperiodesButton = maakNavigatieButton("◷  Talentenperiodes", Sectie.TALENTENPERIODES, genormaliseerdeSectie);
+        ingerichteTalentenButton = maakNavigatieButton("▤  Ingerichte talenten", Sectie.INGERICHTE_TALENTEN, genormaliseerdeSectie);
+        voorkeurenButton = maakNavigatieButton("⇩  Voorkeuren", Sectie.VOORKEUREN, genormaliseerdeSectie);
+        verdeelButton = maakNavigatieButton("↔  Verdelen", Sectie.VERDELEN, genormaliseerdeSectie);
 
         Label logo = new Label("◉");
         logo.getStyleClass().add("brand-mark");
@@ -82,9 +82,7 @@ public class AppSidebar extends VBox {
                 ingerichteTalentenButton,
                 tussenruimte,
                 voorkeurenButton,
-                automatischeVerdelingButton,
-                verdelingBekijkenButton,
-                manueleToewijzingenButton
+                verdeelButton
         );
         menu.setPadding(new Insets(12));
 
@@ -107,6 +105,15 @@ public class AppSidebar extends VBox {
         getStyleClass().add("sidebar");
     }
 
+    private Sectie normaliseerVerdelingsSectie(Sectie sectie) {
+        if (sectie == Sectie.AUTOMATISCHE_VERDELING
+                || sectie == Sectie.TOEWIJZINGEN_BEKIJKEN
+                || sectie == Sectie.MANUELE_TOEWIJZINGEN) {
+            return Sectie.VERDELEN;
+        }
+        return sectie;
+    }
+
     private Button maakNavigatieButton(String tekst, Sectie sectie, Sectie actieveSectie) {
         Button button = new Button(tekst);
         button.setMaxWidth(Double.MAX_VALUE);
@@ -121,47 +128,18 @@ public class AppSidebar extends VBox {
         return button;
     }
 
-    public Button getDashboardButton() {
-        return dashboardButton;
-    }
+    public Button getDashboardButton() { return dashboardButton; }
+    public Button getLeerlingenButton() { return leerlingenButton; }
+    public Button getKlassenButton() { return klassenButton; }
+    public Button getLeerkrachtenButton() { return leerkrachtenButton; }
+    public Button getTalentenButton() { return talentenButton; }
+    public Button getTalentenperiodesButton() { return talentenperiodesButton; }
+    public Button getIngerichteTalentenButton() { return ingerichteTalentenButton; }
+    public Button getVoorkeurenButton() { return voorkeurenButton; }
+    public Button getVerdeelButton() { return verdeelButton; }
 
-    public Button getLeerlingenButton() {
-        return leerlingenButton;
-    }
-
-    public Button getKlassenButton() {
-        return klassenButton;
-    }
-
-    public Button getLeerkrachtenButton() {
-        return leerkrachtenButton;
-    }
-
-    public Button getTalentenButton() {
-        return talentenButton;
-    }
-
-    public Button getTalentenperiodesButton() {
-        return talentenperiodesButton;
-    }
-
-    public Button getIngerichteTalentenButton() {
-        return ingerichteTalentenButton;
-    }
-
-    public Button getVoorkeurenButton() {
-        return voorkeurenButton;
-    }
-
-    public Button getAutomatischeVerdelingButton() {
-        return automatischeVerdelingButton;
-    }
-
-    public Button getVerdelingBekijkenButton() {
-        return verdelingBekijkenButton;
-    }
-
-    public Button getManueleToewijzingenButton() {
-        return manueleToewijzingenButton;
-    }
+    // Oudere views kunnen deze getters nog aanroepen; alle drie verwijzen nu naar dezelfde Verdeel-tab.
+    public Button getAutomatischeVerdelingButton() { return verdeelButton; }
+    public Button getVerdelingBekijkenButton() { return verdeelButton; }
+    public Button getManueleToewijzingenButton() { return verdeelButton; }
 }

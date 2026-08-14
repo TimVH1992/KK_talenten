@@ -5,9 +5,9 @@ import java.util.Objects;
 
 public class TalentenPeriode {
     private final Long id;
-    private final String naam;
-    private final LocalDate startDatum;
-    private final LocalDate eindDatum;
+    private String naam;
+    private LocalDate startDatum;
+    private LocalDate eindDatum;
     private final Schooljaar schooljaar;
 
     public TalentenPeriode(String naam, LocalDate startDatum, LocalDate eindDatum, Schooljaar schooljaar) {
@@ -18,6 +18,25 @@ public class TalentenPeriode {
         if (id != null && id < 1) {
             throw new IllegalArgumentException("Id mag niet kleiner zijn dan 1");
         }
+
+        valideerGegevens(naam, startDatum, eindDatum, schooljaar);
+
+        this.id = id;
+        this.naam = naam;
+        this.startDatum = startDatum;
+        this.eindDatum = eindDatum;
+        this.schooljaar = schooljaar;
+    }
+
+    public void wijzigGegevens(String naam, LocalDate startDatum, LocalDate eindDatum) {
+        valideerGegevens(naam, startDatum, eindDatum, schooljaar);
+
+        this.naam = naam;
+        this.startDatum = startDatum;
+        this.eindDatum = eindDatum;
+    }
+
+    private void valideerGegevens(String naam, LocalDate startDatum, LocalDate eindDatum, Schooljaar schooljaar) {
         if (naam == null || naam.isBlank()) {
             throw new IllegalArgumentException("De naam van een talentenperiode mag niet leeg of null zijn");
         }
@@ -36,12 +55,6 @@ public class TalentenPeriode {
         if (startDatum.isBefore(schooljaar.getStartDatum()) || eindDatum.isAfter(schooljaar.getEindDatum())) {
             throw new IllegalArgumentException("De talentenperiode moet volledig binnen het schooljaar vallen");
         }
-
-        this.id = id;
-        this.naam = naam;
-        this.startDatum = startDatum;
-        this.eindDatum = eindDatum;
-        this.schooljaar = schooljaar;
     }
 
     public Long getId() {
@@ -69,7 +82,10 @@ public class TalentenPeriode {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         TalentenPeriode ander = (TalentenPeriode) object;
-        return Objects.equals(naam, ander.naam) && Objects.equals(startDatum, ander.startDatum) && Objects.equals(eindDatum, ander.eindDatum) && Objects.equals(schooljaar, ander.schooljaar);
+        return Objects.equals(naam, ander.naam)
+                && Objects.equals(startDatum, ander.startDatum)
+                && Objects.equals(eindDatum, ander.eindDatum)
+                && Objects.equals(schooljaar, ander.schooljaar);
     }
 
     @Override

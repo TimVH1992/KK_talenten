@@ -9,4 +9,7 @@ public interface TalentenPeriodeRepository {
     TalentenPeriode save(TalentenPeriode periode);
     List<TalentenPeriode> zoekAlle();
     List<TalentenPeriode> zoekVoorSchooljaar(Schooljaar schooljaar);
+    TalentenPeriode zoekOpId(long id);
+    void update(TalentenPeriode periode);
+    void delete(TalentenPeriode periode);
 }

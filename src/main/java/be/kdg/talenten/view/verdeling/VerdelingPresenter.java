@@ -226,7 +226,7 @@ public class VerdelingPresenter {
             periodesWordenGeladen = true;
 
             List<TalentenPeriode> periodes =
-                    talentenPeriodeService.zoekVoorSchooljaar(schooljaar);
+                    talentenPeriodeService.geefPeriodesVoorSchooljaar(schooljaar);
 
             view.setPeriodes(periodes);
 

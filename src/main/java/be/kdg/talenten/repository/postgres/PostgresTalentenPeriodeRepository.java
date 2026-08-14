@@ -99,4 +99,132 @@ public class PostgresTalentenPeriodeRepository implements TalentenPeriodeReposit
             throw new IllegalStateException("De talentenperiodes konden niet opgehaald worden", exception);
         }
     }
+    @Override
+    public TalentenPeriode zoekOpId(long id) {
+        if (id < 1) {
+            throw new IllegalArgumentException("Id moet groter zijn dan 0");
+        }
+
+        String sql = basisSelect() + " WHERE tp.talenten_periode_id = ?";
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new IllegalStateException("Geen talentenperiode gevonden met id: " + id);
+                }
+
+                Schooljaar schooljaar = new Schooljaar(
+                        resultSet.getLong("schooljaar_id"),
+                        resultSet.getString("schooljaar_naam"),
+                        resultSet.getDate("schooljaar_startdatum").toLocalDate(),
+                        resultSet.getDate("schooljaar_einddatum").toLocalDate(),
+                        resultSet.getBoolean("actief")
+                );
+
+                return new TalentenPeriode(
+                        resultSet.getLong("talenten_periode_id"),
+                        resultSet.getString("periode_naam"),
+                        resultSet.getDate("periode_startdatum").toLocalDate(),
+                        resultSet.getDate("periode_einddatum").toLocalDate(),
+                        schooljaar
+                );
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("De talentenperiode kon niet opgehaald worden", e);
+        }
+    }
+
+    @Override
+    public void update(TalentenPeriode periode) {
+        if (periode == null) {
+            throw new IllegalArgumentException("Talentenperiode mag niet null zijn");
+        }
+        if (periode.getId() == null || periode.getId() < 1) {
+            throw new IllegalStateException("De talentenperiode heeft geen bestaand id");
+        }
+
+        String sql = """
+            UPDATE talenten_periodes
+            SET naam = ?, startdatum = ?, einddatum = ?
+            WHERE talenten_periode_id = ?
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, periode.getNaam());
+            statement.setDate(2, java.sql.Date.valueOf(periode.getStartDatum()));
+            statement.setDate(3, java.sql.Date.valueOf(periode.getEindDatum()));
+            statement.setLong(4, periode.getId());
+
+            if (statement.executeUpdate() != 1) {
+                throw new IllegalStateException("Geen talentenperiode gevonden met id: " + periode.getId());
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("De talentenperiode kon niet aangepast worden", e);
+        }
+    }
+
+    @Override
+    public void delete(TalentenPeriode periode) {
+        if (periode == null) {
+            throw new IllegalArgumentException("Talentenperiode mag niet null zijn");
+        }
+        if (periode.getId() == null || periode.getId() < 1) {
+            throw new IllegalStateException("De talentenperiode heeft geen bestaand id");
+        }
+
+        String controleSql = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM voorkeuren
+                WHERE talenten_periode_id = ?
+
+                UNION ALL
+
+                SELECT 1
+                FROM toewijzingen
+                WHERE talenten_periode_id = ?
+            )
+            """;
+
+        String deleteSql = """
+            DELETE FROM talenten_periodes
+            WHERE talenten_periode_id = ?
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding()) {
+            try (PreparedStatement statement = connection.prepareStatement(controleSql)) {
+                statement.setLong(1, periode.getId());
+                statement.setLong(2, periode.getId());
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    resultSet.next();
+
+                    if (resultSet.getBoolean(1)) {
+                        throw new IllegalStateException(
+                                "De talentenperiode kan niet verwijderd worden omdat er voorkeuren of toewijzingen bestaan"
+                        );
+                    }
+                }
+            }
+
+            try (PreparedStatement statement = connection.prepareStatement(deleteSql)) {
+                statement.setLong(1, periode.getId());
+
+                if (statement.executeUpdate() != 1) {
+                    throw new IllegalStateException("Geen talentenperiode gevonden met id: " + periode.getId());
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException("De talentenperiode kon niet verwijderd worden", e);
+        }
+    }
 }

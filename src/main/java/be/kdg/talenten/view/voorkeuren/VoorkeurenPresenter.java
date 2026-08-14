@@ -100,7 +100,7 @@ public class VoorkeurenPresenter {
     }
 
     private void laadPeriodes(Schooljaar schooljaar) {
-        List<TalentenPeriode> periodes = talentenPeriodeService.zoekVoorSchooljaar(schooljaar);
+        List<TalentenPeriode> periodes = talentenPeriodeService.geefPeriodesVoorSchooljaar(schooljaar);
         view.setPeriodes(periodes);
 
         if (!periodes.isEmpty()) {

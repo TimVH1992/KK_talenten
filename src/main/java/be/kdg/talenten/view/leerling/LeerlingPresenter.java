@@ -55,18 +55,7 @@ public class LeerlingPresenter {
     }
 
     private void addEventHandlers() {
-        view.getDashboardButton().setOnAction(event -> toonHoofdmenu());
-        view.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
-        view.getTalentenButton().setOnAction(event -> toonTalenten());
-        view.getVoorkeurenButton().setOnAction(event -> toonVoorkeuren());
-        view.getAutomatischeVerdelingButton().setOnAction(event -> toonVerdeling());
-        view.getVerdelingBekijkenButton().setOnAction(event -> toonVerdeling());
-        view.getManueleToewijzingenButton().setOnAction(event -> toonVerdeling());
-
-        view.getKlassenButton().setOnAction(event -> view.toonNietBeschikbaar("Klassen beheren"));
-        view.getTalentenperiodesButton().setOnAction(event -> view.toonNietBeschikbaar("Talentenperiodes beheren"));
-        view.getIngerichteTalentenButton().setOnAction(event -> view.toonNietBeschikbaar("Ingerichte talenten beheren"));
-
+        // Sidebar-navigatie wordt centraal gekoppeld door AppNavigator.
         view.getNieuweLeerlingButton().setOnAction(event -> startNieuweLeerling());
         view.getAnnulerenButton().setOnAction(event -> startNieuweLeerling());
         view.getOpslaanButton().setOnAction(event -> slaLeerlingOp());
