@@ -171,7 +171,7 @@ public class MainView extends BorderPane {
     }
 
     private VBox maakPeriodeCard() {
-        Label titel = new Label("Huidige talentenperiode");
+        Label titel = new Label("Talentenperiode");
         titel.getStyleClass().add("section-heading");
 
         Region spacer = new Region();

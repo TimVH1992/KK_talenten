@@ -5,6 +5,7 @@ import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
 import be.kdg.talenten.service.beheer.*;
 import be.kdg.talenten.service.leerling.LeerlingDetailsService;
+import be.kdg.talenten.service.overzicht.OverzichtService;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.service.verdeling.ManueleToewijzingService;
 import be.kdg.talenten.service.verdeling.VerdelingBekijkenService;
@@ -26,6 +27,7 @@ public final class ApplicationConfig {
     private final AutomatischeVerdelingService automatischeVerdelingService;
     private final ManueleToewijzingService manueleToewijzingService;
     private final VerdelingBekijkenService verdelingBekijkenService;
+    private final OverzichtService overzichtService;
 
     private final SchooljaarService schooljaarService;
     private final TalentenPeriodeService talentenPeriodeService;
@@ -65,6 +67,7 @@ public final class ApplicationConfig {
         automatischeVerdelingService = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository, leerlingRepository, voorkeurImportProbleemRepository);
         manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository);
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
+        overzichtService = new OverzichtService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, toewijzingRepository, voorkeurImportProbleemRepository);
         talentService = new TalentService(talentRepository);
         leerkrachtService = new LeerkrachtService(leerkrachtRepository);
         leerlingService = new LeerlingService(leerlingRepository);
@@ -74,6 +77,10 @@ public final class ApplicationConfig {
 
     public VerdelingBekijkenService getVerdelingBekijkenService() {
         return verdelingBekijkenService;
+    }
+
+    public OverzichtService getOverzichtService() {
+        return overzichtService;
     }
 
     public ManueleToewijzingService getManueleToewijzingService() {
