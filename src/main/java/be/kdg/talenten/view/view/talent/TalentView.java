@@ -215,7 +215,8 @@ public class TalentView extends BorderPane {
     }
 
     public void setTalenten(List<Talent> talenten) {
-        talentenTable.setItems(FXCollections.observableArrayList(talenten));
+        talentenTable.getItems().setAll(talenten);
+        talentenTable.refresh();
     }
 
     public void toonNieuwTalentFormulier() {

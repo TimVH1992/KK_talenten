@@ -2,10 +2,7 @@ package be.kdg.talenten.config;
 
 import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
-import be.kdg.talenten.service.beheer.KlasService;
-import be.kdg.talenten.service.beheer.SchooljaarService;
-import be.kdg.talenten.service.beheer.TalentService;
-import be.kdg.talenten.service.beheer.TalentenPeriodeService;
+import be.kdg.talenten.service.beheer.*;
 import be.kdg.talenten.service.leerling.LeerlingDetailsService;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.service.verdeling.ManueleToewijzingService;
@@ -38,6 +35,7 @@ public final class ApplicationConfig {
     private final VoorkeurenImportService voorkeurenImportService;
 
     private final TalentService talentService;
+    private final LeerkrachtService leerkrachtService;
 
 
     public ApplicationConfig() {
@@ -65,6 +63,7 @@ public final class ApplicationConfig {
         manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository);
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
         talentService = new TalentService(talentRepository);
+        leerkrachtService = new LeerkrachtService(leerkrachtRepository);
 
     }
 
@@ -105,5 +104,9 @@ public final class ApplicationConfig {
     }
     public TalentService getTalentService() {
         return talentService;
+    }
+
+    public LeerkrachtService getLeerkrachtService(){
+        return leerkrachtService;
     }
 }

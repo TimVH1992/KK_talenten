@@ -3,6 +3,8 @@ package be.kdg.talenten.view.main;
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.domain.Schooljaar;
 import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.leerkracht.LeerkrachtPresenter;
+import be.kdg.talenten.view.leerkracht.LeerkrachtView;
 import be.kdg.talenten.view.talent.TalentPresenter;
 import be.kdg.talenten.view.talent.TalentView;
 import be.kdg.talenten.view.verdeling.VerdelingPresenter;
@@ -38,9 +40,10 @@ public class MainPresenter {
 
         view.getLeerlingenButton().setOnAction(event -> view.toonNietBeschikbaar("Leerlingen beheren"));
         view.getKlassenButton().setOnAction(event -> view.toonNietBeschikbaar("Klassen beheren"));
-        view.getLeerkrachtenButton().setOnAction(event -> view.toonNietBeschikbaar("Leerkrachten beheren"));
+        view.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
         view.getTalentenButton().setOnAction(event -> toonTalenten());
         view.getTalentenBeheerButton().setOnAction(event -> toonTalenten());
+        view.getLeerkrachtenBeheerButton().setOnAction(event -> toonLeerkrachten());
         view.getTalentenperiodesButton().setOnAction(event -> view.toonNietBeschikbaar("Talentenperiodes beheren"));
         view.getIngerichteTalentenButton().setOnAction(event -> view.toonNietBeschikbaar("Ingerichte talenten beheren"));
 
@@ -63,6 +66,12 @@ public class MainPresenter {
         VoorkeurenView voorkeurenView = new VoorkeurenView();
         new VoorkeurenPresenter(config, voorkeurenView, sceneManager, this::toonHoofdmenu);
         sceneManager.toon(voorkeurenView);
+    }
+
+    private void toonLeerkrachten() {
+        LeerkrachtView leerkrachtView = new LeerkrachtView();
+        new LeerkrachtPresenter(config, leerkrachtView, sceneManager, this::toonHoofdmenu);
+        sceneManager.toon(leerkrachtView);
     }
 
     private void toonTalenten() {
