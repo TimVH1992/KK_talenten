@@ -82,7 +82,7 @@ public class IngerichtTalentPresenter {
             List<Talent> talenten = new ArrayList<>(talentService.geefAlleTalenten());
             talenten.sort(Comparator.comparing(Talent::getNaam, String.CASE_INSENSITIVE_ORDER));
 
-            List<Leerkracht> leerkrachten = new ArrayList<>(leerkrachtService.geefAlleLeerkrachten());
+            List<Leerkracht> leerkrachten = new ArrayList<>(leerkrachtService.geefActieveLeerkrachten());
             leerkrachten.sort(Comparator
                     .comparing(Leerkracht::getAchternaam, String.CASE_INSENSITIVE_ORDER)
                     .thenComparing(Leerkracht::getVoornaam, String.CASE_INSENSITIVE_ORDER));

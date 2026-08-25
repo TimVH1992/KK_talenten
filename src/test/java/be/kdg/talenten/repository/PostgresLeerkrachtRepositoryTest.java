@@ -197,4 +197,48 @@ class PostgresLeerkrachtRepositoryTest {
         Assertions.assertEquals("Jos", aangepasteLeerkracht.getVoornaam());
         Assertions.assertEquals("Van Herreweghe", aangepasteLeerkracht.getAchternaam());
         }
+
+    @Test
+    void updateWijzigtActieveStatusVanLeerkracht() {
+        // ARRANGE
+        Leerkracht opgeslagenLeerkracht =
+                repository.save(new Leerkracht("Tim", "Van Herreweghe"));
+
+        opgeslagenLeerkracht.deactiveer();
+
+        // ACT
+        repository.update(opgeslagenLeerkracht);
+
+        // ASSERT
+        Leerkracht opgehaaldeLeerkracht =
+                repository.zoekOpId(opgeslagenLeerkracht.getId());
+
+        Assertions.assertFalse(opgehaaldeLeerkracht.isActief());
+    }
+    @Test
+    void zoekAlleBehoudtInactieveStatusVanLeerkracht() throws SQLException {
+        // ARRANGE
+        Leerkracht opgeslagenLeerkracht =
+                repository.save(new Leerkracht("Tim", "Van Herreweghe"));
+
+        String sql = """
+            UPDATE leerkrachten
+            SET actief = FALSE
+            WHERE leerkracht_id = ?
+            """;
+
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setLong(1, opgeslagenLeerkracht.getId());
+            statement.executeUpdate();
+        }
+
+        // ACT
+        List<Leerkracht> resultaat = repository.zoekAlle();
+
+        // ASSERT
+        Assertions.assertEquals(1, resultaat.size());
+        Assertions.assertFalse(resultaat.getFirst().isActief());
+    }
     }

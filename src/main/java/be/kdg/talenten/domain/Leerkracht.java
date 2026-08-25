@@ -7,14 +7,20 @@ public class Leerkracht {
     private Long id;
     private String voornaam;
     private String achternaam;
-    private Boolean actief;
+    private boolean actief;
 
     public Leerkracht(String voornaam, String achternaam) {
         this(null, voornaam, achternaam);
     }
 
     public Leerkracht(Long id, String voornaam, String achternaam) {
-        if (id != null && id <1)
+        this(id, voornaam, achternaam, true);
+    }
+
+    public Leerkracht(Long id, String voornaam, String achternaam, Boolean actief) {
+        if (id != null && id < 1) {
+            throw new IllegalArgumentException("Id moet groter zijn dan 0.");
+        }
         if (achternaam == null || achternaam.isBlank()) {
             throw new IllegalArgumentException("De achternaam van de leerkracht mag niet null of leeg zijn");
         }
@@ -22,12 +28,12 @@ public class Leerkracht {
             throw new IllegalArgumentException("De voornaam van de leerkracht mag niet leeg of null zijn");
         }
         this.id = id;
-        this.achternaam = achternaam;
         this.voornaam = voornaam;
-        this.actief = true;
+        this.achternaam = achternaam;
+        this.actief = actief;
     }
 
-    public void wijzigGegevens(String voornaam, String achternaam){
+    public void wijzigGegevens(String voornaam, String achternaam) {
         this.voornaam = voornaam;
         this.achternaam = achternaam;
     }
@@ -44,12 +50,16 @@ public class Leerkracht {
         return id;
     }
 
-    public Boolean getActief(){
+    public boolean isActief() {
         return actief;
     }
 
-    public void setInactief(){
+    public void deactiveer() {
         this.actief = false;
+    }
+
+    public void activeer() {
+        this.actief = true;
     }
 
     @Override

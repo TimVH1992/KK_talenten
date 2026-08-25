@@ -28,4 +28,27 @@ public class LeerkrachtService {
         leerkracht.wijzigGegevens(voornaam, achternaam);
         leerkrachtRepository.update(leerkracht);
     }
+    public void deactiveerLeerkracht(Leerkracht leerkracht) {
+        if (leerkracht == null) {
+            throw new IllegalArgumentException("Leerkracht mag niet null zijn.");
+        }
+
+        leerkracht.deactiveer();
+        leerkrachtRepository.update(leerkracht);
+    }
+
+    public void activeerLeerkracht(Leerkracht leerkracht) {
+        if (leerkracht == null) {
+            throw new IllegalArgumentException("Leerkracht mag niet null zijn.");
+        }
+
+        leerkracht.activeer();
+        leerkrachtRepository.update(leerkracht);
+    }
+
+    public List<Leerkracht> geefActieveLeerkrachten() {
+        return leerkrachtRepository.zoekAlle().stream()
+                .filter(Leerkracht::isActief)
+                .toList();
+    }
 }

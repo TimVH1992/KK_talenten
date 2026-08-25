@@ -1,15 +1,13 @@
 package be.kdg.talenten.view.leerkracht;
 
-import be.kdg.talenten.view.navigation.AppSidebar;
-
 import be.kdg.talenten.domain.Leerkracht;
+import be.kdg.talenten.view.navigation.AppSidebar;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -23,27 +21,25 @@ import java.util.List;
 
 public class LeerkrachtView extends BorderPane {
     private final AppSidebar sidebar;
-    private Button terugButton;
-    private Button nieuweLeerkrachtButton;
-    private TableView<Leerkracht> leerkrachtenTable;
-    private TextField voornaamField;
-    private TextField achternaamField;
-    private Button opslaanButton;
-    private Button annulerenButton;
-    private Label formulierTitelLabel;
-    private Label statusLabel;
+
+    private final Button nieuweLeerkrachtButton;
+    private final TableView<Leerkracht> leerkrachtenTable;
+
+    private final TextField voornaamField;
+    private final TextField achternaamField;
+
+    private final Button statusWijzigenButton;
+    private final Button opslaanButton;
+    private final Button annulerenButton;
+
+    private final Label formulierTitelLabel;
+    private final Label statusLabel;
 
     public LeerkrachtView() {
-        sidebar = new AppSidebar(AppSidebar.Sectie.LEERKRACHTEN, "Leerkrachten beheren");
-        initialiseNodes();
-        layoutNodes();
-    }
-
-    private void initialiseNodes() {
-        terugButton = new Button("⌂  Dashboard");
-        terugButton.getStyleClass().add("sidebar-button");
-        terugButton.setAlignment(Pos.CENTER_LEFT);
-        terugButton.setMaxWidth(Double.MAX_VALUE);
+        sidebar = new AppSidebar(
+                AppSidebar.Sectie.LEERKRACHTEN,
+                "Leerkrachten beheren"
+        );
 
         nieuweLeerkrachtButton = new Button("+ Nieuwe leerkracht");
         nieuweLeerkrachtButton.getStyleClass().add("primary-button");
@@ -58,6 +54,11 @@ public class LeerkrachtView extends BorderPane {
         achternaamField.setPromptText("Achternaam");
         achternaamField.setMaxWidth(Double.MAX_VALUE);
 
+        statusWijzigenButton = new Button("Op niet-actief zetten");
+        statusWijzigenButton.getStyleClass().add("secondary-button");
+        statusWijzigenButton.setVisible(false);
+        statusWijzigenButton.setManaged(false);
+
         opslaanButton = new Button("Opslaan");
         opslaanButton.getStyleClass().add("primary-button");
 
@@ -67,24 +68,61 @@ public class LeerkrachtView extends BorderPane {
         formulierTitelLabel = new Label("Nieuwe leerkracht");
         formulierTitelLabel.getStyleClass().add("section-heading");
 
-        statusLabel = new Label("Selecteer een leerkracht om de gegevens te wijzigen of maak een nieuwe leerkracht aan.");
+        statusLabel = new Label(
+                "Selecteer een leerkracht om de gegevens te wijzigen "
+                        + "of maak een nieuwe leerkracht aan."
+        );
         statusLabel.setWrapText(true);
         statusLabel.getStyleClass().add("status-label");
+
+        layoutNodes();
     }
 
     private TableView<Leerkracht> maakLeerkrachtenTable() {
         TableView<Leerkracht> table = new TableView<>();
         table.setPlaceholder(new Label("Nog geen leerkrachten gevonden."));
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        table.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN
+        );
 
-        TableColumn<Leerkracht, String> voornaamKolom = new TableColumn<>("Voornaam");
-        voornaamKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getVoornaam()));
-        voornaamKolom.setPrefWidth(230);
+        TableColumn<Leerkracht, String> voornaamKolom =
+                new TableColumn<>("Voornaam");
 
-        TableColumn<Leerkracht, String> achternaamKolom = new TableColumn<>("Achternaam");
-        achternaamKolom.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getAchternaam()));
+        voornaamKolom.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(
+                        data.getValue().getVoornaam()
+                )
+        );
+        voornaamKolom.setPrefWidth(210);
 
-        table.getColumns().addAll(voornaamKolom, achternaamKolom);
+        TableColumn<Leerkracht, String> achternaamKolom =
+                new TableColumn<>("Achternaam");
+
+        achternaamKolom.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(
+                        data.getValue().getAchternaam()
+                )
+        );
+        achternaamKolom.setPrefWidth(230);
+
+        TableColumn<Leerkracht, String> statusKolom =
+                new TableColumn<>("Status");
+
+        statusKolom.setCellValueFactory(data ->
+                new ReadOnlyStringWrapper(
+                        data.getValue().isActief()
+                                ? "Actief"
+                                : "Niet actief"
+                )
+        );
+        statusKolom.setPrefWidth(110);
+
+        table.getColumns().addAll(
+                voornaamKolom,
+                achternaamKolom,
+                statusKolom
+        );
+
         return table;
     }
 
@@ -94,125 +132,114 @@ public class LeerkrachtView extends BorderPane {
         getStyleClass().add("app-background");
     }
 
-    private VBox maakSidebar() {
-        Label logo = new Label("◉");
-        logo.getStyleClass().add("brand-mark");
-
-        Label brand = new Label("Talentontwikkeling");
-        brand.getStyleClass().add("sidebar-brand");
-
-        HBox brandBox = new HBox(10, logo, brand);
-        brandBox.setAlignment(Pos.CENTER_LEFT);
-        brandBox.setPadding(new Insets(20, 18, 18, 18));
-
-        Separator separator = new Separator();
-        separator.getStyleClass().add("sidebar-separator");
-
-        Button leerlingen = maakPlaceholderButton("○  Leerlingen");
-        Button klassen = maakPlaceholderButton("▣  Klassen");
-
-        Button leerkrachten = new Button("○  Leerkrachten");
-        leerkrachten.setMaxWidth(Double.MAX_VALUE);
-        leerkrachten.setAlignment(Pos.CENTER_LEFT);
-        leerkrachten.getStyleClass().addAll("sidebar-button", "sidebar-button-active");
-        leerkrachten.setDisable(true);
-
-        Button talenten = maakPlaceholderButton("✦  Talenten");
-        Button periodes = maakPlaceholderButton("◷  Talentenperiodes");
-        Button ingerichte = maakPlaceholderButton("▤  Ingerichte talenten");
-        Button voorkeuren = maakPlaceholderButton("⇩  Voorkeuren importeren");
-        Button verdeling = maakPlaceholderButton("◎  Automatische verdeling");
-        Button bekijken = maakPlaceholderButton("♙  Toewijzingen bekijken");
-        Button manueel = maakPlaceholderButton("↔  Manuele toewijzingen");
-
-        VBox menu = new VBox(4, terugButton, leerlingen, klassen, leerkrachten, talenten, periodes, ingerichte, maakMenuTussenruimte(), voorkeuren, verdeling, bekijken, manueel);
-        menu.setPadding(new Insets(12));
-
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-
-        Label rol = new Label("Talentcoördinator");
-        rol.getStyleClass().add("sidebar-user-name");
-        Label sub = new Label("Leerkrachten beheren");
-        sub.getStyleClass().add("sidebar-user-subtitle");
-        VBox gebruiker = new VBox(3, rol, sub);
-        gebruiker.setPadding(new Insets(16));
-        gebruiker.getStyleClass().add("sidebar-user-box");
-
-        VBox sidebar = new VBox(brandBox, separator, menu, spacer, gebruiker);
-        sidebar.setPrefWidth(245);
-        sidebar.setMinWidth(225);
-        sidebar.getStyleClass().add("sidebar");
-        return sidebar;
-    }
-
-    private Button maakPlaceholderButton(String tekst) {
-        Button button = new Button(tekst);
-        button.setMaxWidth(Double.MAX_VALUE);
-        button.setAlignment(Pos.CENTER_LEFT);
-        button.getStyleClass().add("sidebar-button");
-        button.setDisable(true);
-        return button;
-    }
-
-    private Region maakMenuTussenruimte() {
-        Region region = new Region();
-        region.setPrefHeight(10);
-        return region;
-    }
-
     private VBox maakInhoud() {
         Label titel = new Label("Leerkrachten beheren");
         titel.getStyleClass().add("page-title");
 
-        Label ondertitel = new Label("Voeg leerkrachten toe en pas bestaande namen aan.");
+        Label ondertitel = new Label(
+                "Voeg leerkrachten toe, wijzig gegevens "
+                        + "en beheer hun actieve status."
+        );
         ondertitel.getStyleClass().add("page-subtitle");
 
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
-        HBox header = new HBox(14, new VBox(4, titel, ondertitel), headerSpacer, nieuweLeerkrachtButton);
+
+        HBox header = new HBox(
+                14,
+                new VBox(4, titel, ondertitel),
+                headerSpacer,
+                nieuweLeerkrachtButton
+        );
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label overzichtTitel = new Label("Bestaande leerkrachten");
+        Label overzichtTitel =
+                new Label("Bestaande leerkrachten");
         overzichtTitel.getStyleClass().add("section-heading");
 
-        Label overzichtUitleg = new Label("Selecteer een leerkracht in de tabel om de voornaam of achternaam te wijzigen.");
+        Label overzichtUitleg = new Label(
+                "Selecteer een leerkracht om gegevens "
+                        + "of de actieve status te wijzigen."
+        );
         overzichtUitleg.setWrapText(true);
         overzichtUitleg.getStyleClass().add("muted-label");
 
-        VBox overzichtCard = new VBox(10, overzichtTitel, overzichtUitleg, leerkrachtenTable);
+        VBox overzichtCard = new VBox(
+                10,
+                overzichtTitel,
+                overzichtUitleg,
+                leerkrachtenTable
+        );
         overzichtCard.getStyleClass().add("content-card");
         overzichtCard.setPadding(new Insets(22));
         overzichtCard.setMinWidth(520);
+
         HBox.setHgrow(overzichtCard, Priority.ALWAYS);
         VBox.setVgrow(leerkrachtenTable, Priority.ALWAYS);
 
+        VBox formulierCard = maakFormulierCard();
+
+        HBox beheer = new HBox(
+                16,
+                overzichtCard,
+                formulierCard
+        );
+
+        HBox.setHgrow(overzichtCard, Priority.ALWAYS);
+        VBox.setVgrow(beheer, Priority.ALWAYS);
+
+        VBox inhoud = new VBox(
+                22,
+                header,
+                beheer,
+                statusLabel
+        );
+
+        inhoud.setPadding(new Insets(32));
+        VBox.setVgrow(beheer, Priority.ALWAYS);
+
+        return inhoud;
+    }
+
+    private VBox maakFormulierCard() {
         Label voornaamLabel = new Label("Voornaam");
         voornaamLabel.getStyleClass().add("field-label");
 
         Label achternaamLabel = new Label("Achternaam");
         achternaamLabel.getStyleClass().add("field-label");
 
-        HBox knoppen = new HBox(10, annulerenButton, opslaanButton);
-        knoppen.setAlignment(Pos.CENTER_RIGHT);
-
         Region formulierSpacer = new Region();
         VBox.setVgrow(formulierSpacer, Priority.ALWAYS);
 
-        VBox formulierCard = new VBox(10, formulierTitelLabel, voornaamLabel, voornaamField, achternaamLabel, achternaamField, formulierSpacer, knoppen);
+        Region knoppenSpacer = new Region();
+        HBox.setHgrow(knoppenSpacer, Priority.ALWAYS);
+
+        HBox knoppen = new HBox(
+                10,
+                statusWijzigenButton,
+                knoppenSpacer,
+                annulerenButton,
+                opslaanButton
+        );
+        knoppen.setAlignment(Pos.CENTER_LEFT);
+
+        VBox formulierCard = new VBox(
+                10,
+                formulierTitelLabel,
+                voornaamLabel,
+                voornaamField,
+                achternaamLabel,
+                achternaamField,
+                formulierSpacer,
+                knoppen
+        );
+
         formulierCard.getStyleClass().add("content-card");
         formulierCard.setPadding(new Insets(22));
-        formulierCard.setPrefWidth(390);
-        formulierCard.setMinWidth(340);
+        formulierCard.setPrefWidth(410);
+        formulierCard.setMinWidth(360);
 
-        HBox beheer = new HBox(16, overzichtCard, formulierCard);
-        HBox.setHgrow(overzichtCard, Priority.ALWAYS);
-        VBox.setVgrow(beheer, Priority.ALWAYS);
-
-        VBox inhoud = new VBox(22, header, beheer, statusLabel);
-        inhoud.setPadding(new Insets(32));
-        VBox.setVgrow(beheer, Priority.ALWAYS);
-        return inhoud;
+        return formulierCard;
     }
 
     public void setLeerkrachten(List<Leerkracht> leerkrachten) {
@@ -222,28 +249,72 @@ public class LeerkrachtView extends BorderPane {
 
     public void toonNieuweLeerkrachtFormulier() {
         formulierTitelLabel.setText("Nieuwe leerkracht");
+
         voornaamField.clear();
         achternaamField.clear();
-        leerkrachtenTable.getSelectionModel().clearSelection();
+
+        leerkrachtenTable
+                .getSelectionModel()
+                .clearSelection();
+
+        statusWijzigenButton.setVisible(false);
+        statusWijzigenButton.setManaged(false);
+
         voornaamField.requestFocus();
-        setStatus("Vul de gegevens van de nieuwe leerkracht in.");
+
+        setStatus(
+                "Vul de gegevens van de nieuwe leerkracht in."
+        );
     }
 
     public void toonLeerkrachtFormulier(Leerkracht leerkracht) {
         formulierTitelLabel.setText("Leerkracht wijzigen");
-        voornaamField.setText(leerkracht.getVoornaam());
-        achternaamField.setText(leerkracht.getAchternaam());
-        setStatus("Je wijzigt " + leerkracht.getVoornaam() + " " + leerkracht.getAchternaam() + ".");
+
+        voornaamField.setText(
+                leerkracht.getVoornaam()
+        );
+
+        achternaamField.setText(
+                leerkracht.getAchternaam()
+        );
+
+        statusWijzigenButton.setVisible(true);
+        statusWijzigenButton.setManaged(true);
+
+        if (leerkracht.isActief()) {
+            statusWijzigenButton.setText(
+                    "Op niet-actief zetten"
+            );
+        } else {
+            statusWijzigenButton.setText(
+                    "Op actief zetten"
+            );
+        }
+
+        setStatus(
+                "Je wijzigt "
+                        + leerkracht.getVoornaam()
+                        + " "
+                        + leerkracht.getAchternaam()
+                        + "."
+        );
     }
 
     public void setStatus(String tekst) {
-        statusLabel.setText(tekst == null ? "" : tekst);
+        statusLabel.setText(
+                tekst == null ? "" : tekst
+        );
     }
 
     public void toonFout(String bericht) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(
+                Alert.AlertType.ERROR
+        );
+
         alert.setTitle("Fout");
-        alert.setHeaderText("De actie kon niet uitgevoerd worden");
+        alert.setHeaderText(
+                "De actie kon niet uitgevoerd worden"
+        );
         alert.setContentText(bericht);
         alert.showAndWait();
     }
@@ -252,8 +323,8 @@ public class LeerkrachtView extends BorderPane {
         setStatus(bericht);
     }
 
-    public Button getTerugButton() {
-        return terugButton;
+    public AppSidebar getSidebar() {
+        return sidebar;
     }
 
     public Button getNieuweLeerkrachtButton() {
@@ -272,15 +343,15 @@ public class LeerkrachtView extends BorderPane {
         return achternaamField;
     }
 
+    public Button getStatusWijzigenButton() {
+        return statusWijzigenButton;
+    }
+
     public Button getOpslaanButton() {
         return opslaanButton;
     }
 
     public Button getAnnulerenButton() {
         return annulerenButton;
-    }
-
-    public AppSidebar getSidebar() {
-        return sidebar;
     }
 }

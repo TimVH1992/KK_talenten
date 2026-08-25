@@ -156,11 +156,75 @@ public class LeerkrachtServiceTest {
         }
 
         private Leerkracht kopieVan(Leerkracht leerkracht) {
-            return new Leerkracht(
+            Leerkracht kopie = new Leerkracht(
                     leerkracht.getId(),
                     leerkracht.getVoornaam(),
                     leerkracht.getAchternaam()
             );
+
+            if (!leerkracht.isActief()) {
+                kopie.deactiveer();
+            }
+
+            return kopie;
         }
+    }
+
+    @Test
+    void deactiveerLeerkrachtWijzigtStatusEnUpdateRepository() {
+        // ARRANGE
+        Leerkracht opgeslagenLeerkracht =
+                repository.save(new Leerkracht("Tim", "Van Herreweghe"));
+
+        // ACT
+        service.deactiveerLeerkracht(opgeslagenLeerkracht);
+
+        // ASSERT
+        Leerkracht resultaat =
+                repository.zoekOpId(opgeslagenLeerkracht.getId());
+
+        Assertions.assertTrue(repository.isUpdateAangeroepen());
+        Assertions.assertFalse(resultaat.isActief());
+    }
+
+    @Test
+    void activeerLeerkrachtWijzigtStatusEnUpdateRepository() {
+        // ARRANGE
+        Leerkracht opgeslagenLeerkracht =
+                repository.save(new Leerkracht("Tim", "Van Herreweghe"));
+
+        opgeslagenLeerkracht.deactiveer();
+
+        // ACT
+        service.activeerLeerkracht(opgeslagenLeerkracht);
+
+        // ASSERT
+        Leerkracht resultaat =
+                repository.zoekOpId(opgeslagenLeerkracht.getId());
+
+        Assertions.assertTrue(repository.isUpdateAangeroepen());
+        Assertions.assertTrue(resultaat.isActief());
+    }
+
+    @Test
+    void geefActieveLeerkrachtenGeeftAlleenActieveLeerkrachtenTerug() {
+        // ARRANGE
+        Leerkracht tim =
+                repository.save(new Leerkracht("Tim", "Van Herreweghe"));
+
+        Leerkracht els =
+                repository.save(new Leerkracht("Els", "Peeters"));
+
+        els.deactiveer();
+        repository.update(els);
+
+        // ACT
+        List<Leerkracht> resultaat =
+                service.geefActieveLeerkrachten();
+
+        // ASSERT
+        Assertions.assertEquals(1, resultaat.size());
+        Assertions.assertEquals(tim.getId(), resultaat.getFirst().getId());
+        Assertions.assertTrue(resultaat.getFirst().isActief());
     }
 }
