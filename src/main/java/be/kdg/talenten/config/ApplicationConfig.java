@@ -8,6 +8,7 @@ import be.kdg.talenten.service.overzicht.OverzichtService;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.service.verdeling.ManueleToewijzingService;
 import be.kdg.talenten.service.verdeling.VerdelingBekijkenService;
+import be.kdg.talenten.service.verdeling.VerdelingExcelService;
 import be.kdg.talenten.service.voorkeuren.VoorkeurenExcelService;
 import be.kdg.talenten.service.voorkeuren.VoorkeurenImportService;
 
@@ -42,6 +43,9 @@ public final class ApplicationConfig {
     private final LeerlingService leerlingService;
     private final IngerichtTalentService ingerichtTalentService;
 
+    private final VerdelingExcelService verdelingExcelService;
+
+
 
     public ApplicationConfig() {
         klasRepository = new PostgresKlasRepository();
@@ -65,14 +69,17 @@ public final class ApplicationConfig {
         voorkeurenExcelService = new VoorkeurenExcelService(leerlingRepository, ingerichtTalentRepository);
         voorkeurenImportService = new VoorkeurenImportService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, voorkeurImportProbleemRepository);
 
+
         automatischeVerdelingService = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository, leerlingRepository, voorkeurImportProbleemRepository);
         manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository, voorkeurRepository);
-        verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
+        verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository, leerlingKlasHistoriekRepository);
         overzichtService = new OverzichtService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, toewijzingRepository, voorkeurImportProbleemRepository);
         talentService = new TalentService(talentRepository);
         leerkrachtService = new LeerkrachtService(leerkrachtRepository);
         leerlingService = new LeerlingService(leerlingRepository, leerlingKlasHistoriekRepository);
         ingerichtTalentService = new IngerichtTalentService(ingerichtTalentRepository);
+
+        verdelingExcelService = new VerdelingExcelService(verdelingBekijkenService, klasService);
 
     }
 
@@ -115,6 +122,7 @@ public final class ApplicationConfig {
     public VoorkeurenImportService getVoorkeurenImportService() {
         return voorkeurenImportService;
     }
+
     public TalentService getTalentService() {
         return talentService;
     }
@@ -126,7 +134,12 @@ public final class ApplicationConfig {
     public LeerlingService getLeerlingService() {
         return leerlingService;
     }
+
     public IngerichtTalentService getIngerichtTalentService() {
         return ingerichtTalentService;
+    }
+
+    public VerdelingExcelService getVerdelingExcelService() {
+        return verdelingExcelService;
     }
 }

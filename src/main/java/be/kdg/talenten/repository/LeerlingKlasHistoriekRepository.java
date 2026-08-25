@@ -9,18 +9,11 @@ import java.util.List;
 
 public interface LeerlingKlasHistoriekRepository {
 
-    void startHistoriek(
-            Leerling leerling,
-            Klas klas,
-            LocalDate vanaf
-    );
+    void startHistoriek(Leerling leerling, Klas klas, LocalDate vanaf);
 
-    void sluitHuidigeHistoriekAf(
-            Leerling leerling,
-            LocalDate tot
-    );
+    void sluitHuidigeHistoriekAf(Leerling leerling, LocalDate tot);
 
-    List<LeerlingKlasHistoriek> zoekVoorLeerling(
-            Leerling leerling
-    );
+    List<LeerlingKlasHistoriek> zoekVoorLeerling(Leerling leerling);
+
+    List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(Klas klas, LocalDate datum);
 }

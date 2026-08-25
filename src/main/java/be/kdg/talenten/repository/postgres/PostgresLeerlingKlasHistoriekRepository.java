@@ -219,4 +219,128 @@ public class PostgresLeerlingKlasHistoriekRepository
             );
         }
     }
+    @Override
+    public List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(
+            Klas klas,
+            LocalDate datum
+    ) {
+        if (klas == null || klas.getId() == null) {
+            throw new IllegalArgumentException(
+                    "De klas moet eerst opgeslagen zijn."
+            );
+        }
+
+        if (datum == null) {
+            throw new IllegalArgumentException(
+                    "Datum mag niet null zijn."
+            );
+        }
+
+        String sql = """
+            SELECT
+                h.leerling_klas_historiek_id,
+                h.vanaf,
+                h.tot,
+
+                l.leerling_id,
+                l.voornaam,
+                l.achternaam,
+                l.actief
+
+            FROM leerling_klas_historiek h
+
+            JOIN leerlingen l
+                ON l.leerling_id = h.leerling_id
+
+            WHERE h.klas_id = ?
+              AND h.vanaf <= ?
+              AND (
+                    h.tot IS NULL
+                    OR h.tot > ?
+              )
+
+            ORDER BY
+                l.achternaam,
+                l.voornaam
+            """;
+
+        try (Connection connection =
+                     DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
+
+            statement.setLong(
+                    1,
+                    klas.getId()
+            );
+
+            statement.setObject(
+                    2,
+                    datum
+            );
+
+            statement.setObject(
+                    3,
+                    datum
+            );
+
+            try (ResultSet resultSet =
+                         statement.executeQuery()) {
+
+                List<LeerlingKlasHistoriek> resultaat =
+                        new ArrayList<>();
+
+                while (resultSet.next()) {
+
+                    Leerling leerling =
+                            new Leerling(
+                                    resultSet.getLong(
+                                            "leerling_id"
+                                    ),
+                                    resultSet.getString(
+                                            "voornaam"
+                                    ),
+                                    resultSet.getString(
+                                            "achternaam"
+                                    ),
+                                    klas,
+                                    resultSet.getBoolean(
+                                            "actief"
+                                    )
+                            );
+
+                    LocalDate tot =
+                            resultSet.getDate("tot") == null
+                                    ? null
+                                    : resultSet
+                                    .getDate("tot")
+                                    .toLocalDate();
+
+                    resultaat.add(
+                            new LeerlingKlasHistoriek(
+                                    resultSet.getLong(
+                                            "leerling_klas_historiek_id"
+                                    ),
+                                    leerling,
+                                    klas,
+                                    resultSet
+                                            .getDate("vanaf")
+                                            .toLocalDate(),
+                                    tot
+                            )
+                    );
+                }
+
+                return resultaat;
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De klashistoriek kon niet opgehaald worden.",
+                    e
+            );
+        }
+    }
+
+
 }

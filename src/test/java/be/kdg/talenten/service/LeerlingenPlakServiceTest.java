@@ -541,5 +541,22 @@ class LeerlingenPlakServiceTest {
                     )
                     .toList();
         }
+
+        @Override
+        public List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(
+                Klas klas,
+                LocalDate datum
+        ) {
+            return historiek.stream()
+                    .filter(registratie ->
+                            registratie.getKlas().equals(klas)
+                                    && !registratie.getVanaf().isAfter(datum)
+                                    && (
+                                    registratie.getTot() == null
+                                            || registratie.getTot().isAfter(datum)
+                            )
+                    )
+                    .toList();
+        }
     }
 }

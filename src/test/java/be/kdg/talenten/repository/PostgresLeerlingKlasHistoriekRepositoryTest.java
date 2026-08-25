@@ -287,5 +287,201 @@ public class PostgresLeerlingKlasHistoriekRepositoryTest {
                 )
         );
     }
+    @Test
+    void zoekVoorKlasOpDatumGeeftLeerlingDieOpDieDatumInKlasZat() {
+        // ARRANGE
+        historiekRepository.startHistoriek(
+                leerling,
+                klas2A,
+                LocalDate.of(2026, 9, 1)
+        );
+
+        // ACT
+        List<LeerlingKlasHistoriek> resultaat =
+                historiekRepository.zoekVoorKlasOpDatum(
+                        klas2A,
+                        LocalDate.of(2026, 10, 15)
+                );
+
+        // ASSERT
+        Assertions.assertEquals(
+                1,
+                resultaat.size()
+        );
+
+        Assertions.assertEquals(
+                leerling.getId(),
+                resultaat.getFirst()
+                        .getLeerling()
+                        .getId()
+        );
+
+        Assertions.assertEquals(
+                klas2A.getId(),
+                resultaat.getFirst()
+                        .getKlas()
+                        .getId()
+        );
+    }
+    @Test
+    void zoekVoorKlasOpDatumNeemtOudeKlasNietMeerMeeVanafWisseldatum() {
+        // ARRANGE
+        Klas klas2B = klasRepository.save(
+                new Klas(
+                        "2B",
+                        schooljaar,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        LocalDate startdatum =
+                LocalDate.of(2026, 9, 1);
+
+        LocalDate wisseldatum =
+                LocalDate.of(2027, 1, 15);
+
+        historiekRepository.startHistoriek(
+                leerling,
+                klas2A,
+                startdatum
+        );
+
+        historiekRepository.sluitHuidigeHistoriekAf(
+                leerling,
+                wisseldatum
+        );
+
+        historiekRepository.startHistoriek(
+                leerling,
+                klas2B,
+                wisseldatum
+        );
+
+        // ACT
+        List<LeerlingKlasHistoriek> oudeKlas =
+                historiekRepository.zoekVoorKlasOpDatum(
+                        klas2A,
+                        wisseldatum
+                );
+
+        List<LeerlingKlasHistoriek> nieuweKlas =
+                historiekRepository.zoekVoorKlasOpDatum(
+                        klas2B,
+                        wisseldatum
+                );
+
+        // ASSERT
+        Assertions.assertTrue(
+                oudeKlas.isEmpty()
+        );
+
+        Assertions.assertEquals(
+                1,
+                nieuweKlas.size()
+        );
+
+        Assertions.assertEquals(
+                leerling.getId(),
+                nieuweKlas.getFirst()
+                        .getLeerling()
+                        .getId()
+        );
+    }
+    @Test
+    void zoekVoorKlasOpDatumKanVorigeKlasHistorischTerugvinden() {
+        // ARRANGE
+        Klas klas2B = klasRepository.save(
+                new Klas(
+                        "2B",
+                        schooljaar,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        LocalDate startdatum =
+                LocalDate.of(2026, 9, 1);
+
+        LocalDate wisseldatum =
+                LocalDate.of(2027, 1, 15);
+
+        historiekRepository.startHistoriek(
+                leerling,
+                klas2A,
+                startdatum
+        );
+
+        historiekRepository.sluitHuidigeHistoriekAf(
+                leerling,
+                wisseldatum
+        );
+
+        historiekRepository.startHistoriek(
+                leerling,
+                klas2B,
+                wisseldatum
+        );
+
+        // ACT
+        List<LeerlingKlasHistoriek> resultaat =
+                historiekRepository.zoekVoorKlasOpDatum(
+                        klas2A,
+                        LocalDate.of(2026, 11, 10)
+                );
+
+        // ASSERT
+        Assertions.assertEquals(
+                1,
+                resultaat.size()
+        );
+
+        Assertions.assertEquals(
+                leerling.getId(),
+                resultaat.getFirst()
+                        .getLeerling()
+                        .getId()
+        );
+
+        Assertions.assertEquals(
+                klas2A.getId(),
+                resultaat.getFirst()
+                        .getKlas()
+                        .getId()
+        );
+
+        Assertions.assertEquals(
+                startdatum,
+                resultaat.getFirst()
+                        .getVanaf()
+        );
+
+        Assertions.assertEquals(
+                wisseldatum,
+                resultaat.getFirst()
+                        .getTot()
+        );
+    }
+    @Test
+    void zoekVoorKlasOpDatumMetNullKlasGeeftException() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> historiekRepository.zoekVoorKlasOpDatum(
+                        null,
+                        LocalDate.of(2026, 10, 15)
+                )
+        );
+    }
+
+    @Test
+    void zoekVoorKlasOpDatumMetNullDatumGeeftException() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> historiekRepository.zoekVoorKlasOpDatum(
+                        klas2A,
+                        null
+                )
+        );
+    }
 
 }
