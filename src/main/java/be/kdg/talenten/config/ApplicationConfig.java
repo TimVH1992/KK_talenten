@@ -65,7 +65,7 @@ public final class ApplicationConfig {
         voorkeurenImportService = new VoorkeurenImportService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, voorkeurImportProbleemRepository);
 
         automatischeVerdelingService = new AutomatischeVerdelingService(voorkeurRepository, toewijzingRepository, leerlingRepository, voorkeurImportProbleemRepository);
-        manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository);
+        manueleToewijzingService = new ManueleToewijzingService(toewijzingRepository, voorkeurRepository);
         verdelingBekijkenService = new VerdelingBekijkenService(ingerichtTalentRepository, toewijzingRepository, leerlingRepository);
         overzichtService = new OverzichtService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, toewijzingRepository, voorkeurImportProbleemRepository);
         talentService = new TalentService(talentRepository);

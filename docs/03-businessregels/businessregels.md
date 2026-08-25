@@ -93,6 +93,9 @@ Manuele wijzigingen worden bewaard zodat later zichtbaar is welke toewijzingen a
 
 Een manuele wijziging vervangt de automatische toewijzing.
 
+### BR-020A
+Bij een manuele toewijzing zoeken we of het nieuwe IngerichtTalent voorkomt tussen de voorkeuren van die leerling voor die periode. Zo ja, bewaren we het bijbehorende voorkeurNummer. Zo nee, null.
+
 ### BR-021
 
 Historische toewijzingen worden niet aangepast wanneer een nieuwe verdeling wordt uitgevoerd.

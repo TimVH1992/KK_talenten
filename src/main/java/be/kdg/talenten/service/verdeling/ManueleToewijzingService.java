@@ -1,23 +1,26 @@
 package be.kdg.talenten.service.verdeling;
 
-import be.kdg.talenten.domain.IngerichtTalent;
-import be.kdg.talenten.domain.Leerling;
-import be.kdg.talenten.domain.TalentenPeriode;
-import be.kdg.talenten.domain.Toewijzing;
-import be.kdg.talenten.domain.ToewijzingsType;
+import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.ToewijzingRepository;
+import be.kdg.talenten.repository.VoorkeurRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class ManueleToewijzingService {
     private final ToewijzingRepository toewijzingRepository;
+    private final VoorkeurRepository voorkeurRepository;
 
-    public ManueleToewijzingService(ToewijzingRepository toewijzingRepository) {
+    public ManueleToewijzingService(ToewijzingRepository toewijzingRepository, VoorkeurRepository voorkeurRepository) {
         if (toewijzingRepository == null) {
             throw new IllegalArgumentException("ToewijzingRepository mag niet null zijn.");
         }
+        if(voorkeurRepository == null){
+            throw new IllegalArgumentException("VoorkeurRepository mag niet null zijn");
+        }
 
         this.toewijzingRepository = toewijzingRepository;
+        this.voorkeurRepository = voorkeurRepository;
     }
 
     public Toewijzing wijzigToewijzing(
@@ -52,12 +55,14 @@ public class ManueleToewijzingService {
         Toewijzing bestaandeToewijzing =
                 toewijzingRepository.zoekToewijzingVoorLeerlingEnPeriode(leerling, talentenPeriode);
 
+        Integer voorkeurNummer = bepaalVoorkeurNummer(leerling, talentenPeriode, nieuwIngerichtTalent);
+
         if (bestaandeToewijzing == null) {
             Toewijzing nieuweToewijzing = new Toewijzing(
                     leerling,
                     nieuwIngerichtTalent,
                     ToewijzingsType.MANUEEL,
-                    null
+                    voorkeurNummer
             );
 
             return toewijzingRepository.save(nieuweToewijzing);
@@ -66,9 +71,23 @@ public class ManueleToewijzingService {
         bestaandeToewijzing.wijzigNaar(
                 nieuwIngerichtTalent,
                 ToewijzingsType.MANUEEL,
-                null
+                voorkeurNummer
         );
 
         return toewijzingRepository.update(bestaandeToewijzing);
+    }
+
+    private Integer bepaalVoorkeurNummer(
+            Leerling leerling,
+            TalentenPeriode periode,
+            IngerichtTalent gekozenTalent){
+
+        List<Voorkeur> voorkeurenVoorLeerling = voorkeurRepository.zoekVoorLeerlingEnPeriode(leerling, periode);
+        for (Voorkeur voorkeur : voorkeurenVoorLeerling){
+            if (voorkeur.getIngerichtTalent().equals(gekozenTalent)){
+                return voorkeur.getVoorkeurNummer();
+            }
+        }
+        return null;
     }
 }
