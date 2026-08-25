@@ -319,6 +319,76 @@ public class PostgresVoorkeurRepositoryTest {
         );
     }
 
+    @Test
+    void zoekVoorPeriodeGeeftVoorkeurTerugAlsIngerichtTalentGeenLeerkrachtHeeft() {
+        // ARRANGE
+        KlasRepository klasRepository = new PostgresKlasRepository();
+        LeerlingRepository leerlingRepository = new PostgresLeerlingRepository();
+        TalentRepository talentRepository = new PostgresTalentRepository();
+        TalentenPeriodeRepository periodeRepository = new PostgresTalentenPeriodeRepository();
+        IngerichtTalentRepository ingerichtTalentRepository = new PostgresIngerichtTalentRepository();
+        VoorkeurRepository voorkeurRepository = new PostgresVoorkeurRepository();
+
+        Klas klas = klasRepository.save(
+                new Klas(
+                        "1AA",
+                        schooljaar2026_2027,
+                        1,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                )
+        );
+
+        Leerling leerling = leerlingRepository.save(
+                new Leerling("Jan", "Peeters", klas)
+        );
+
+        TalentenPeriode periode = periodeRepository.save(
+                new TalentenPeriode(
+                        "Herfst",
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 10, 31),
+                        schooljaar2026_2027
+                )
+        );
+
+        Talent talent = talentRepository.save(
+                new Talent("Voetbal", "Voetbaltraining")
+        );
+
+        IngerichtTalent voetbalHerfst = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        talent,
+                        periode,
+                        talent.getNaam(),
+                        talent.getBeschrijving(),
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of()
+                )
+        );
+
+        Voorkeur opgeslagenVoorkeur = voorkeurRepository.save(
+                new Voorkeur(
+                        leerling,
+                        periode,
+                        voetbalHerfst,
+                        1
+                )
+        );
+
+        // ACT
+        List<Voorkeur> resultaat = voorkeurRepository.zoekVoorPeriode(periode);
+
+        // ASSERT
+        assertEquals(1, resultaat.size());
+
+        Voorkeur opgehaaldeVoorkeur = resultaat.getFirst();
+
+        assertEquals(opgeslagenVoorkeur.getId(), opgehaaldeVoorkeur.getId());
+        assertEquals(voetbalHerfst.getId(), opgehaaldeVoorkeur.getIngerichtTalent().getId());
+        assertTrue(opgehaaldeVoorkeur.getIngerichtTalent().getLeerkrachten().isEmpty());
+    }
+
     private TestData initialiseTestData() {
         KlasRepository klasRepository =
                 new PostgresKlasRepository();

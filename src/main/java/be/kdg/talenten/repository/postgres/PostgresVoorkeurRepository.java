@@ -496,11 +496,7 @@ public class PostgresVoorkeurRepository implements VoorkeurRepository {
                 );
 
         if (leerkrachten == null || leerkrachten.isEmpty()) {
-            throw new IllegalStateException(
-                    "Ingericht talent "
-                            + ingerichtTalentId
-                            + " heeft geen leerkracht in de databank"
-            );
+            return List.of();
         }
 
         return leerkrachten;

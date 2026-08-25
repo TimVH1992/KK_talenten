@@ -251,6 +251,47 @@ class PostgresToewijzingRepositoryTest {
     }
 
     @Test
+    void zoekVoorPeriodeGeeftToewijzingTerugAlsIngerichtTalentGeenLeerkrachtHeeft() {
+        // ARRANGE
+        Talent voetbal = talentRepository.save(
+                new Talent("Voetbal", "Voetbaltraining")
+        );
+
+        IngerichtTalent voetbalHerfst = ingerichtTalentRepository.save(
+                new IngerichtTalent(
+                        voetbal,
+                        herfst,
+                        voetbal.getNaam(),
+                        voetbal.getBeschrijving(),
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of()
+                )
+        );
+
+        Toewijzing opgeslagenToewijzing = toewijzingRepository.save(
+                new Toewijzing(
+                        jan,
+                        voetbalHerfst,
+                        ToewijzingsType.AUTOMATISCH,
+                        1
+                )
+        );
+
+        // ACT
+        List<Toewijzing> resultaat = toewijzingRepository.zoekVoorPeriode(herfst);
+
+        // ASSERT
+        assertEquals(1, resultaat.size());
+
+        Toewijzing opgehaaldeToewijzing = resultaat.getFirst();
+
+        assertEquals(opgeslagenToewijzing.getId(), opgehaaldeToewijzing.getId());
+        assertEquals(voetbalHerfst.getId(), opgehaaldeToewijzing.getIngerichtTalent().getId());
+        assertTrue(opgehaaldeToewijzing.getIngerichtTalent().getLeerkrachten().isEmpty());
+    }
+
+    @Test
     void zoekToewijzingVoorLeerlingEnPeriodeGeeftJuisteToewijzing() {
         // ARRANGE
         Toewijzing opgeslagenToewijzing = toewijzingRepository.save(

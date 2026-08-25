@@ -920,11 +920,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                 );
 
         if (leerkrachten == null || leerkrachten.isEmpty()) {
-            throw new IllegalStateException(
-                    "Ingericht talent "
-                            + ingerichtTalentId
-                            + " heeft geen leerkracht in de databank"
-            );
+            return List.of();
         }
 
         return leerkrachten;
