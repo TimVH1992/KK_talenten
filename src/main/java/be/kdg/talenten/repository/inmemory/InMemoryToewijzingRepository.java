@@ -168,4 +168,21 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
                         .equals(schooljaar))
                 .toList();
     }
+
+    @Override
+    public void verwijderVoorIngerichtTalent(
+            IngerichtTalent ingerichtTalent
+    ) {
+        if (ingerichtTalent == null) {
+            throw new IllegalArgumentException(
+                    "Het ingerichte talent mag niet null zijn"
+            );
+        }
+
+        opgeslagenToewijzingen.removeIf(
+                toewijzing ->
+                        toewijzing.getIngerichtTalent()
+                                == ingerichtTalent
+        );
+    }
 }

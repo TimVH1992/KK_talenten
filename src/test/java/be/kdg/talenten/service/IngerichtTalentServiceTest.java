@@ -2,6 +2,8 @@ package be.kdg.talenten.service;
 
 import be.kdg.talenten.domain.*;
 import be.kdg.talenten.repository.IngerichtTalentRepository;
+import be.kdg.talenten.repository.ToewijzingRepository;
+import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
 import be.kdg.talenten.service.beheer.IngerichtTalentService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +16,7 @@ import java.util.List;
 public class IngerichtTalentServiceTest {
 
     private TestIngerichtTalentRepository repository;
+    private ToewijzingRepository toewijzingRepository;
     private IngerichtTalentService service;
 
     private Schooljaar schooljaar;
@@ -24,8 +27,19 @@ public class IngerichtTalentServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository = new TestIngerichtTalentRepository();
-        service = new IngerichtTalentService(repository);
+        repository =
+                new TestIngerichtTalentRepository();
+
+        toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        service =
+                new IngerichtTalentService(
+                        repository,
+                        toewijzingRepository
+                );
 
         schooljaar = new Schooljaar(
                 1L,
@@ -81,14 +95,21 @@ public class IngerichtTalentServiceTest {
 
         // ACT
         List<IngerichtTalent> resultaat =
-                service.geefIngerichteTalentenVoorPeriode(periode);
+                service.geefIngerichteTalentenVoorPeriode(
+                        periode
+                );
 
         // ASSERT
-        Assertions.assertEquals(2, resultaat.size());
+        Assertions.assertEquals(
+                2,
+                resultaat.size()
+        );
+
         Assertions.assertEquals(
                 "Schaken beginners",
                 resultaat.get(0).getNaam()
         );
+
         Assertions.assertEquals(
                 "Schaken gevorderd",
                 resultaat.get(1).getNaam()
@@ -98,28 +119,36 @@ public class IngerichtTalentServiceTest {
     @Test
     void maakIngerichtTalentSlaatNieuwIngerichtTalentOp() {
         // ACT
-        IngerichtTalent resultaat = service.maakIngerichtTalent(
-                talent,
-                periode,
-                "Schaken beginners",
-                "Leren schaken",
-                10,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                List.of()
-        );
+        IngerichtTalent resultaat =
+                service.maakIngerichtTalent(
+                        talent,
+                        periode,
+                        "Schaken beginners",
+                        "Leren schaken",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of()
+                );
 
         // ASSERT
-        Assertions.assertNotNull(resultaat);
-        Assertions.assertNotNull(resultaat.getId());
+        Assertions.assertNotNull(
+                resultaat
+        );
+
+        Assertions.assertNotNull(
+                resultaat.getId()
+        );
 
         Assertions.assertEquals(
                 "Schaken beginners",
                 resultaat.getNaam()
         );
+
         Assertions.assertEquals(
                 "Leren schaken",
                 resultaat.getOmschrijving()
         );
+
         Assertions.assertEquals(
                 10,
                 resultaat.getMaxCapaciteit()
@@ -137,12 +166,13 @@ public class IngerichtTalentServiceTest {
     @Test
     void wijzigIngerichtTalentWijzigtGegevensEnUpdateRepository() {
         // ARRANGE
-        IngerichtTalent opgeslagen = repository.save(
-                maakIngerichtTalent(
-                        "Schaken beginners",
-                        List.of(tim)
-                )
-        );
+        IngerichtTalent opgeslagen =
+                repository.save(
+                        maakIngerichtTalent(
+                                "Schaken beginners",
+                                List.of(tim)
+                        )
+                );
 
         // ACT
         service.wijzigIngerichtTalent(
@@ -154,7 +184,9 @@ public class IngerichtTalentServiceTest {
 
         // ASSERT
         IngerichtTalent resultaat =
-                repository.zoekOpId(opgeslagen.getId());
+                repository.zoekOpId(
+                        opgeslagen.getId()
+                );
 
         Assertions.assertTrue(
                 repository.isUpdateAangeroepen()
@@ -164,10 +196,12 @@ public class IngerichtTalentServiceTest {
                 "Schaken gevorderd",
                 resultaat.getNaam()
         );
+
         Assertions.assertEquals(
                 "Schaken voor gevorderden",
                 resultaat.getOmschrijving()
         );
+
         Assertions.assertEquals(
                 15,
                 resultaat.getMaxCapaciteit()
@@ -177,12 +211,13 @@ public class IngerichtTalentServiceTest {
     @Test
     void voegLeerkrachtToeVoegtLeerkrachtToeEnUpdateRepository() {
         // ARRANGE
-        IngerichtTalent opgeslagen = repository.save(
-                maakIngerichtTalent(
-                        "Schaken beginners",
-                        List.of(tim)
-                )
-        );
+        IngerichtTalent opgeslagen =
+                repository.save(
+                        maakIngerichtTalent(
+                                "Schaken beginners",
+                                List.of(tim)
+                        )
+                );
 
         // ACT
         service.voegLeerkrachtToe(
@@ -192,7 +227,9 @@ public class IngerichtTalentServiceTest {
 
         // ASSERT
         IngerichtTalent resultaat =
-                repository.zoekOpId(opgeslagen.getId());
+                repository.zoekOpId(
+                        opgeslagen.getId()
+                );
 
         Assertions.assertTrue(
                 repository.isUpdateAangeroepen()
@@ -215,12 +252,13 @@ public class IngerichtTalentServiceTest {
     @Test
     void verwijderLeerkrachtKanLaatsteLeerkrachtVerwijderen() {
         // ARRANGE
-        IngerichtTalent opgeslagen = repository.save(
-                maakIngerichtTalent(
-                        "Schaken beginners",
-                        List.of(tim)
-                )
-        );
+        IngerichtTalent opgeslagen =
+                repository.save(
+                        maakIngerichtTalent(
+                                "Schaken beginners",
+                                List.of(tim)
+                        )
+                );
 
         // ACT
         service.verwijderLeerkracht(
@@ -230,7 +268,9 @@ public class IngerichtTalentServiceTest {
 
         // ASSERT
         IngerichtTalent resultaat =
-                repository.zoekOpId(opgeslagen.getId());
+                repository.zoekOpId(
+                        opgeslagen.getId()
+                );
 
         Assertions.assertTrue(
                 repository.isUpdateAangeroepen()
@@ -242,21 +282,26 @@ public class IngerichtTalentServiceTest {
     }
 
     @Test
-    void deactiveerMaaktIngerichtTalentInactiefEnUpdateRepository() {
+    void deactiveerMaaktIngerichtTalentInactief() {
         // ARRANGE
-        IngerichtTalent opgeslagen = repository.save(
-                maakIngerichtTalent(
-                        "Schaken beginners",
-                        List.of()
-                )
-        );
+        IngerichtTalent opgeslagen =
+                repository.save(
+                        maakIngerichtTalent(
+                                "Schaken beginners",
+                                List.of()
+                        )
+                );
 
         // ACT
-        service.deactiveer(opgeslagen);
+        service.deactiveer(
+                opgeslagen
+        );
 
         // ASSERT
         IngerichtTalent resultaat =
-                repository.zoekOpId(opgeslagen.getId());
+                repository.zoekOpId(
+                        opgeslagen.getId()
+                );
 
         Assertions.assertFalse(
                 resultaat.isActief()
@@ -268,25 +313,148 @@ public class IngerichtTalentServiceTest {
     }
 
     @Test
-    void activeerMaaktIngerichtTalentActiefEnUpdateRepository() {
+    void deactiveerVerwijdertLeerkrachtenEnToewijzingen() {
         // ARRANGE
-        IngerichtTalent opgeslagen = repository.save(
-                maakIngerichtTalent(
-                        "Schaken beginners",
-                        List.of()
+        IngerichtTalent opgeslagen =
+                repository.save(
+                        maakIngerichtTalent(
+                                "Schaken beginners",
+                                List.of(
+                                        tim,
+                                        sara
+                                )
+                        )
+                );
+
+        Klas klas = new Klas(
+                1L,
+                "1AA",
+                schooljaar,
+                1,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+        );
+
+        Leerling jan = new Leerling(
+                1L,
+                "Jan",
+                "Peeters",
+                klas
+        );
+
+        Leerling sofie = new Leerling(
+                2L,
+                "Sofie",
+                "Janssens",
+                klas
+        );
+
+        toewijzingRepository.save(
+                new Toewijzing(
+                        jan,
+                        opgeslagen,
+                        ToewijzingsType.AUTOMATISCH,
+                        1
                 )
         );
 
-        opgeslagen.deactiveer();
-        repository.update(opgeslagen);
-        repository.resetUpdateAangeroepen();
+        toewijzingRepository.save(
+                new Toewijzing(
+                        sofie,
+                        opgeslagen,
+                        ToewijzingsType.AUTOMATISCH,
+                        2
+                )
+        );
+
+        Assertions.assertEquals(
+                2,
+                toewijzingRepository
+                        .telToewijzingenVoorIngerichtTalent(
+                                opgeslagen
+                        )
+        );
+
+        Assertions.assertEquals(
+                2,
+                opgeslagen.getLeerkrachten().size()
+        );
 
         // ACT
-        service.activeer(opgeslagen);
+        service.deactiveer(
+                opgeslagen
+        );
 
         // ASSERT
         IngerichtTalent resultaat =
-                repository.zoekOpId(opgeslagen.getId());
+                repository.zoekOpId(
+                        opgeslagen.getId()
+                );
+
+        Assertions.assertFalse(
+                resultaat.isActief()
+        );
+
+        Assertions.assertTrue(
+                resultaat.getLeerkrachten().isEmpty()
+        );
+
+        Assertions.assertEquals(
+                0,
+                toewijzingRepository
+                        .telToewijzingenVoorIngerichtTalent(
+                                opgeslagen
+                        )
+        );
+
+        Assertions.assertNull(
+                toewijzingRepository
+                        .zoekToewijzingVoorLeerlingEnPeriode(
+                                jan,
+                                periode
+                        )
+        );
+
+        Assertions.assertNull(
+                toewijzingRepository
+                        .zoekToewijzingVoorLeerlingEnPeriode(
+                                sofie,
+                                periode
+                        )
+        );
+
+        Assertions.assertTrue(
+                repository.isUpdateAangeroepen()
+        );
+    }
+
+    @Test
+    void activeerMaaktIngerichtTalentActiefEnUpdateRepository() {
+        // ARRANGE
+        IngerichtTalent opgeslagen =
+                repository.save(
+                        maakIngerichtTalent(
+                                "Schaken beginners",
+                                List.of()
+                        )
+                );
+
+        opgeslagen.deactiveer();
+        repository.update(
+                opgeslagen
+        );
+
+        repository.resetUpdateAangeroepen();
+
+        // ACT
+        service.activeer(
+                opgeslagen
+        );
+
+        // ASSERT
+        IngerichtTalent resultaat =
+                repository.zoekOpId(
+                        opgeslagen.getId()
+                );
 
         Assertions.assertTrue(
                 resultaat.isActief()
@@ -301,12 +469,13 @@ public class IngerichtTalentServiceTest {
     void wijzigIngerichtTalentMetNullGeeftException() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> service.wijzigIngerichtTalent(
-                        null,
-                        "Schaken",
-                        "Beschrijving",
-                        10
-                )
+                () ->
+                        service.wijzigIngerichtTalent(
+                                null,
+                                "Schaken",
+                                "Beschrijving",
+                                10
+                        )
         );
     }
 
@@ -314,10 +483,11 @@ public class IngerichtTalentServiceTest {
     void voegLeerkrachtToeMetNullIngerichtTalentGeeftException() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> service.voegLeerkrachtToe(
-                        null,
-                        tim
-                )
+                () ->
+                        service.voegLeerkrachtToe(
+                                null,
+                                tim
+                        )
         );
     }
 
@@ -325,22 +495,63 @@ public class IngerichtTalentServiceTest {
     void verwijderLeerkrachtMetNullIngerichtTalentGeeftException() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> service.verwijderLeerkracht(
-                        null,
-                        tim
-                )
+                () ->
+                        service.verwijderLeerkracht(
+                                null,
+                                tim
+                        )
         );
     }
 
     @Test
-    void constructorMetNullRepositoryGeeftException() {
+    void constructorMetNullIngerichtTalentRepositoryGeeftException() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new IngerichtTalentService(null)
+                () ->
+                        new IngerichtTalentService(
+                                null,
+                                toewijzingRepository
+                        )
         );
     }
 
-    private IngerichtTalent maakIngerichtTalent(String naam, List<Leerkracht> leerkrachten) {
+    @Test
+    void constructorMetNullToewijzingRepositoryGeeftException() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new IngerichtTalentService(
+                                repository,
+                                null
+                        )
+        );
+    }
+
+    @Test
+    void maakIngerichtTalentMetLegeOmschrijvingGebruiktBeschrijvingVanTalent() {
+        // ACT
+        IngerichtTalent resultaat =
+                service.maakIngerichtTalent(
+                        talent,
+                        periode,
+                        "Schaken beginners",
+                        "",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of()
+                );
+
+        // ASSERT
+        Assertions.assertEquals(
+                talent.getBeschrijving(),
+                resultaat.getOmschrijving()
+        );
+    }
+
+    private IngerichtTalent maakIngerichtTalent(
+            String naam,
+            List<Leerkracht> leerkrachten
+    ) {
         return new IngerichtTalent(
                 talent,
                 periode,
@@ -352,7 +563,8 @@ public class IngerichtTalentServiceTest {
         );
     }
 
-    private static class TestIngerichtTalentRepository implements IngerichtTalentRepository {
+    private static class TestIngerichtTalentRepository
+            implements IngerichtTalentRepository {
 
         private final List<IngerichtTalent> ingerichteTalenten =
                 new ArrayList<>();
@@ -363,8 +575,11 @@ public class IngerichtTalentServiceTest {
         private boolean updateAangeroepen;
 
         @Override
-        public IngerichtTalent save(IngerichtTalent ingerichtTalent) {
-            saveAangeroepen = true;
+        public IngerichtTalent save(
+                IngerichtTalent ingerichtTalent
+        ) {
+            saveAangeroepen =
+                    true;
 
             IngerichtTalent opgeslagen =
                     kopieMetId(
@@ -372,23 +587,33 @@ public class IngerichtTalentServiceTest {
                             volgendId++
                     );
 
-            ingerichteTalenten.add(opgeslagen);
+            ingerichteTalenten.add(
+                    opgeslagen
+            );
 
-            return kopieVan(opgeslagen);
+            return kopieVan(
+                    opgeslagen
+            );
         }
 
         @Override
-        public List<IngerichtTalent> zoekVoorPeriode(TalentenPeriode periode) {
+        public List<IngerichtTalent> zoekVoorPeriode(
+                TalentenPeriode periode
+        ) {
             List<IngerichtTalent> resultaat =
                     new ArrayList<>();
 
-            for (IngerichtTalent ingerichtTalent : ingerichteTalenten) {
+            for (IngerichtTalent ingerichtTalent :
+                    ingerichteTalenten) {
+
                 if (ingerichtTalent
                         .getTalentenPeriode()
                         .equals(periode)) {
 
                     resultaat.add(
-                            kopieVan(ingerichtTalent)
+                            kopieVan(
+                                    ingerichtTalent
+                            )
                     );
                 }
             }
@@ -397,17 +622,28 @@ public class IngerichtTalentServiceTest {
         }
 
         @Override
-        public List<IngerichtTalent> zoekActieveVoorPeriodeEnDoelgroep(TalentenPeriode periode, Doelgroep doelgroep) {
+        public List<IngerichtTalent>
+        zoekActieveVoorPeriodeEnDoelgroep(
+                TalentenPeriode periode,
+                Doelgroep doelgroep
+        ) {
             List<IngerichtTalent> resultaat =
                     new ArrayList<>();
 
-            for (IngerichtTalent ingerichtTalent : ingerichteTalenten) {
-                if (ingerichtTalent.getTalentenPeriode().equals(periode)
-                        && ingerichtTalent.getDoelgroep() == doelgroep
+            for (IngerichtTalent ingerichtTalent :
+                    ingerichteTalenten) {
+
+                if (ingerichtTalent
+                        .getTalentenPeriode()
+                        .equals(periode)
+                        && ingerichtTalent.getDoelgroep()
+                        == doelgroep
                         && ingerichtTalent.isActief()) {
 
                     resultaat.add(
-                            kopieVan(ingerichtTalent)
+                            kopieVan(
+                                    ingerichtTalent
+                            )
                     );
                 }
             }
@@ -416,8 +652,12 @@ public class IngerichtTalentServiceTest {
         }
 
         @Override
-        public IngerichtTalent zoekOpId(long id) {
-            for (IngerichtTalent ingerichtTalent : ingerichteTalenten) {
+        public IngerichtTalent zoekOpId(
+                long id
+        ) {
+            for (IngerichtTalent ingerichtTalent :
+                    ingerichteTalenten) {
+
                 if (ingerichtTalent.getId() != null
                         && ingerichtTalent.getId() == id) {
 
@@ -428,26 +668,37 @@ public class IngerichtTalentServiceTest {
             }
 
             throw new IllegalStateException(
-                    "Geen ingericht talent gevonden met id: " + id
+                    "Geen ingericht talent gevonden met id: "
+                            + id
             );
         }
 
         @Override
-        public void update(IngerichtTalent ingerichtTalent) {
-            updateAangeroepen = true;
+        public void update(
+                IngerichtTalent ingerichtTalent
+        ) {
+            updateAangeroepen =
+                    true;
 
-            for (int i = 0; i < ingerichteTalenten.size(); i++) {
+            for (int i = 0;
+                 i < ingerichteTalenten.size();
+                 i++) {
+
                 IngerichtTalent opgeslagen =
                         ingerichteTalenten.get(i);
 
                 if (opgeslagen.getId() != null
-                        && opgeslagen.getId().equals(
-                        ingerichtTalent.getId()
-                )) {
+                        && opgeslagen
+                        .getId()
+                        .equals(
+                                ingerichtTalent.getId()
+                        )) {
 
                     ingerichteTalenten.set(
                             i,
-                            kopieVan(ingerichtTalent)
+                            kopieVan(
+                                    ingerichtTalent
+                            )
                     );
 
                     return;
@@ -469,10 +720,14 @@ public class IngerichtTalentServiceTest {
         }
 
         public void resetUpdateAangeroepen() {
-            updateAangeroepen = false;
+            updateAangeroepen =
+                    false;
         }
 
-        private IngerichtTalent kopieMetId(IngerichtTalent ingerichtTalent, long id) {
+        private IngerichtTalent kopieMetId(
+                IngerichtTalent ingerichtTalent,
+                long id
+        ) {
             return new IngerichtTalent(
                     id,
                     ingerichtTalent.getTalent(),
@@ -486,7 +741,9 @@ public class IngerichtTalentServiceTest {
             );
         }
 
-        private IngerichtTalent kopieVan(IngerichtTalent ingerichtTalent) {
+        private IngerichtTalent kopieVan(
+                IngerichtTalent ingerichtTalent
+        ) {
             return new IngerichtTalent(
                     ingerichtTalent.getId(),
                     ingerichtTalent.getTalent(),
@@ -499,25 +756,5 @@ public class IngerichtTalentServiceTest {
                     ingerichtTalent.isActief()
             );
         }
-    }
-
-    @Test
-    void maakIngerichtTalentMetLegeOmschrijvingGebruiktBeschrijvingVanTalent() {
-        // ACT
-        IngerichtTalent resultaat = service.maakIngerichtTalent(
-                talent,
-                periode,
-                "Schaken beginners",
-                "",
-                10,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                List.of()
-        );
-
-        // ASSERT
-        Assertions.assertEquals(
-                talent.getBeschrijving(),
-                resultaat.getOmschrijving()
-        );
     }
 }

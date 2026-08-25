@@ -77,7 +77,7 @@ public final class ApplicationConfig {
         talentService = new TalentService(talentRepository);
         leerkrachtService = new LeerkrachtService(leerkrachtRepository);
         leerlingService = new LeerlingService(leerlingRepository, leerlingKlasHistoriekRepository);
-        ingerichtTalentService = new IngerichtTalentService(ingerichtTalentRepository);
+        ingerichtTalentService = new IngerichtTalentService(ingerichtTalentRepository, toewijzingRepository);
 
         verdelingExcelService = new VerdelingExcelService(verdelingBekijkenService, klasService);
 

@@ -22,4 +22,5 @@ public interface ToewijzingRepository {
 
     List<Toewijzing> zoekVoorPeriode(TalentenPeriode periode);
     List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(Leerling leerling, Schooljaar schooljaar);
+    void verwijderVoorIngerichtTalent(IngerichtTalent ingerichtTalent);
 }

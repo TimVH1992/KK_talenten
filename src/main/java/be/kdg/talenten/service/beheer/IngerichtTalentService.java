@@ -6,19 +6,33 @@ import be.kdg.talenten.domain.Leerkracht;
 import be.kdg.talenten.domain.Talent;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.repository.IngerichtTalentRepository;
+import be.kdg.talenten.repository.ToewijzingRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IngerichtTalentService {
 
     private final IngerichtTalentRepository ingerichtTalentRepository;
+    private final ToewijzingRepository toewijzingRepository;
 
-    public IngerichtTalentService(IngerichtTalentRepository ingerichtTalentRepository) {
-        if (ingerichtTalentRepository == null) {
-            throw new IllegalArgumentException("IngerichtTalentRepository mag niet null zijn");
+    public IngerichtTalentService(
+            IngerichtTalentRepository ingerichtTalentRepository,
+            ToewijzingRepository toewijzingRepository
+    ) {
+        if (ingerichtTalentRepository == null
+                || toewijzingRepository == null) {
+
+            throw new IllegalArgumentException(
+                    "Repositories mogen niet null zijn"
+            );
         }
 
-        this.ingerichtTalentRepository = ingerichtTalentRepository;
+        this.ingerichtTalentRepository =
+                ingerichtTalentRepository;
+
+        this.toewijzingRepository =
+                toewijzingRepository;
     }
 
     public List<IngerichtTalent> geefIngerichteTalentenVoorPeriode(TalentenPeriode periode) {
@@ -82,11 +96,45 @@ public class IngerichtTalentService {
         ingerichtTalentRepository.update(ingerichtTalent);
     }
 
-    public void deactiveer(IngerichtTalent ingerichtTalent) {
-        valideerIngerichtTalent(ingerichtTalent);
+    public void deactiveer(
+            IngerichtTalent ingerichtTalent
+    ) {
+        if (ingerichtTalent == null) {
+            throw new IllegalArgumentException(
+                    "Ingericht talent mag niet null zijn"
+            );
+        }
+
+        if (ingerichtTalent.getId() == null) {
+            throw new IllegalArgumentException(
+                    "Het ingerichte talent moet eerst opgeslagen zijn"
+            );
+        }
+
+        if (!ingerichtTalent.isActief()) {
+            return;
+        }
+
+        toewijzingRepository.verwijderVoorIngerichtTalent(
+                ingerichtTalent
+        );
+
+        List<Leerkracht> gekoppeldeLeerkrachten =
+                new ArrayList<>(
+                        ingerichtTalent.getLeerkrachten()
+                );
+
+        for (Leerkracht leerkracht : gekoppeldeLeerkrachten) {
+            ingerichtTalent.verwijderLeerkracht(
+                    leerkracht
+            );
+        }
 
         ingerichtTalent.deactiveer();
-        ingerichtTalentRepository.update(ingerichtTalent);
+
+        ingerichtTalentRepository.update(
+                ingerichtTalent
+        );
     }
 
     private void valideerIngerichtTalent(IngerichtTalent ingerichtTalent) {

@@ -1335,4 +1335,44 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             );
         }
     }
+    @Override
+    public void verwijderVoorIngerichtTalent(
+            IngerichtTalent ingerichtTalent
+    ) {
+        if (ingerichtTalent == null) {
+            throw new IllegalArgumentException(
+                    "Het ingerichte talent mag niet null zijn"
+            );
+        }
+
+        if (ingerichtTalent.getId() == null) {
+            throw new IllegalArgumentException(
+                    "Het ingerichte talent moet eerst opgeslagen zijn"
+            );
+        }
+
+        String sql = """
+            DELETE FROM toewijzingen
+            WHERE ingericht_talent_id = ?
+            """;
+
+        try (Connection connection =
+                     DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
+
+            statement.setLong(
+                    1,
+                    ingerichtTalent.getId()
+            );
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De toewijzingen van het ingerichte talent konden niet verwijderd worden",
+                    e
+            );
+        }
+    }
 }

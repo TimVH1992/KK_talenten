@@ -10,6 +10,7 @@ import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
 import be.kdg.talenten.overzicht.KlasOverzicht;
 import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
 import be.kdg.talenten.overzicht.LeerlingToewijzingOverzicht;
+import be.kdg.talenten.overzicht.NietToegewezenLeerlingOverzicht;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -57,6 +58,9 @@ public class VerdelingView extends BorderPane {
     private ComboBox<Klas> klasComboBox;
     private TableView<LeerlingToewijzingOverzicht> klasLeerlingenTable;
 
+    private TableView<NietToegewezenLeerlingOverzicht>
+            nietToegewezenLeerlingenTable;
+
     private Label geselecteerdeLeerlingLabel;
     private Label voorkeurenTitelLabel;
 
@@ -102,6 +106,7 @@ public class VerdelingView extends BorderPane {
 
         schooljaarComboBox.setConverter(
                 new StringConverter<>() {
+
                     @Override
                     public String toString(
                             Schooljaar schooljaar
@@ -134,6 +139,7 @@ public class VerdelingView extends BorderPane {
 
         periodeComboBox.setConverter(
                 new StringConverter<>() {
+
                     @Override
                     public String toString(
                             TalentenPeriode periode
@@ -242,6 +248,7 @@ public class VerdelingView extends BorderPane {
 
         klasComboBox.setConverter(
                 new StringConverter<>() {
+
                     @Override
                     public String toString(
                             Klas klas
@@ -252,7 +259,9 @@ public class VerdelingView extends BorderPane {
 
                         return klas.getNaam()
                                 + " — "
-                                + klas.getSchooljaar().getNaam();
+                                + klas
+                                .getSchooljaar()
+                                .getNaam();
                     }
 
                     @Override
@@ -266,6 +275,10 @@ public class VerdelingView extends BorderPane {
 
         klasLeerlingenTable =
                 maakKlasLeerlingenTable();
+
+
+        nietToegewezenLeerlingenTable =
+                maakNietToegewezenLeerlingenTable();
 
 
         geselecteerdeLeerlingLabel =
@@ -311,6 +324,7 @@ public class VerdelingView extends BorderPane {
 
         doelTalentComboBox.setConverter(
                 new StringConverter<>() {
+
                     @Override
                     public String toString(
                             IngerichtTalent ingerichtTalent
@@ -364,6 +378,7 @@ public class VerdelingView extends BorderPane {
 
     private TableView<IngerichtTalentOverzicht>
     maakTalentenTable() {
+
         TableView<IngerichtTalentOverzicht> table =
                 new TableView<>();
 
@@ -470,6 +485,7 @@ public class VerdelingView extends BorderPane {
 
     private TableView<Toewijzing>
     maakLeerlingenTable() {
+
         TableView<Toewijzing> table =
                 new TableView<>();
 
@@ -566,6 +582,7 @@ public class VerdelingView extends BorderPane {
 
     private TableView<LeerlingToewijzingOverzicht>
     maakKlasLeerlingenTable() {
+
         TableView<LeerlingToewijzingOverzicht> table =
                 new TableView<>();
 
@@ -651,8 +668,64 @@ public class VerdelingView extends BorderPane {
         return table;
     }
 
+    private TableView<NietToegewezenLeerlingOverzicht>
+    maakNietToegewezenLeerlingenTable() {
+
+        TableView<NietToegewezenLeerlingOverzicht> table =
+                new TableView<>();
+
+        table.setPlaceholder(
+                new Label(
+                        "Alle deelnemende leerlingen zijn toegewezen."
+                )
+        );
+
+        table.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN
+        );
+
+
+        TableColumn<NietToegewezenLeerlingOverzicht, String> naamKolom =
+                new TableColumn<>(
+                        "Leerling"
+                );
+
+        naamKolom.setCellValueFactory(
+                data ->
+                        new ReadOnlyStringWrapper(
+                                data
+                                        .getValue()
+                                        .volledigeNaam()
+                        )
+        );
+
+
+        TableColumn<NietToegewezenLeerlingOverzicht, String> klasKolom =
+                new TableColumn<>(
+                        "Klas"
+                );
+
+        klasKolom.setCellValueFactory(
+                data ->
+                        new ReadOnlyStringWrapper(
+                                data
+                                        .getValue()
+                                        .klasNaam()
+                        )
+        );
+
+
+        table.getColumns().addAll(
+                naamKolom,
+                klasKolom
+        );
+
+        return table;
+    }
+
     private TableView<Voorkeur>
     maakVoorkeurenTable() {
+
         TableView<Voorkeur> table =
                 new TableView<>();
 
@@ -716,6 +789,7 @@ public class VerdelingView extends BorderPane {
 
     private TableView<Toewijzing>
     maakHistoriekTable() {
+
         TableView<Toewijzing> table =
                 new TableView<>();
 
@@ -872,6 +946,7 @@ public class VerdelingView extends BorderPane {
                         "muted-label"
                 );
 
+
         HBox exportBalk =
                 new HBox(
                         10,
@@ -987,6 +1062,60 @@ public class VerdelingView extends BorderPane {
                 );
 
 
+        Label nietToegewezenTitel =
+                new Label(
+                        "Niet toegewezen leerlingen"
+                );
+
+        nietToegewezenTitel
+                .getStyleClass()
+                .add(
+                        "section-title"
+                );
+
+
+        Label nietToegewezenUitleg =
+                new Label(
+                        "Hier staan leerlingen die deelnemen aan de talentenwerking, maar voor deze periode nog geen toewijzing hebben."
+                );
+
+        nietToegewezenUitleg
+                .getStyleClass()
+                .add(
+                        "muted-label"
+                );
+
+        nietToegewezenUitleg.setWrapText(
+                true
+        );
+
+
+        VBox nietToegewezenPaneel =
+                new VBox(
+                        12,
+                        nietToegewezenTitel,
+                        nietToegewezenUitleg,
+                        nietToegewezenLeerlingenTable
+                );
+
+        VBox.setVgrow(
+                nietToegewezenLeerlingenTable,
+                Priority.ALWAYS
+        );
+
+        nietToegewezenPaneel.setPadding(
+                new Insets(
+                        16
+                )
+        );
+
+        nietToegewezenPaneel
+                .getStyleClass()
+                .add(
+                        "content-card"
+                );
+
+
         Tab perTalentTab =
                 new Tab(
                         "Per talent",
@@ -999,6 +1128,13 @@ public class VerdelingView extends BorderPane {
                         klasPaneel
                 );
 
+        Tab nietToegewezenTab =
+                new Tab(
+                        "Niet toegewezen",
+                        nietToegewezenPaneel
+                );
+
+
         perTalentTab.setClosable(
                 false
         );
@@ -1007,11 +1143,16 @@ public class VerdelingView extends BorderPane {
                 false
         );
 
+        nietToegewezenTab.setClosable(
+                false
+        );
+
 
         TabPane overzichtTabPane =
                 new TabPane(
                         perTalentTab,
-                        perKlasTab
+                        perKlasTab,
+                        nietToegewezenTab
                 );
 
         overzichtTabPane.setTabClosingPolicy(
@@ -1244,9 +1385,7 @@ public class VerdelingView extends BorderPane {
     private String formatteerDoelgroep(
             IngerichtTalent ingerichtTalent
     ) {
-        return switch (
-                ingerichtTalent.getDoelgroep()
-                ) {
+        return switch (ingerichtTalent.getDoelgroep()) {
             case OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB ->
                     "Observatie / opleidingsfase";
 
@@ -1283,8 +1422,7 @@ public class VerdelingView extends BorderPane {
         if (overzicht.toewijzing() == null
                 || overzicht
                 .toewijzing()
-                .getVoorkeurNummer()
-                == null) {
+                .getVoorkeurNummer() == null) {
 
             return "—";
         }
@@ -1382,6 +1520,16 @@ public class VerdelingView extends BorderPane {
                         : overzicht.leerlingen();
 
         klasLeerlingenTable.setItems(
+                FXCollections.observableArrayList(
+                        leerlingen
+                )
+        );
+    }
+
+    public void setNietToegewezenLeerlingen(
+            List<NietToegewezenLeerlingOverzicht> leerlingen
+    ) {
+        nietToegewezenLeerlingenTable.setItems(
                 FXCollections.observableArrayList(
                         leerlingen
                 )
@@ -1571,8 +1719,7 @@ public class VerdelingView extends BorderPane {
                 .showAndWait()
                 .filter(
                         buttonType ->
-                                buttonType
-                                        == ButtonType.OK
+                                buttonType == ButtonType.OK
                 )
                 .isPresent();
     }
@@ -1617,8 +1764,14 @@ public class VerdelingView extends BorderPane {
         return klasComboBox;
     }
 
-    public TableView<LeerlingToewijzingOverzicht> getKlasLeerlingenTable() {
+    public TableView<LeerlingToewijzingOverzicht>
+    getKlasLeerlingenTable() {
         return klasLeerlingenTable;
+    }
+
+    public TableView<NietToegewezenLeerlingOverzicht>
+    getNietToegewezenLeerlingenTable() {
+        return nietToegewezenLeerlingenTable;
     }
 
     public ComboBox<IngerichtTalent> getDoelTalentComboBox() {
