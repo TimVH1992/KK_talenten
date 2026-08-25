@@ -16,6 +16,7 @@ import javafx.util.StringConverter;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 public class IngerichtTalentView extends BorderPane {
     private final AppSidebar sidebar;
@@ -37,6 +38,7 @@ public class IngerichtTalentView extends BorderPane {
     private final ComboBox<Leerkracht> leerkrachtComboBox;
     private final Button leerkrachtToevoegenButton;
     private final Button leerkrachtVerwijderenButton;
+    private final List<Leerkracht> alleLeerkrachten = new ArrayList<>();
 
     private final Button opslaanButton;
     private final Button annulerenButton;
@@ -259,7 +261,9 @@ public class IngerichtTalentView extends BorderPane {
     }
 
     public void setLeerkrachten(List<Leerkracht> leerkrachten) {
-        leerkrachtComboBox.setItems(FXCollections.observableArrayList(leerkrachten));
+        alleLeerkrachten.clear();
+        alleLeerkrachten.addAll(leerkrachten);
+        vernieuwBeschikbareLeerkrachten();
     }
 
     public void setIngerichteTalenten(List<IngerichtTalent> ingerichteTalenten) {
@@ -288,7 +292,7 @@ public class IngerichtTalentView extends BorderPane {
         maxCapaciteitSpinner.getValueFactory().setValue(10);
         actiefCheckBox.setSelected(true);
         gekoppeldeLeerkrachtenList.getItems().clear();
-        leerkrachtComboBox.getSelectionModel().clearSelection();
+        vernieuwBeschikbareLeerkrachten();
 
         naamField.requestFocus();
         setStatus("Vul de gegevens in. Een ingericht talent mag tijdelijk zonder leerkracht bestaan.");
@@ -305,7 +309,7 @@ public class IngerichtTalentView extends BorderPane {
         maxCapaciteitSpinner.getValueFactory().setValue(ingerichtTalent.getMaxCapaciteit());
         actiefCheckBox.setSelected(ingerichtTalent.isActief());
         gekoppeldeLeerkrachtenList.getItems().setAll(ingerichtTalent.getLeerkrachten());
-        leerkrachtComboBox.getSelectionModel().clearSelection();
+        vernieuwBeschikbareLeerkrachten();
 
         periodeComboBox.setDisable(true);
         talentComboBox.setDisable(true);
@@ -329,7 +333,8 @@ public class IngerichtTalentView extends BorderPane {
         }
 
         gekoppeldeLeerkrachtenList.getItems().add(leerkracht);
-        leerkrachtComboBox.getSelectionModel().clearSelection();
+        vernieuwBeschikbareLeerkrachten();
+
         return true;
     }
 
@@ -340,6 +345,7 @@ public class IngerichtTalentView extends BorderPane {
             return;
         }
         gekoppeldeLeerkrachtenList.getItems().remove(geselecteerd);
+        vernieuwBeschikbareLeerkrachten();
     }
 
     public List<Leerkracht> getFormulierLeerkrachten() {
@@ -499,5 +505,20 @@ public class IngerichtTalentView extends BorderPane {
 
     public Button getAnnulerenButton() {
         return annulerenButton;
+    }
+
+    private void vernieuwBeschikbareLeerkrachten() {
+        List<Leerkracht> gekoppeldeLeerkrachten =
+                gekoppeldeLeerkrachtenList.getItems();
+
+        List<Leerkracht> beschikbareLeerkrachten = alleLeerkrachten.stream()
+                .filter(leerkracht -> !gekoppeldeLeerkrachten.contains(leerkracht))
+                .toList();
+
+        leerkrachtComboBox.setItems(
+                FXCollections.observableArrayList(beschikbareLeerkrachten)
+        );
+
+        leerkrachtComboBox.getSelectionModel().clearSelection();
     }
 }
