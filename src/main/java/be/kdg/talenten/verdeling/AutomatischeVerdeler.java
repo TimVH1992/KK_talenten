@@ -98,32 +98,75 @@ public class AutomatischeVerdeler {
         verhoogKlasBezetting(ingerichtTalent, toewijzing.getLeerling().getKlas(), bezettingPerKlas);
     }
 
-    private Toewijzing zoekToewijzingZonderHistoriek(Leerling leerling, List<Voorkeur> voorkeurenVanLeerling, Map<IngerichtTalent, Integer> bezetting, Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas) {
+    private Toewijzing zoekToewijzingZonderHistoriek(
+            Leerling leerling,
+            List<Voorkeur> voorkeurenVanLeerling,
+            Map<IngerichtTalent, Integer> bezetting,
+            Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas
+    ) {
         for (Voorkeur voorkeur : voorkeurenVanLeerling) {
-            IngerichtTalent ingerichtTalent = voorkeur.getIngerichtTalent();
+            IngerichtTalent ingerichtTalent =
+                    voorkeur.getIngerichtTalent();
 
-            if (heeftLeerlingTalentAlGevolgd(leerling, ingerichtTalent.getTalent())) {
+            if (!ingerichtTalent.isActief()) {
                 continue;
             }
 
-            if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)
-                    && heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent, leerling.getKlas(), bezettingPerKlas)) {
+            if (heeftLeerlingTalentAlGevolgd(
+                    leerling,
+                    ingerichtTalent.getTalent()
+            )) {
+                continue;
+            }
 
-                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
+            if (heeftIngerichtTalentVrijePlaats(
+                    ingerichtTalent,
+                    bezetting
+            ) && heeftKlasNogPlaatsVoorIngerichtTalent(
+                    ingerichtTalent,
+                    leerling.getKlas(),
+                    bezettingPerKlas
+            )) {
+                return new Toewijzing(
+                        leerling,
+                        ingerichtTalent,
+                        ToewijzingsType.AUTOMATISCH,
+                        voorkeur.getVoorkeurNummer()
+                );
             }
         }
 
         return null;
     }
 
-    private Toewijzing zoekToewijzingMetHistoriekToegestaan(Leerling leerling, List<Voorkeur> voorkeurenVanLeerling, Map<IngerichtTalent, Integer> bezetting, Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas) {
+    private Toewijzing zoekToewijzingMetHistoriekToegestaan(
+            Leerling leerling,
+            List<Voorkeur> voorkeurenVanLeerling,
+            Map<IngerichtTalent, Integer> bezetting,
+            Map<IngerichtTalent, Map<Klas, Integer>> bezettingPerKlas
+    ) {
         for (Voorkeur voorkeur : voorkeurenVanLeerling) {
-            IngerichtTalent ingerichtTalent = voorkeur.getIngerichtTalent();
+            IngerichtTalent ingerichtTalent =
+                    voorkeur.getIngerichtTalent();
 
-            if (heeftIngerichtTalentVrijePlaats(ingerichtTalent, bezetting)
-                    && heeftKlasNogPlaatsVoorIngerichtTalent(ingerichtTalent, leerling.getKlas(), bezettingPerKlas)) {
+            if (!ingerichtTalent.isActief()) {
+                continue;
+            }
 
-                return new Toewijzing(leerling, ingerichtTalent, ToewijzingsType.AUTOMATISCH, voorkeur.getVoorkeurNummer());
+            if (heeftIngerichtTalentVrijePlaats(
+                    ingerichtTalent,
+                    bezetting
+            ) && heeftKlasNogPlaatsVoorIngerichtTalent(
+                    ingerichtTalent,
+                    leerling.getKlas(),
+                    bezettingPerKlas
+            )) {
+                return new Toewijzing(
+                        leerling,
+                        ingerichtTalent,
+                        ToewijzingsType.AUTOMATISCH,
+                        voorkeur.getVoorkeurNummer()
+                );
             }
         }
 

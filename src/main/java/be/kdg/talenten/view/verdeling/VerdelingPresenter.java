@@ -10,6 +10,7 @@ import be.kdg.talenten.domain.Toewijzing;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
 import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
 import be.kdg.talenten.overzicht.LeerlingToewijzingOverzicht;
+import be.kdg.talenten.overzicht.NietToegewezenLeerlingOverzicht;
 import be.kdg.talenten.service.beheer.KlasService;
 import be.kdg.talenten.service.beheer.SchooljaarService;
 import be.kdg.talenten.service.beheer.TalentenPeriodeService;
@@ -63,11 +64,8 @@ public class VerdelingPresenter {
             );
         }
 
-        this.view =
-                view;
-
-        this.terugNaarHoofdmenu =
-                terugNaarHoofdmenu;
+        this.view = view;
+        this.terugNaarHoofdmenu = terugNaarHoofdmenu;
 
         this.schooljaarService =
                 config.getSchooljaarService();
@@ -170,6 +168,20 @@ public class VerdelingPresenter {
                                 )
                 );
 
+        view.getNietToegewezenLeerlingenTable()
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        (
+                                observable,
+                                oud,
+                                nieuw
+                        ) ->
+                                selecteerNietToegewezenLeerling(
+                                        nieuw
+                                )
+                );
+
         view.getAutomatischeVerdelingButton()
                 .setOnAction(
                         event ->
@@ -197,8 +209,7 @@ public class VerdelingPresenter {
 
     private void laadSchooljaren() {
         try {
-            schooljarenWordenGeladen =
-                    true;
+            schooljarenWordenGeladen = true;
 
             List<Schooljaar> schooljaren =
                     schooljaarService
@@ -214,6 +225,23 @@ public class VerdelingPresenter {
                 );
 
                 view.setKlassen(
+                        List.of()
+                );
+
+                view.setOverzichten(
+                        List.of()
+                );
+
+                view.setToewijzingen(
+                        null,
+                        List.of()
+                );
+
+                view.setKlasOverzicht(
+                        null
+                );
+
+                view.setNietToegewezenLeerlingen(
                         List.of()
                 );
 
@@ -258,8 +286,7 @@ public class VerdelingPresenter {
             );
 
         } finally {
-            schooljarenWordenGeladen =
-                    false;
+            schooljarenWordenGeladen = false;
         }
     }
 
@@ -279,6 +306,23 @@ public class VerdelingPresenter {
             );
 
             view.setKlassen(
+                    List.of()
+            );
+
+            view.setOverzichten(
+                    List.of()
+            );
+
+            view.setToewijzingen(
+                    null,
+                    List.of()
+            );
+
+            view.setKlasOverzicht(
+                    null
+            );
+
+            view.setNietToegewezenLeerlingen(
                     List.of()
             );
 
@@ -355,6 +399,10 @@ public class VerdelingPresenter {
 
             view.setKlasOverzicht(
                     null
+            );
+
+            view.setNietToegewezenLeerlingen(
+                    List.of()
             );
 
             view.setExportToegestaan(
@@ -498,6 +546,10 @@ public class VerdelingPresenter {
                     null
             );
 
+            view.setNietToegewezenLeerlingen(
+                    List.of()
+            );
+
             view.toonMelding(
                     "Selecteer eerst een talentenperiode."
             );
@@ -512,8 +564,18 @@ public class VerdelingPresenter {
                                     periode
                             );
 
+            List<NietToegewezenLeerlingOverzicht> nietToegewezenLeerlingen =
+                    verdelingBekijkenService
+                            .bekijkNietToegewezenLeerlingen(
+                                    periode
+                            );
+
             view.setOverzichten(
                     overzichten
+            );
+
+            view.setNietToegewezenLeerlingen(
+                    nietToegewezenLeerlingen
             );
 
             view.setToewijzingen(
@@ -549,7 +611,9 @@ public class VerdelingPresenter {
                             + periode.getNaam()
                             + ". "
                             + totaalToegewezen
-                            + " leerlingen toegewezen in totaal.";
+                            + " leerlingen toegewezen. "
+                            + nietToegewezenLeerlingen.size()
+                            + " leerlingen niet toegewezen.";
 
             if (isAfgelopenPeriode(
                     periode
@@ -650,6 +714,11 @@ public class VerdelingPresenter {
                 .getSelectionModel()
                 .clearSelection();
 
+        view
+                .getNietToegewezenLeerlingenTable()
+                .getSelectionModel()
+                .clearSelection();
+
         selecteerLeerling(
                 toewijzing.getLeerling(),
                 toewijzing
@@ -668,9 +737,37 @@ public class VerdelingPresenter {
                 .getSelectionModel()
                 .clearSelection();
 
+        view
+                .getNietToegewezenLeerlingenTable()
+                .getSelectionModel()
+                .clearSelection();
+
         selecteerLeerling(
                 overzicht.leerling(),
                 overzicht.toewijzing()
+        );
+    }
+
+    private void selecteerNietToegewezenLeerling(
+            NietToegewezenLeerlingOverzicht overzicht
+    ) {
+        if (overzicht == null) {
+            return;
+        }
+
+        view
+                .getLeerlingenTable()
+                .getSelectionModel()
+                .clearSelection();
+
+        view
+                .getKlasLeerlingenTable()
+                .getSelectionModel()
+                .clearSelection();
+
+        selecteerLeerling(
+                overzicht.leerling(),
+                null
         );
     }
 
@@ -843,7 +940,7 @@ public class VerdelingPresenter {
 
         if (geselecteerdeLeerling == null) {
             view.toonFout(
-                    "Selecteer eerst een leerling in het overzicht per talent of per klas."
+                    "Selecteer eerst een leerling in het overzicht per talent, per klas of bij niet toegewezen."
             );
 
             return;

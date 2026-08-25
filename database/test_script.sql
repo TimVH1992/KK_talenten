@@ -49,3 +49,16 @@ SELECT * FROM leerlingen;
 SELECT * FROM ingerichte_talenten;
 SELECT * FROM voorkeuren;
 SELECT * FROM toewijzingen;
+
+SELECT
+    it.naam,
+    it.actief,
+    COUNT(tw.toewijzing_id) AS aantal_toewijzingen
+FROM ingerichte_talenten it
+         LEFT JOIN toewijzingen tw
+                   ON tw.ingericht_talent_id = it.ingericht_talent_id
+WHERE LOWER(it.naam) LIKE '%digitale media%'
+GROUP BY
+    it.ingericht_talent_id,
+    it.naam,
+    it.actief;

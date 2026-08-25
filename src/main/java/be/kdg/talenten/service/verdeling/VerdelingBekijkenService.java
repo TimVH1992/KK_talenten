@@ -41,25 +41,34 @@ public class VerdelingBekijkenService {
                     "IngerichtTalentRepository mag niet null zijn"
             );
         }
+
         if (toewijzingRepository == null) {
             throw new IllegalArgumentException(
                     "ToewijzingRepository mag niet null zijn"
             );
         }
+
         if (leerlingRepository == null) {
             throw new IllegalArgumentException(
                     "LeerlingRepository mag niet null zijn"
             );
         }
+
         if (leerlingKlasHistoriekRepository == null) {
             throw new IllegalArgumentException(
                     "LeerlingKlasHistoriekRepository mag niet null zijn"
             );
         }
 
-        this.ingerichtTalentRepository = ingerichtTalentRepository;
-        this.toewijzingRepository = toewijzingRepository;
-        this.leerlingRepository = leerlingRepository;
+        this.ingerichtTalentRepository =
+                ingerichtTalentRepository;
+
+        this.toewijzingRepository =
+                toewijzingRepository;
+
+        this.leerlingRepository =
+                leerlingRepository;
+
         this.leerlingKlasHistoriekRepository =
                 leerlingKlasHistoriekRepository;
     }
@@ -67,13 +76,26 @@ public class VerdelingBekijkenService {
     public List<IngerichtTalentOverzicht> bekijkPerIngerichtTalent(
             TalentenPeriode periode
     ) {
-        valideerPeriode(periode);
+        valideerPeriode(
+                periode
+        );
 
         Map<IngerichtTalent, List<Toewijzing>> toewijzingenPerTalent =
                 new LinkedHashMap<>();
 
+        List<IngerichtTalent> actieveIngerichteTalenten =
+                ingerichtTalentRepository
+                        .zoekVoorPeriode(
+                                periode
+                        )
+                        .stream()
+                        .filter(
+                                IngerichtTalent::isActief
+                        )
+                        .toList();
+
         for (IngerichtTalent ingerichtTalent :
-                ingerichtTalentRepository.zoekVoorPeriode(periode)) {
+                actieveIngerichteTalenten) {
 
             toewijzingenPerTalent.put(
                     ingerichtTalent,
@@ -82,7 +104,10 @@ public class VerdelingBekijkenService {
         }
 
         for (Toewijzing toewijzing :
-                toewijzingRepository.zoekVoorPeriode(periode)) {
+                toewijzingRepository
+                        .zoekVoorPeriode(
+                                periode
+                        )) {
 
             List<Toewijzing> toewijzingen =
                     toewijzingenPerTalent.get(
@@ -90,7 +115,9 @@ public class VerdelingBekijkenService {
                     );
 
             if (toewijzingen != null) {
-                toewijzingen.add(toewijzing);
+                toewijzingen.add(
+                        toewijzing
+                );
             }
         }
 
@@ -130,7 +157,9 @@ public class VerdelingBekijkenService {
             TalentenPeriode periode,
             Klas klas
     ) {
-        valideerPeriode(periode);
+        valideerPeriode(
+                periode
+        );
 
         if (klas == null) {
             throw new IllegalArgumentException(
@@ -148,7 +177,9 @@ public class VerdelingBekijkenService {
         List<LeerlingToewijzingOverzicht> toewijzingenPerKlas =
                 new ArrayList<>();
 
-        for (LeerlingKlasHistoriek historiek : klasHistoriek) {
+        for (LeerlingKlasHistoriek historiek :
+                klasHistoriek) {
+
             Leerling leerling =
                     historiek.getLeerling();
 
@@ -178,7 +209,9 @@ public class VerdelingBekijkenService {
     bekijkNietToegewezenLeerlingen(
             TalentenPeriode periode
     ) {
-        valideerPeriode(periode);
+        valideerPeriode(
+                periode
+        );
 
         List<Leerling> leerlingen =
                 leerlingRepository
@@ -186,19 +219,31 @@ public class VerdelingBekijkenService {
                                 periode.getSchooljaar()
                         )
                         .stream()
-                        .filter(Leerling::isActief)
+                        .filter(
+                                Leerling::isActief
+                        )
                         .toList();
 
         Set<Leerling> toegewezenLeerlingen =
                 toewijzingRepository
-                        .zoekVoorPeriode(periode)
+                        .zoekVoorPeriode(
+                                periode
+                        )
                         .stream()
-                        .map(Toewijzing::getLeerling)
-                        .collect(Collectors.toSet());
+                        .map(
+                                Toewijzing::getLeerling
+                        )
+                        .collect(
+                                Collectors.toSet()
+                        );
 
-        return leerlingen.stream()
-                .filter(leerling ->
-                        !toegewezenLeerlingen.contains(leerling)
+        return leerlingen
+                .stream()
+                .filter(
+                        leerling ->
+                                !toegewezenLeerlingen.contains(
+                                        leerling
+                                )
                 )
                 .sorted(
                         Comparator
@@ -215,14 +260,17 @@ public class VerdelingBekijkenService {
                                         Leerling::getVoornaam
                                 )
                 )
-                .map(leerling ->
-                        new NietToegewezenLeerlingOverzicht(
-                                leerling,
-                                leerling.getVoornaam()
-                                        + " "
-                                        + leerling.getAchternaam(),
-                                leerling.getKlas().getNaam()
-                        )
+                .map(
+                        leerling ->
+                                new NietToegewezenLeerlingOverzicht(
+                                        leerling,
+                                        leerling.getVoornaam()
+                                                + " "
+                                                + leerling.getAchternaam(),
+                                        leerling
+                                                .getKlas()
+                                                .getNaam()
+                                )
                 )
                 .toList();
     }

@@ -61,6 +61,8 @@ public class VerdelingView extends BorderPane {
     private TableView<NietToegewezenLeerlingOverzicht>
             nietToegewezenLeerlingenTable;
 
+    private Tab nietToegewezenTab;
+
     private Label geselecteerdeLeerlingLabel;
     private Label voorkeurenTitelLabel;
 
@@ -1128,9 +1130,9 @@ public class VerdelingView extends BorderPane {
                         klasPaneel
                 );
 
-        Tab nietToegewezenTab =
+        nietToegewezenTab =
                 new Tab(
-                        "Niet toegewezen",
+                        "Niet toegewezen (0)",
                         nietToegewezenPaneel
                 );
 
@@ -1529,10 +1531,21 @@ public class VerdelingView extends BorderPane {
     public void setNietToegewezenLeerlingen(
             List<NietToegewezenLeerlingOverzicht> leerlingen
     ) {
+        List<NietToegewezenLeerlingOverzicht> veiligeLijst =
+                leerlingen == null
+                        ? List.of()
+                        : leerlingen;
+
         nietToegewezenLeerlingenTable.setItems(
                 FXCollections.observableArrayList(
-                        leerlingen
+                        veiligeLijst
                 )
+        );
+
+        nietToegewezenTab.setText(
+                "Niet toegewezen ("
+                        + veiligeLijst.size()
+                        + ")"
         );
     }
 

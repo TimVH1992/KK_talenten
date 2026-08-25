@@ -7,6 +7,7 @@ import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurImportProbleemReposit
 import be.kdg.talenten.repository.inmemory.InMemoryVoorkeurRepository;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.testutil.TestDataFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -659,6 +660,191 @@ class AutomatischeVerdelingServiceTest {
                 resultaat
                         .getNietToegewezenLeerlingen()
                         .contains(sofie)
+        );
+    }
+
+    @Test
+    void automatischeVerdelingNegeertVoorkeurVoorInactiefIngerichtTalent() {
+        // ARRANGE
+        LocalDate startDatum =
+                LocalDate.of(2099, 11, 22);
+
+        LocalDate eindDatum =
+                LocalDate.of(2100, 2, 21);
+
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(
+                        startDatum,
+                        eindDatum
+                );
+
+        Klas klas1AA =
+                maakObservatieKlas(
+                        schooljaar
+                );
+
+        Leerling jan =
+                new Leerling(
+                        "Jan",
+                        "Peeters",
+                        klas1AA
+                );
+
+        TalentenPeriode winter =
+                new TalentenPeriode(
+                        "Winter",
+                        startDatum,
+                        eindDatum,
+                        schooljaar
+                );
+
+
+        IngerichtTalent digitaleMediaWinter =
+                richtTalentIn(
+                        new Talent(
+                                "Digitale Media",
+                                "Foto en video"
+                        ),
+                        winter,
+                        10
+                );
+
+        IngerichtTalent voetbalWinter =
+                richtTalentIn(
+                        new Talent(
+                                "Voetbal",
+                                "Voetbaltraining"
+                        ),
+                        winter,
+                        10
+                );
+
+        IngerichtTalent kokenWinter =
+                richtTalentIn(
+                        new Talent(
+                                "Koken",
+                                "Leren koken"
+                        ),
+                        winter,
+                        10
+                );
+
+
+        digitaleMediaWinter.deactiveer();
+
+
+        List<Voorkeur> voorkeuren =
+                List.of(
+                        new Voorkeur(
+                                jan,
+                                winter,
+                                digitaleMediaWinter,
+                                1
+                        ),
+                        new Voorkeur(
+                                jan,
+                                winter,
+                                voetbalWinter,
+                                2
+                        ),
+                        new Voorkeur(
+                                jan,
+                                winter,
+                                kokenWinter,
+                                3
+                        )
+                );
+
+
+        InMemoryVoorkeurRepository voorkeurRepository =
+                new InMemoryVoorkeurRepository(
+                        voorkeuren
+                );
+
+        InMemoryToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        InMemoryLeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        List.of(jan)
+                );
+
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(
+                        new ArrayList<>()
+                );
+
+
+        AutomatischeVerdelingService service =
+                new AutomatischeVerdelingService(
+                        voorkeurRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        probleemRepository
+                );
+
+
+        // ACT
+        VerdelingsResultaat resultaat =
+                service.voerAutomatischeVerdelingUit(
+                        winter
+                );
+
+
+        // ASSERT
+        assertEquals(
+                1,
+                resultaat.getAantalToewijzingen()
+        );
+
+        assertTrue(
+                resultaat
+                        .getNietToegewezenLeerlingen()
+                        .isEmpty()
+        );
+
+
+        Toewijzing toewijzing =
+                resultaat
+                        .getToewijzingen()
+                        .getFirst();
+
+
+        assertSame(
+                jan,
+                toewijzing.getLeerling()
+        );
+
+        assertSame(
+                voetbalWinter,
+                toewijzing.getIngerichtTalent()
+        );
+
+        assertEquals(
+                2,
+                toewijzing.getVoorkeurNummer()
+        );
+
+
+        assertTrue(
+                resultaat
+                        .getToewijzingen()
+                        .stream()
+                        .noneMatch(resultaatToewijzing ->
+                                resultaatToewijzing
+                                        .getIngerichtTalent()
+                                        == digitaleMediaWinter
+                        )
+        );
+
+
+        assertEquals(
+                1,
+                toewijzingRepository
+                        .getOpgeslagenToewijzingen()
+                        .size()
         );
     }
 

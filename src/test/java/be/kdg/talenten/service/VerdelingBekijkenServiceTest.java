@@ -12,6 +12,7 @@ import be.kdg.talenten.repository.ToewijzingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryIngerichtTalentRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryLeerlingRepository;
 import be.kdg.talenten.repository.inmemory.InMemoryToewijzingRepository;
+import be.kdg.talenten.service.beheer.IngerichtTalentService;
 import be.kdg.talenten.service.verdeling.VerdelingBekijkenService;
 import be.kdg.talenten.testutil.TestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -1376,5 +1377,244 @@ class VerdelingBekijkenServiceTest {
                     )
                     .toList();
         }
+    }
+    @Test
+    void leerlingWordtNietToegewezenNadatZijnIngerichtTalentGedeactiveerdIs() {
+        // ARRANGE
+        Klas klas1AA =
+                maakObservatieKlas(
+                        "1AA",
+                        1
+                );
+
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        Leerling jan =
+                new Leerling(
+                        "Jan",
+                        "Peeters",
+                        klas1AA
+                );
+
+        Talent digitaleMediaTalent =
+                new Talent(
+                        "Digitale Media",
+                        "Foto en video"
+                );
+
+        IngerichtTalent digitaleMedia =
+                new IngerichtTalent(
+                        1L,
+                        digitaleMediaTalent,
+                        herfst,
+                        "Digitale Media - Herfst",
+                        "Foto en video",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(testLeerkracht),
+                        true
+                );
+
+
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                digitaleMedia
+                        )
+                );
+
+        InMemoryToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        List.of(
+                                jan
+                        )
+                );
+
+        LeerlingKlasHistoriekRepository historiekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+
+        Toewijzing toewijzing =
+                new Toewijzing(
+                        jan,
+                        digitaleMedia,
+                        ToewijzingsType.AUTOMATISCH,
+                        1
+                );
+
+        toewijzingRepository.save(
+                toewijzing
+        );
+
+
+        IngerichtTalentService ingerichtTalentService =
+                new IngerichtTalentService(
+                        ingerichtTalentRepository,
+                        toewijzingRepository
+                );
+
+        VerdelingBekijkenService verdelingBekijkenService =
+                new VerdelingBekijkenService(
+                        ingerichtTalentRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        historiekRepository
+                );
+
+
+        // Eerst is Jan toegewezen.
+        assertTrue(
+                verdelingBekijkenService
+                        .bekijkNietToegewezenLeerlingen(
+                                herfst
+                        )
+                        .isEmpty()
+        );
+
+        assertEquals(
+                1,
+                toewijzingRepository
+                        .telToewijzingenVoorIngerichtTalent(
+                                digitaleMedia
+                        )
+        );
+
+
+        // ACT
+        ingerichtTalentService.deactiveer(
+                digitaleMedia
+        );
+
+
+        // ASSERT
+        assertFalse(
+                digitaleMedia.isActief()
+        );
+
+        assertEquals(
+                0,
+                toewijzingRepository
+                        .telToewijzingenVoorIngerichtTalent(
+                                digitaleMedia
+                        )
+        );
+
+
+        List<NietToegewezenLeerlingOverzicht> nietToegewezen =
+                verdelingBekijkenService
+                        .bekijkNietToegewezenLeerlingen(
+                                herfst
+                        );
+
+
+        assertEquals(
+                1,
+                nietToegewezen.size()
+        );
+
+        assertSame(
+                jan,
+                nietToegewezen
+                        .getFirst()
+                        .leerling()
+        );
+    }
+    @Test
+    void bekijkPerIngerichtTalentToontGeenInactieveIngerichteTalenten() {
+        // ARRANGE
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        Talent schaken =
+                new Talent(
+                        "Schaken",
+                        "Leren schaken"
+                );
+
+        Talent digitaleMedia =
+                new Talent(
+                        "Digitale Media",
+                        "Foto en video"
+                );
+
+        IngerichtTalent schakenHerfst =
+                richtTalentIn(
+                        schaken,
+                        herfst,
+                        10
+                );
+
+        IngerichtTalent digitaleMediaHerfst =
+                richtTalentIn(
+                        digitaleMedia,
+                        herfst,
+                        10
+                );
+
+        digitaleMediaHerfst.deactiveer();
+
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                schakenHerfst,
+                                digitaleMediaHerfst
+                        )
+                );
+
+        ToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingKlasHistoriekRepository historiekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+        VerdelingBekijkenService service =
+                new VerdelingBekijkenService(
+                        ingerichtTalentRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        historiekRepository
+                );
+
+        // ACT
+        List<IngerichtTalentOverzicht> resultaat =
+                service.bekijkPerIngerichtTalent(
+                        herfst
+                );
+
+        // ASSERT
+        assertEquals(
+                1,
+                resultaat.size()
+        );
+
+        assertSame(
+                schakenHerfst,
+                resultaat
+                        .getFirst()
+                        .ingerichtTalent()
+        );
+
+        assertTrue(
+                resultaat
+                        .stream()
+                        .noneMatch(overzicht ->
+                                overzicht
+                                        .ingerichtTalent()
+                                        == digitaleMediaHerfst
+                        )
+        );
     }
 }
