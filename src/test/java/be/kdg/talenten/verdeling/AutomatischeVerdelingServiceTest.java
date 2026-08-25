@@ -538,4 +538,129 @@ class AutomatischeVerdelingServiceTest {
         assertSame(herfst, probleemUitResultaat.getPeriode());
         assertEquals("Keuze 3 is niet ingevuld", probleemUitResultaat.getReden());
     }
+    @Test
+    void leerlingDieNietDeelneemtWordtNietAutomatischToegewezen() {
+        // ARRANGE
+        LocalDate startDatum = LocalDate.of(2099, 11, 22);
+        LocalDate eindDatum = LocalDate.of(2100, 2, 21);
+
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+
+        Klas klas1AA = maakObservatieKlas(schooljaar);
+
+        Leerling jan = new Leerling(
+                "Jan",
+                "Peeters",
+                klas1AA
+        );
+
+        Leerling sofie = new Leerling(
+                "Sofie",
+                "Janssens",
+                klas1AA
+        );
+
+        sofie.deactiveer();
+
+        TalentenPeriode winter = new TalentenPeriode(
+                "Winter",
+                startDatum,
+                eindDatum,
+                schooljaar
+        );
+
+        IngerichtTalent schakenWinter = richtTalentIn(
+                new Talent("Schaken", "Leren schaken"),
+                winter,
+                10
+        );
+
+        IngerichtTalent voetbalWinter = richtTalentIn(
+                new Talent("Voetbal", "Voetbaltraining"),
+                winter,
+                10
+        );
+
+        IngerichtTalent kokenWinter = richtTalentIn(
+                new Talent("Koken", "Leren koken"),
+                winter,
+                10
+        );
+
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(jan, winter, schakenWinter, 1),
+                new Voorkeur(jan, winter, voetbalWinter, 2),
+                new Voorkeur(jan, winter, kokenWinter, 3),
+
+                new Voorkeur(sofie, winter, schakenWinter, 1),
+                new Voorkeur(sofie, winter, voetbalWinter, 2),
+                new Voorkeur(sofie, winter, kokenWinter, 3)
+        );
+
+        InMemoryLeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        List.of(jan, sofie)
+                );
+
+        InMemoryVoorkeurRepository voorkeurRepository =
+                new InMemoryVoorkeurRepository(
+                        voorkeuren
+                );
+
+        InMemoryToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        InMemoryVoorkeurImportProbleemRepository probleemRepository =
+                new InMemoryVoorkeurImportProbleemRepository(
+                        new ArrayList<>()
+                );
+
+        AutomatischeVerdelingService service =
+                new AutomatischeVerdelingService(
+                        voorkeurRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        probleemRepository
+                );
+
+        // ACT
+        VerdelingsResultaat resultaat =
+                service.voerAutomatischeVerdelingUit(
+                        winter
+                );
+
+        // ASSERT
+        assertEquals(
+                1,
+                resultaat.getAantalToewijzingen()
+        );
+
+        assertSame(
+                jan,
+                resultaat
+                        .getToewijzingen()
+                        .getFirst()
+                        .getLeerling()
+        );
+
+        assertTrue(
+                resultaat
+                        .getToewijzingen()
+                        .stream()
+                        .noneMatch(toewijzing ->
+                                toewijzing.getLeerling().equals(sofie)
+                        )
+        );
+
+        assertFalse(
+                resultaat
+                        .getNietToegewezenLeerlingen()
+                        .contains(sofie)
+        );
+    }
+
+
 }

@@ -6,12 +6,17 @@ public class Leerling {
     private String voornaam;
     private String achternaam;
     private Klas klas;
+    private boolean actief;
 
     public Leerling(String voornaam, String achternaam, Klas klas) {
-        this(null, voornaam, achternaam, klas);
+        this(null, voornaam, achternaam, klas, true);
     }
 
     public Leerling(Long id, String voornaam, String achternaam, Klas klas) {
+        this(id, voornaam, achternaam, klas, true);
+    }
+
+    public Leerling(Long id, String voornaam, String achternaam, Klas klas, boolean actief) {
         valideerGegevens(voornaam, achternaam, klas);
 
         if (id != null && id < 1) {
@@ -22,6 +27,7 @@ public class Leerling {
         this.voornaam = voornaam;
         this.achternaam = achternaam;
         this.klas = klas;
+        this.actief = actief;
     }
 
     public void wijzigGegevens(String voornaam, String achternaam, Klas klas) {
@@ -36,7 +42,16 @@ public class Leerling {
         if (klas == null) {
             throw new IllegalArgumentException("Klas mag niet null zijn.");
         }
+
         this.klas = klas;
+    }
+
+    public void deactiveer() {
+        actief = false;
+    }
+
+    public void activeer() {
+        actief = true;
     }
 
     private void valideerGegevens(String voornaam, String achternaam, Klas klas) {
@@ -55,16 +70,20 @@ public class Leerling {
         return id;
     }
 
-    public Klas getKlas() {
-        return klas;
-    }
-
     public String getVoornaam() {
         return voornaam;
     }
 
     public String getAchternaam() {
         return achternaam;
+    }
+
+    public Klas getKlas() {
+        return klas;
+    }
+
+    public boolean isActief() {
+        return actief;
     }
 
     @Override
@@ -83,7 +102,9 @@ public class Leerling {
 
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : System.identityHashCode(this);
+        return id != null
+                ? id.hashCode()
+                : System.identityHashCode(this);
     }
 
     @Override

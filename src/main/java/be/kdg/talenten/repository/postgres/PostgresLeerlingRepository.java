@@ -26,7 +26,7 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
         }
 
         String sql = """
-                SELECT leerling_id, voornaam, achternaam
+                SELECT leerling_id, voornaam, achternaam, actief
                 FROM leerlingen
                 WHERE klas_id = ?
                 ORDER BY leerling_id
@@ -45,7 +45,8 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                             resultSet.getLong("leerling_id"),
                             resultSet.getString("voornaam"),
                             resultSet.getString("achternaam"),
-                            klas
+                            klas,
+                            resultSet.getBoolean("actief")
                     );
 
                     leerlingenPerKlas.add(leerling);
@@ -74,9 +75,10 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                 INSERT INTO leerlingen (
                     voornaam,
                     achternaam,
-                    klas_id
+                    klas_id,
+                    actief
                 )
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?, ?)
                 RETURNING leerling_id
                 """;
 
@@ -86,6 +88,7 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
             statement.setString(1, leerling.getVoornaam());
             statement.setString(2, leerling.getAchternaam());
             statement.setLong(3, leerling.getKlas().getId());
+            statement.setBoolean(4, leerling.isActief());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) {
@@ -98,7 +101,8 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                         gegenereerdId,
                         leerling.getVoornaam(),
                         leerling.getAchternaam(),
-                        leerling.getKlas()
+                        leerling.getKlas(),
+                        leerling.isActief()
                 );
             }
         } catch (SQLException e) {
@@ -119,6 +123,7 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                 SELECT
                     l.voornaam,
                     l.achternaam,
+                    l.actief,
 
                     k.klas_id,
                     k.klas_naam,
@@ -162,7 +167,8 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                         id,
                         resultSet.getString("voornaam"),
                         resultSet.getString("achternaam"),
-                        klas
+                        klas,
+                        resultSet.getBoolean("actief")
                 );
             }
         } catch (SQLException e) {
@@ -187,6 +193,7 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                     l.leerling_id,
                     l.voornaam,
                     l.achternaam,
+                    l.actief,
                     k.klas_id,
                     k.klas_naam,
                     k.leerjaar,
@@ -219,7 +226,8 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
                             resultSet.getLong("leerling_id"),
                             resultSet.getString("voornaam"),
                             resultSet.getString("achternaam"),
-                            klas
+                            klas,
+                            resultSet.getBoolean("actief")
                     );
 
                     leerlingen.add(leerling);
@@ -258,10 +266,13 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
         }
 
         String sql = """
-            UPDATE leerlingen
-            SET voornaam = ?, achternaam = ?, klas_id = ?
-            WHERE leerling_id = ?
-            """;
+                UPDATE leerlingen
+                SET voornaam = ?,
+                    achternaam = ?,
+                    klas_id = ?,
+                    actief = ?
+                WHERE leerling_id = ?
+                """;
 
         try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -269,12 +280,15 @@ public class PostgresLeerlingRepository implements LeerlingRepository {
             statement.setString(1, leerling.getVoornaam());
             statement.setString(2, leerling.getAchternaam());
             statement.setLong(3, leerling.getKlas().getId());
-            statement.setLong(4, leerling.getId());
+            statement.setBoolean(4, leerling.isActief());
+            statement.setLong(5, leerling.getId());
 
             int aantalAangepasteRijen = statement.executeUpdate();
 
             if (aantalAangepasteRijen == 0) {
-                throw new IllegalStateException("Geen leerling gevonden met id: " + leerling.getId());
+                throw new IllegalStateException(
+                        "Geen leerling gevonden met id: " + leerling.getId()
+                );
             }
 
         } catch (SQLException e) {

@@ -49,8 +49,20 @@ public class AutomatischeVerdelingService {
             throw new IllegalStateException("Een afgelopen talentenperiode mag niet meer automatisch verdeeld worden.");
         }
 
-        List<Leerling> leerlingen = leerlingRepository.zoekVoorSchooljaar(talentenPeriode.getSchooljaar());
-        List<Voorkeur> voorkeuren = voorkeurRepository.zoekVoorPeriode(talentenPeriode);
+        List<Leerling> leerlingen =
+                leerlingRepository
+                        .zoekVoorSchooljaar(talentenPeriode.getSchooljaar())
+                        .stream()
+                        .filter(Leerling::isActief)
+                        .toList();
+        List<Voorkeur> voorkeuren =
+                voorkeurRepository
+                        .zoekVoorPeriode(talentenPeriode)
+                        .stream()
+                        .filter(voorkeur ->
+                                voorkeur.getLeerling().isActief()
+                        )
+                        .toList();
 
         List<Toewijzing> historischeToewijzingen = toewijzingRepository.zoekHistorischeToewijzingenVoorSchooljaar(talentenPeriode.getSchooljaar()).stream()
                 .filter(toewijzing -> toewijzing.getIngerichtTalent().getTalentenPeriode().getSchooljaar().equals(talentenPeriode.getSchooljaar()))

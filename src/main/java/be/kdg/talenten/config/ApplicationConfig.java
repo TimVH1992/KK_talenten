@@ -1,6 +1,5 @@
 package be.kdg.talenten.config;
 
-import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
 import be.kdg.talenten.service.beheer.*;
@@ -23,6 +22,7 @@ public final class ApplicationConfig {
     private final VoorkeurRepository voorkeurRepository;
     private final ToewijzingRepository toewijzingRepository;
     private final VoorkeurImportProbleemRepository voorkeurImportProbleemRepository;
+    private final LeerlingKlasHistoriekRepository leerlingKlasHistoriekRepository;
 
     private final AutomatischeVerdelingService automatischeVerdelingService;
     private final ManueleToewijzingService manueleToewijzingService;
@@ -51,6 +51,7 @@ public final class ApplicationConfig {
         schooljaarRepository = new PostgresSchooljaarRepository();
         talentenPeriodeRepository = new PostgresTalentenPeriodeRepository();
         ingerichtTalentRepository = new PostgresIngerichtTalentRepository();
+        leerlingKlasHistoriekRepository = new PostgresLeerlingKlasHistoriekRepository();
 
         voorkeurRepository = new PostgresVoorkeurRepository(leerlingRepository, ingerichtTalentRepository);
         toewijzingRepository = new PostgresToewijzingRepository(leerlingRepository, ingerichtTalentRepository);
@@ -70,7 +71,7 @@ public final class ApplicationConfig {
         overzichtService = new OverzichtService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, toewijzingRepository, voorkeurImportProbleemRepository);
         talentService = new TalentService(talentRepository);
         leerkrachtService = new LeerkrachtService(leerkrachtRepository);
-        leerlingService = new LeerlingService(leerlingRepository);
+        leerlingService = new LeerlingService(leerlingRepository, leerlingKlasHistoriekRepository);
         ingerichtTalentService = new IngerichtTalentService(ingerichtTalentRepository);
 
     }

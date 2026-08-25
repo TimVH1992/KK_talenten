@@ -115,11 +115,17 @@ public class VoorkeurenExcelService {
         Map<Klas, List<Leerling>> leerlingenPerKlas = new LinkedHashMap<>();
 
         for (Leerling leerling : leerlingRepository.zoekVoorSchooljaar(periode.getSchooljaar())) {
+            if (!leerling.isActief()) {
+                continue;
+            }
+
             if (leerling.getKlas().getDoelgroep() != doelgroep) {
                 continue;
             }
 
-            leerlingenPerKlas.computeIfAbsent(leerling.getKlas(), klas -> new ArrayList<>()).add(leerling);
+            leerlingenPerKlas
+                    .computeIfAbsent(leerling.getKlas(), klas -> new ArrayList<>())
+                    .add(leerling);
         }
 
         return leerlingenPerKlas;

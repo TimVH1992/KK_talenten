@@ -48,8 +48,17 @@ public class VoorkeurenExcelServiceTest {
 
         klas = new Klas("1AA", schooljaar, 1, doelgroep);
 
-        jan = new Leerling("Jan", "Mertens", klas);
-        sofie = new Leerling("Sofie", "VO", klas);
+        jan = new Leerling(
+                "Jan",
+                "Mertens",
+                klas
+        );
+
+        sofie = new Leerling(
+                "Sofie",
+                "VO",
+                klas
+        );
 
         leerlingRepository = new InMemoryLeerlingRepository(List.of(jan, sofie));
 
@@ -305,5 +314,64 @@ public class VoorkeurenExcelServiceTest {
         }
 
         return null;
+    }
+    @Test
+    void genereerTemplateNeemtLeerlingDieNietDeelneemtNietOp(
+            @TempDir Path tempDir
+    ) throws IOException {
+        // ARRANGE
+        sofie.deactiveer();
+
+        Path bestand =
+                tempDir.resolve(
+                        "voorkeuren.xlsx"
+                );
+
+        // ACT
+        service.genereerTemplate(
+                periode,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                bestand
+        );
+
+        // ASSERT
+        try (XSSFWorkbook workbook =
+                     new XSSFWorkbook(
+                             Files.newInputStream(bestand)
+                     )) {
+
+            Sheet sheet =
+                    workbook.getSheet("1AA");
+
+            assertNotNull(sheet);
+
+            // Header + Jan
+            assertEquals(
+                    2,
+                    sheet.getPhysicalNumberOfRows()
+            );
+
+            Row janRij =
+                    sheet.getRow(1);
+
+            assertEquals(
+                    "Jan",
+                    janRij
+                            .getCell(0)
+                            .getStringCellValue()
+            );
+
+            assertEquals(
+                    "Mertens",
+                    janRij
+                            .getCell(1)
+                            .getStringCellValue()
+            );
+
+            // Sofie mag geen rij krijgen
+            assertNull(
+                    sheet.getRow(2)
+            );
+        }
     }
 }

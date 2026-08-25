@@ -154,11 +154,10 @@ public class PostgresLeerlingRepositoryTest {
                 gevondenLeerling.getKlas().getSchooljaar()
         );
     }
+
     @Test
     void updateWijzigtGegevensEnKlasVanLeerling() {
         // ARRANGE
-
-
         Klas klas2A = klasRepository.save(
                 new Klas(
                         "2A",
@@ -184,20 +183,24 @@ public class PostgresLeerlingRepositoryTest {
         opgeslagenLeerling.wijzigGegevens(
                 "Janne",
                 "Peeters",
-                klas2B
+                klas2A
         );
+
+        opgeslagenLeerling.wijsKlasToe(klas2B);
 
         // ACT
         repository.update(opgeslagenLeerling);
 
         // ASSERT
-        Leerling resultaat = repository.zoekOpId(opgeslagenLeerling.getId());
+        Leerling resultaat =
+                repository.zoekOpId(opgeslagenLeerling.getId());
 
         Assertions.assertEquals("Janne", resultaat.getVoornaam());
         Assertions.assertEquals("Peeters", resultaat.getAchternaam());
         Assertions.assertEquals(klas2B.getId(), resultaat.getKlas().getId());
         Assertions.assertEquals("2B", resultaat.getKlas().getNaam());
     }
+
     @Test
     void updateMetNullLeerlingGeeftException() {
         Assertions.assertThrows(
@@ -208,13 +211,111 @@ public class PostgresLeerlingRepositoryTest {
 
     @Test
     void updateVanNietOpgeslagenLeerlingGeeftException() {
-        // ARRANGE: wel een opgeslagen klas nodig
-        Leerling leerling = new Leerling("Jan", "Peeters", klas);
+        // ARRANGE
+        Leerling leerling =
+                new Leerling("Jan", "Peeters", klas);
 
         // ACT & ASSERT
         Assertions.assertThrows(
                 IllegalStateException.class,
                 () -> repository.update(leerling)
         );
+    }
+
+    @Test
+    void saveSlaatNieuweLeerlingAlsActiefOp() {
+        // ARRANGE
+        Leerling leerling =
+                new Leerling("Jan", "Peeters", klas);
+
+        // ACT
+        Leerling opgeslagenLeerling =
+                repository.save(leerling);
+
+        Leerling opgehaaldeLeerling =
+                repository.zoekOpId(opgeslagenLeerling.getId());
+
+        // ASSERT
+        Assertions.assertTrue(opgeslagenLeerling.isActief());
+        Assertions.assertTrue(opgehaaldeLeerling.isActief());
+    }
+
+    @Test
+    void updateKanLeerlingDeactiveren() {
+        // ARRANGE
+        Leerling leerling = repository.save(
+                new Leerling("Jan", "Peeters", klas)
+        );
+
+        leerling.deactiveer();
+
+        // ACT
+        repository.update(leerling);
+
+        Leerling resultaat =
+                repository.zoekOpId(leerling.getId());
+
+        // ASSERT
+        Assertions.assertFalse(resultaat.isActief());
+    }
+
+    @Test
+    void updateKanLeerlingOpnieuwActiveren() {
+        // ARRANGE
+        Leerling leerling = repository.save(
+                new Leerling("Jan", "Peeters", klas)
+        );
+
+        leerling.deactiveer();
+        repository.update(leerling);
+
+        leerling.activeer();
+
+        // ACT
+        repository.update(leerling);
+
+        Leerling resultaat =
+                repository.zoekOpId(leerling.getId());
+
+        // ASSERT
+        Assertions.assertTrue(resultaat.isActief());
+    }
+
+    @Test
+    void zoekVoorKlasBehoudtActieveStatus() {
+        // ARRANGE
+        Leerling leerling = repository.save(
+                new Leerling("Jan", "Peeters", klas)
+        );
+
+        leerling.deactiveer();
+        repository.update(leerling);
+
+        // ACT
+        List<Leerling> resultaat =
+                repository.zoekVoorKlas(klas);
+
+        // ASSERT
+        Assertions.assertEquals(1, resultaat.size());
+        Assertions.assertFalse(resultaat.getFirst().isActief());
+    }
+
+    @Test
+    void zoekVoorSchooljaarBehoudtActieveStatus() {
+        // ARRANGE
+        Leerling leerling = repository.save(
+                new Leerling("Jan", "Peeters", klas)
+        );
+
+        leerling.deactiveer();
+        repository.update(leerling);
+
+        // ACT
+        List<Leerling> resultaat =
+                repository.zoekVoorSchooljaar(schooljaar2026_2027);
+
+        // ASSERT
+        Assertions.assertEquals(1, resultaat.size());
+        Assertions.assertFalse(resultaat.getFirst().isActief());
     }
 }

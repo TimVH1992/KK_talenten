@@ -92,7 +92,6 @@ CREATE TABLE klassen
             )
 );
 
-
 -- =========================================================
 -- LEERLINGEN
 -- =========================================================
@@ -103,6 +102,7 @@ CREATE TABLE leerlingen
     voornaam    VARCHAR(100) NOT NULL,
     achternaam  VARCHAR(100) NOT NULL,
     klas_id     BIGINT       NOT NULL,
+    actief      BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT pk_leerlingen
         PRIMARY KEY (leerling_id),
@@ -119,6 +119,33 @@ CREATE TABLE leerlingen
         CHECK (btrim(achternaam) <> '')
 );
 
+-- =========================================================
+-- KLASHISTORIEK LEERLINGEN
+-- =========================================================
+
+CREATE TABLE leerling_klas_historiek (
+                                         leerling_klas_historiek_id BIGINT GENERATED ALWAYS AS IDENTITY,
+                                         leerling_id BIGINT NOT NULL,
+                                         klas_id BIGINT NOT NULL,
+                                         vanaf DATE NOT NULL,
+                                         tot DATE,
+
+                                         CONSTRAINT pk_leerling_klas_historiek
+                                             PRIMARY KEY (leerling_klas_historiek_id),
+
+                                         CONSTRAINT fk_leerling_klas_historiek_leerling
+                                             FOREIGN KEY (leerling_id)
+                                                 REFERENCES leerlingen (leerling_id)
+                                                 ON DELETE RESTRICT,
+
+                                         CONSTRAINT fk_leerling_klas_historiek_klas
+                                             FOREIGN KEY (klas_id)
+                                                 REFERENCES klassen (klas_id)
+                                                 ON DELETE RESTRICT,
+
+                                         CONSTRAINT chk_leerling_klas_historiek_datums
+                                             CHECK (tot IS NULL OR tot > vanaf)
+);
 
 -- =========================================================
 -- LEERKRACHTEN
@@ -525,6 +552,10 @@ CREATE INDEX idx_toewijzingen_periode
 
 CREATE INDEX idx_toewijzingen_ingericht_talent
     ON toewijzingen (ingericht_talent_id);
+
+CREATE UNIQUE INDEX uq_leerling_een_huidige_klas
+    ON leerling_klas_historiek (leerling_id)
+    WHERE tot IS NULL;
 
 -- =========================================================
 -- INITIËLE DATA
