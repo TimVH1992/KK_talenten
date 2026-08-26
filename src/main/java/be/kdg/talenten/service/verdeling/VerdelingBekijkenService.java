@@ -1,5 +1,6 @@
 package be.kdg.talenten.service.verdeling;
 
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
@@ -73,8 +74,22 @@ public class VerdelingBekijkenService {
                 leerlingKlasHistoriekRepository;
     }
 
+    /*
+     * Bestaande methode blijft bestaan.
+     * null als doelgroep betekent: alle doelgroepen.
+     */
     public List<IngerichtTalentOverzicht> bekijkPerIngerichtTalent(
             TalentenPeriode periode
+    ) {
+        return bekijkPerIngerichtTalent(
+                periode,
+                null
+        );
+    }
+
+    public List<IngerichtTalentOverzicht> bekijkPerIngerichtTalent(
+            TalentenPeriode periode,
+            Doelgroep doelgroep
     ) {
         valideerPeriode(
                 periode
@@ -83,7 +98,7 @@ public class VerdelingBekijkenService {
         Map<IngerichtTalent, List<Toewijzing>> toewijzingenPerTalent =
                 new LinkedHashMap<>();
 
-        List<IngerichtTalent> actieveIngerichteTalenten =
+        List<IngerichtTalent> ingerichteTalenten =
                 ingerichtTalentRepository
                         .zoekVoorPeriode(
                                 periode
@@ -92,10 +107,17 @@ public class VerdelingBekijkenService {
                         .filter(
                                 IngerichtTalent::isActief
                         )
+                        .filter(
+                                ingerichtTalent ->
+                                        doelgroep == null
+                                                || ingerichtTalent
+                                                .getDoelgroep()
+                                                == doelgroep
+                        )
                         .toList();
 
         for (IngerichtTalent ingerichtTalent :
-                actieveIngerichteTalenten) {
+                ingerichteTalenten) {
 
             toewijzingenPerTalent.put(
                     ingerichtTalent,
@@ -205,15 +227,30 @@ public class VerdelingBekijkenService {
         );
     }
 
+    /*
+     * Bestaande methode blijft bestaan.
+     * Zonder doelgroepfilter worden alle doelgroepen weergegeven.
+     */
     public List<NietToegewezenLeerlingOverzicht>
     bekijkNietToegewezenLeerlingen(
             TalentenPeriode periode
+    ) {
+        return bekijkNietToegewezenLeerlingen(
+                periode,
+                null
+        );
+    }
+
+    public List<NietToegewezenLeerlingOverzicht>
+    bekijkNietToegewezenLeerlingen(
+            TalentenPeriode periode,
+            Doelgroep doelgroep
     ) {
         valideerPeriode(
                 periode
         );
 
-        List<Leerling> leerlingen =
+        List<LeerlingMetKlas> leerlingen =
                 leerlingRepository
                         .zoekVoorSchooljaar(
                                 periode.getSchooljaar()
@@ -221,6 +258,28 @@ public class VerdelingBekijkenService {
                         .stream()
                         .filter(
                                 Leerling::isActief
+                        )
+                        .map(
+                                leerling ->
+                                        new LeerlingMetKlas(
+                                                leerling,
+                                                bepaalKlasOpStartPeriode(
+                                                        leerling,
+                                                        periode
+                                                )
+                                        )
+                        )
+                        .filter(
+                                leerlingMetKlas ->
+                                        leerlingMetKlas.klas() != null
+                        )
+                        .filter(
+                                leerlingMetKlas ->
+                                        doelgroep == null
+                                                || leerlingMetKlas
+                                                .klas()
+                                                .getDoelgroep()
+                                                == doelgroep
                         )
                         .toList();
 
@@ -230,6 +289,12 @@ public class VerdelingBekijkenService {
                                 periode
                         )
                         .stream()
+                        .filter(
+                                toewijzing ->
+                                        toewijzing
+                                                .getIngerichtTalent()
+                                                .isActief()
+                        )
                         .map(
                                 Toewijzing::getLeerling
                         )
@@ -240,39 +305,83 @@ public class VerdelingBekijkenService {
         return leerlingen
                 .stream()
                 .filter(
-                        leerling ->
+                        leerlingMetKlas ->
                                 !toegewezenLeerlingen.contains(
-                                        leerling
+                                        leerlingMetKlas.leerling()
                                 )
                 )
                 .sorted(
                         Comparator
                                 .comparing(
-                                        (Leerling leerling) ->
-                                                leerling
-                                                        .getKlas()
+                                        (LeerlingMetKlas leerlingMetKlas) ->
+                                                leerlingMetKlas
+                                                        .klas()
                                                         .getNaam()
                                 )
                                 .thenComparing(
-                                        Leerling::getAchternaam
+                                        leerlingMetKlas ->
+                                                leerlingMetKlas
+                                                        .leerling()
+                                                        .getAchternaam()
                                 )
                                 .thenComparing(
-                                        Leerling::getVoornaam
+                                        leerlingMetKlas ->
+                                                leerlingMetKlas
+                                                        .leerling()
+                                                        .getVoornaam()
                                 )
                 )
                 .map(
-                        leerling ->
+                        leerlingMetKlas ->
                                 new NietToegewezenLeerlingOverzicht(
-                                        leerling,
-                                        leerling.getVoornaam()
+                                        leerlingMetKlas.leerling(),
+                                        leerlingMetKlas
+                                                .leerling()
+                                                .getVoornaam()
                                                 + " "
-                                                + leerling.getAchternaam(),
-                                        leerling
-                                                .getKlas()
+                                                + leerlingMetKlas
+                                                .leerling()
+                                                .getAchternaam(),
+                                        leerlingMetKlas
+                                                .klas()
                                                 .getNaam()
                                 )
                 )
                 .toList();
+    }
+
+    private Klas bepaalKlasOpStartPeriode(
+            Leerling leerling,
+            TalentenPeriode periode
+    ) {
+        return leerlingKlasHistoriekRepository
+                .zoekVoorLeerling(
+                        leerling
+                )
+                .stream()
+                .filter(
+                        historiek ->
+                                !historiek
+                                        .getVanaf()
+                                        .isAfter(
+                                                periode.getStartDatum()
+                                        )
+                                        && (
+                                        historiek.getTot() == null
+                                                || historiek
+                                                .getTot()
+                                                .isAfter(
+                                                        periode.getStartDatum()
+                                                )
+                                )
+                )
+                .map(
+                        LeerlingKlasHistoriek::getKlas
+                )
+                .findFirst()
+                .orElse(
+                        leerling.getKlas()
+                );
     }
 
     private void valideerPeriode(
@@ -283,5 +392,11 @@ public class VerdelingBekijkenService {
                     "Talentenperiode mag niet null zijn"
             );
         }
+    }
+
+    private record LeerlingMetKlas(
+            Leerling leerling,
+            Klas klas
+    ) {
     }
 }

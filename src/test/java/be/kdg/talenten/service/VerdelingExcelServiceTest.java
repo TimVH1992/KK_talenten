@@ -637,16 +637,305 @@ class VerdelingExcelServiceTest {
                     sofieRij
             );
 
-            /*
-             * Sofie's huidige klas is ondertussen 1AB,
-             * maar bij de start van de herfstperiode
-             * zat zij in 1AA.
-             */
             assertEquals(
                     "1AA",
                     sofieRij
                             .getCell(2)
                             .getStringCellValue()
+            );
+        }
+    }
+
+    @Test
+    void exportPerTalentFiltertOpDoelgroep()
+            throws Exception {
+
+        // ARRANGE
+        Klas kwalificatieKlas =
+                new Klas(
+                        3L,
+                        "3KA",
+                        schooljaar,
+                        3,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                );
+
+        Leerling tom =
+                new Leerling(
+                        4L,
+                        "Tom",
+                        "Vermeulen",
+                        kwalificatieKlas,
+                        true
+                );
+
+        Talent koken =
+                new Talent(
+                        "Koken",
+                        "Leren koken"
+                );
+
+        Leerkracht leerkracht =
+                new Leerkracht(
+                        "Test",
+                        "Leerkracht"
+                );
+
+        IngerichtTalent kokenHerfst =
+                new IngerichtTalent(
+                        koken,
+                        herfst,
+                        koken.getNaam(),
+                        koken.getBeschrijving(),
+                        10,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                        List.of(leerkracht)
+                );
+
+        VerdelingExcelService filterService =
+                maakFilterTestService(
+                        kwalificatieKlas,
+                        tom,
+                        kokenHerfst
+                );
+
+        Path bestand =
+                tempDir.resolve(
+                        "talenten-observatie.xlsx"
+                );
+
+        // ACT
+        filterService.exporteerPerIngerichtTalent(
+                herfst,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                bestand
+        );
+
+        // ASSERT
+        try (InputStream inputStream =
+                     Files.newInputStream(bestand);
+             XSSFWorkbook workbook =
+                     new XSSFWorkbook(inputStream)) {
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "Overzicht"
+                    )
+            );
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "Schaken"
+                    )
+            );
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "Dansen"
+                    )
+            );
+
+            assertNull(
+                    workbook.getSheet(
+                            "Koken"
+                    )
+            );
+
+            assertEquals(
+                    3,
+                    workbook.getNumberOfSheets()
+            );
+        }
+    }
+
+    @Test
+    void exportPerKlasFiltertOpDoelgroep()
+            throws Exception {
+
+        // ARRANGE
+        Klas kwalificatieKlas =
+                new Klas(
+                        3L,
+                        "3KA",
+                        schooljaar,
+                        3,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                );
+
+        Leerling tom =
+                new Leerling(
+                        4L,
+                        "Tom",
+                        "Vermeulen",
+                        kwalificatieKlas,
+                        true
+                );
+
+        Talent koken =
+                new Talent(
+                        "Koken",
+                        "Leren koken"
+                );
+
+        Leerkracht leerkracht =
+                new Leerkracht(
+                        "Test",
+                        "Leerkracht"
+                );
+
+        IngerichtTalent kokenHerfst =
+                new IngerichtTalent(
+                        koken,
+                        herfst,
+                        koken.getNaam(),
+                        koken.getBeschrijving(),
+                        10,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                        List.of(leerkracht)
+                );
+
+        VerdelingExcelService filterService =
+                maakFilterTestService(
+                        kwalificatieKlas,
+                        tom,
+                        kokenHerfst
+                );
+
+        Path bestand =
+                tempDir.resolve(
+                        "klassen-observatie.xlsx"
+                );
+
+        // ACT
+        filterService.exporteerPerKlas(
+                herfst,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                bestand
+        );
+
+        // ASSERT
+        try (InputStream inputStream =
+                     Files.newInputStream(bestand);
+             XSSFWorkbook workbook =
+                     new XSSFWorkbook(inputStream)) {
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "1AA"
+                    )
+            );
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "1AB"
+                    )
+            );
+
+            assertNull(
+                    workbook.getSheet(
+                            "3KA"
+                    )
+            );
+
+            assertEquals(
+                    2,
+                    workbook.getNumberOfSheets()
+            );
+        }
+    }
+
+    @Test
+    void exportMetNullDoelgroepExporteertAlleDoelgroepen()
+            throws Exception {
+
+        // ARRANGE
+        Klas kwalificatieKlas =
+                new Klas(
+                        3L,
+                        "3KA",
+                        schooljaar,
+                        3,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                );
+
+        Leerling tom =
+                new Leerling(
+                        4L,
+                        "Tom",
+                        "Vermeulen",
+                        kwalificatieKlas,
+                        true
+                );
+
+        Talent koken =
+                new Talent(
+                        "Koken",
+                        "Leren koken"
+                );
+
+        Leerkracht leerkracht =
+                new Leerkracht(
+                        "Test",
+                        "Leerkracht"
+                );
+
+        IngerichtTalent kokenHerfst =
+                new IngerichtTalent(
+                        koken,
+                        herfst,
+                        koken.getNaam(),
+                        koken.getBeschrijving(),
+                        10,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                        List.of(leerkracht)
+                );
+
+        VerdelingExcelService filterService =
+                maakFilterTestService(
+                        kwalificatieKlas,
+                        tom,
+                        kokenHerfst
+                );
+
+        Path bestand =
+                tempDir.resolve(
+                        "alle-doelgroepen.xlsx"
+                );
+
+        // ACT
+        filterService.exporteerPerKlas(
+                herfst,
+                null,
+                bestand
+        );
+
+        // ASSERT
+        try (InputStream inputStream =
+                     Files.newInputStream(bestand);
+             XSSFWorkbook workbook =
+                     new XSSFWorkbook(inputStream)) {
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "1AA"
+                    )
+            );
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "1AB"
+                    )
+            );
+
+            assertNotNull(
+                    workbook.getSheet(
+                            "3KA"
+                    )
+            );
+
+            assertEquals(
+                    3,
+                    workbook.getNumberOfSheets()
             );
         }
     }
@@ -757,6 +1046,110 @@ class VerdelingExcelServiceTest {
         );
     }
 
+    private VerdelingExcelService maakFilterTestService(
+            Klas kwalificatieKlas,
+            Leerling kwalificatieLeerling,
+            IngerichtTalent kwalificatieTalent
+    ) {
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                schakenHerfst,
+                                dansenHerfst,
+                                kwalificatieTalent
+                        )
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        List.of(
+                                jan,
+                                sofie,
+                                julie,
+                                kwalificatieLeerling
+                        )
+                );
+
+        ToewijzingRepository filterToewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        filterToewijzingRepository.saveAll(
+                List.of(
+                        new Toewijzing(
+                                jan,
+                                schakenHerfst,
+                                ToewijzingsType.AUTOMATISCH,
+                                1
+                        ),
+                        new Toewijzing(
+                                julie,
+                                dansenHerfst,
+                                ToewijzingsType.MANUEEL,
+                                null
+                        ),
+                        new Toewijzing(
+                                kwalificatieLeerling,
+                                kwalificatieTalent,
+                                ToewijzingsType.AUTOMATISCH,
+                                1
+                        )
+                )
+        );
+
+        TestLeerlingKlasHistoriekRepository filterHistoriekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+        filterHistoriekRepository.startHistoriek(
+                jan,
+                klas1AA,
+                schooljaar.getStartDatum()
+        );
+
+        filterHistoriekRepository.startHistoriek(
+                sofie,
+                klas1AA,
+                schooljaar.getStartDatum()
+        );
+
+        filterHistoriekRepository.startHistoriek(
+                julie,
+                klas1AB,
+                schooljaar.getStartDatum()
+        );
+
+        filterHistoriekRepository.startHistoriek(
+                kwalificatieLeerling,
+                kwalificatieKlas,
+                schooljaar.getStartDatum()
+        );
+
+        VerdelingBekijkenService verdelingBekijkenService =
+                new VerdelingBekijkenService(
+                        ingerichtTalentRepository,
+                        filterToewijzingRepository,
+                        leerlingRepository,
+                        filterHistoriekRepository
+                );
+
+        KlasService filterKlasService =
+                new KlasService(
+                        new TestKlasRepository(
+                                List.of(
+                                        klas1AA,
+                                        klas1AB,
+                                        kwalificatieKlas
+                                )
+                        )
+                );
+
+        return new VerdelingExcelService(
+                verdelingBekijkenService,
+                filterKlasService
+        );
+    }
+
     private Row zoekLeerlingRij(
             Sheet sheet,
             String voornaam,
@@ -795,37 +1188,56 @@ class VerdelingExcelServiceTest {
         return null;
     }
 
-    private static class TestKlasRepository implements KlasRepository {
+    private static class TestKlasRepository
+            implements KlasRepository {
 
         private final List<Klas> klassen;
 
-        private TestKlasRepository(List<Klas> klassen) {
-            this.klassen = new ArrayList<>(klassen);
+        private TestKlasRepository(
+                List<Klas> klassen
+        ) {
+            this.klassen =
+                    new ArrayList<>(
+                            klassen
+                    );
         }
 
         @Override
-        public Klas save(Klas klas) {
-            klassen.add(klas);
+        public Klas save(
+                Klas klas
+        ) {
+            klassen.add(
+                    klas
+            );
+
             return klas;
         }
 
         @Override
         public List<Klas> zoekAlle() {
-            return List.copyOf(klassen);
+            return List.copyOf(
+                    klassen
+            );
         }
 
         @Override
-        public Klas zoekOpId(long id) {
+        public Klas zoekOpId(
+                long id
+        ) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void update(Klas klas) {
+        public void update(
+                Klas klas
+        ) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void delete(Klas klas) {
+        public void delete(
+                Klas klas
+        ) {
             throw new UnsupportedOperationException();
         }
     }
@@ -836,7 +1248,8 @@ class VerdelingExcelServiceTest {
         private final List<LeerlingKlasHistoriek> historiek =
                 new ArrayList<>();
 
-        private long volgendId = 1;
+        private long volgendId =
+                1;
 
         @Override
         public void startHistoriek(
@@ -869,7 +1282,9 @@ class VerdelingExcelServiceTest {
 
                 if (registratie
                         .getLeerling()
-                        .equals(leerling)
+                        .equals(
+                                leerling
+                        )
                         && registratie.isHuidig()) {
 
                     historiek.set(
@@ -896,11 +1311,15 @@ class VerdelingExcelServiceTest {
         public List<LeerlingKlasHistoriek> zoekVoorLeerling(
                 Leerling leerling
         ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getLeerling()
-                                    .equals(leerling)
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getLeerling()
+                                            .equals(
+                                                    leerling
+                                            )
                     )
                     .toList();
         }
@@ -910,20 +1329,28 @@ class VerdelingExcelServiceTest {
                 Klas klas,
                 LocalDate datum
         ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getKlas()
-                                    .equals(klas)
-                                    && !registratie
-                                    .getVanaf()
-                                    .isAfter(datum)
-                                    && (
-                                    registratie.getTot() == null
-                                            || registratie
-                                            .getTot()
-                                            .isAfter(datum)
-                            )
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getKlas()
+                                            .equals(
+                                                    klas
+                                            )
+                                            && !registratie
+                                            .getVanaf()
+                                            .isAfter(
+                                                    datum
+                                            )
+                                            && (
+                                            registratie.getTot() == null
+                                                    || registratie
+                                                    .getTot()
+                                                    .isAfter(
+                                                            datum
+                                                    )
+                                    )
                     )
                     .toList();
         }

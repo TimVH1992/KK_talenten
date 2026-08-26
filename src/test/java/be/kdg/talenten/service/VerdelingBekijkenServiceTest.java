@@ -1531,28 +1531,22 @@ class VerdelingBekijkenServiceTest {
         TalentenPeriode herfst =
                 maakHerfstPeriode();
 
-        Talent schaken =
-                new Talent(
-                        "Schaken",
-                        "Leren schaken"
-                );
-
-        Talent digitaleMedia =
-                new Talent(
-                        "Digitale Media",
-                        "Foto en video"
-                );
-
         IngerichtTalent schakenHerfst =
                 richtTalentIn(
-                        schaken,
+                        new Talent(
+                                "Schaken",
+                                "Leren schaken"
+                        ),
                         herfst,
                         10
                 );
 
         IngerichtTalent digitaleMediaHerfst =
                 richtTalentIn(
-                        digitaleMedia,
+                        new Talent(
+                                "Digitale Media",
+                                "Foto en video"
+                        ),
                         herfst,
                         10
                 );
@@ -1606,15 +1600,327 @@ class VerdelingBekijkenServiceTest {
                         .getFirst()
                         .ingerichtTalent()
         );
+    }
+    @Test
+    void bekijkPerIngerichtTalentFiltertOpDoelgroep() {
+        // ARRANGE
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        Talent schaken =
+                new Talent(
+                        "Schaken",
+                        "Leren schaken"
+                );
+
+        Talent koken =
+                new Talent(
+                        "Koken",
+                        "Leren koken"
+                );
+
+        IngerichtTalent schakenHerfst =
+                new IngerichtTalent(
+                        schaken,
+                        herfst,
+                        "Schaken",
+                        "Leren schaken",
+                        10,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        List.of(testLeerkracht)
+                );
+
+        IngerichtTalent kokenHerfst =
+                new IngerichtTalent(
+                        koken,
+                        herfst,
+                        "Koken",
+                        "Leren koken",
+                        10,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                        List.of(testLeerkracht)
+                );
+
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        List.of(
+                                schakenHerfst,
+                                kokenHerfst
+                        )
+                );
+
+        ToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingKlasHistoriekRepository historiekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+        VerdelingBekijkenService service =
+                new VerdelingBekijkenService(
+                        ingerichtTalentRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        historiekRepository
+                );
+
+        // ACT
+        List<IngerichtTalentOverzicht> resultaat =
+                service.bekijkPerIngerichtTalent(
+                        herfst,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
+
+        // ASSERT
+        assertEquals(
+                1,
+                resultaat.size()
+        );
+
+        assertSame(
+                schakenHerfst,
+                resultaat
+                        .getFirst()
+                        .ingerichtTalent()
+        );
+
+        assertFalse(
+                resultaat
+                        .stream()
+                        .anyMatch(
+                                overzicht ->
+                                        overzicht
+                                                .ingerichtTalent()
+                                                == kokenHerfst
+                        )
+        );
+    }
+    @Test
+    void bekijkNietToegewezenLeerlingenFiltertOpDoelgroep() {
+        // ARRANGE
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        Klas klas1AA =
+                new Klas(
+                        "1AA",
+                        schooljaar2026_2027,
+                        1,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
+
+        Klas klas3KA =
+                new Klas(
+                        "3KA",
+                        schooljaar2026_2027,
+                        3,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                );
+
+        Leerling jan =
+                new Leerling(
+                        "Jan",
+                        "Peeters",
+                        klas1AA
+                );
+
+        Leerling sofie =
+                new Leerling(
+                        "Sofie",
+                        "Janssens",
+                        klas3KA
+                );
+
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        new ArrayList<>()
+                );
+
+        ToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        List.of(
+                                jan,
+                                sofie
+                        )
+                );
+
+        TestLeerlingKlasHistoriekRepository historiekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+        historiekRepository.startHistoriek(
+                jan,
+                klas1AA,
+                schooljaar2026_2027.getStartDatum()
+        );
+
+        historiekRepository.startHistoriek(
+                sofie,
+                klas3KA,
+                schooljaar2026_2027.getStartDatum()
+        );
+
+        VerdelingBekijkenService service =
+                new VerdelingBekijkenService(
+                        ingerichtTalentRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        historiekRepository
+                );
+
+        // ACT
+        List<NietToegewezenLeerlingOverzicht> resultaat =
+                service.bekijkNietToegewezenLeerlingen(
+                        herfst,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
+
+        // ASSERT
+        assertEquals(
+                1,
+                resultaat.size()
+        );
+
+        assertSame(
+                jan,
+                resultaat
+                        .getFirst()
+                        .leerling()
+        );
+
+        assertEquals(
+                "1AA",
+                resultaat
+                        .getFirst()
+                        .klasNaam()
+        );
+
+        assertFalse(
+                resultaat
+                        .stream()
+                        .anyMatch(
+                                overzicht ->
+                                        overzicht.leerling() == sofie
+                        )
+        );
+    }
+    @Test
+    void bekijkNietToegewezenLeerlingenMetNullDoelgroepToontAlleDoelgroepen() {
+        // ARRANGE
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        Klas klas1AA =
+                new Klas(
+                        "1AA",
+                        schooljaar2026_2027,
+                        1,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
+
+        Klas klas3KA =
+                new Klas(
+                        "3KA",
+                        schooljaar2026_2027,
+                        3,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                );
+
+        Leerling jan =
+                new Leerling(
+                        "Jan",
+                        "Peeters",
+                        klas1AA
+                );
+
+        Leerling sofie =
+                new Leerling(
+                        "Sofie",
+                        "Janssens",
+                        klas3KA
+                );
+
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        new ArrayList<>()
+                );
+
+        ToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        List.of(
+                                jan,
+                                sofie
+                        )
+                );
+
+        TestLeerlingKlasHistoriekRepository historiekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+        historiekRepository.startHistoriek(
+                jan,
+                klas1AA,
+                schooljaar2026_2027.getStartDatum()
+        );
+
+        historiekRepository.startHistoriek(
+                sofie,
+                klas3KA,
+                schooljaar2026_2027.getStartDatum()
+        );
+
+        VerdelingBekijkenService service =
+                new VerdelingBekijkenService(
+                        ingerichtTalentRepository,
+                        toewijzingRepository,
+                        leerlingRepository,
+                        historiekRepository
+                );
+
+        // ACT
+        List<NietToegewezenLeerlingOverzicht> resultaat =
+                service.bekijkNietToegewezenLeerlingen(
+                        herfst,
+                        null
+                );
+
+        // ASSERT
+        assertEquals(
+                2,
+                resultaat.size()
+        );
 
         assertTrue(
                 resultaat
                         .stream()
-                        .noneMatch(overzicht ->
-                                overzicht
-                                        .ingerichtTalent()
-                                        == digitaleMediaHerfst
+                        .anyMatch(
+                                overzicht ->
+                                        overzicht.leerling() == jan
+                        )
+        );
+
+        assertTrue(
+                resultaat
+                        .stream()
+                        .anyMatch(
+                                overzicht ->
+                                        overzicht.leerling() == sofie
                         )
         );
     }
+
 }

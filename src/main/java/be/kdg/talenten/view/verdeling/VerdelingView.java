@@ -1,5 +1,6 @@
 package be.kdg.talenten.view.verdeling;
 
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Schooljaar;
@@ -44,6 +45,7 @@ public class VerdelingView extends BorderPane {
 
     private ComboBox<Schooljaar> schooljaarComboBox;
     private ComboBox<TalentenPeriode> periodeComboBox;
+    private ComboBox<DoelgroepKeuze> doelgroepComboBox;
 
     private Button overzichtLadenButton;
     private Button automatischeVerdelingButton;
@@ -169,6 +171,56 @@ public class VerdelingView extends BorderPane {
                     }
                 }
         );
+
+
+        doelgroepComboBox =
+                new ComboBox<>();
+
+        doelgroepComboBox.setPrefWidth(
+                260
+        );
+
+        doelgroepComboBox.setItems(
+                FXCollections.observableArrayList(
+                        new DoelgroepKeuze(
+                                "Alle doelgroepen",
+                                null
+                        ),
+                        new DoelgroepKeuze(
+                                "Observatie / opleidingsfase",
+                                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        ),
+                        new DoelgroepKeuze(
+                                "Kwalificatiefase",
+                                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                        )
+                )
+        );
+
+        doelgroepComboBox.setConverter(
+                new StringConverter<>() {
+
+                    @Override
+                    public String toString(
+                            DoelgroepKeuze keuze
+                    ) {
+                        return keuze == null
+                                ? ""
+                                : keuze.label();
+                    }
+
+                    @Override
+                    public DoelgroepKeuze fromString(
+                            String string
+                    ) {
+                        return null;
+                    }
+                }
+        );
+
+        doelgroepComboBox
+                .getSelectionModel()
+                .selectFirst();
 
 
         overzichtLadenButton =
@@ -423,6 +475,7 @@ public class VerdelingView extends BorderPane {
                                         data
                                                 .getValue()
                                                 .ingerichtTalent()
+                                                .getDoelgroep()
                                 )
                         )
         );
@@ -915,20 +968,40 @@ public class VerdelingView extends BorderPane {
         );
 
 
-        HBox selectieBalk =
+        HBox filterBalk =
                 new HBox(
                         12,
                         new Label("Schooljaar:"),
                         schooljaarComboBox,
                         new Label("Periode:"),
                         periodeComboBox,
+                        new Label("Doelgroep:"),
+                        doelgroepComboBox
+                );
+
+        filterBalk.setAlignment(
+                Pos.CENTER_LEFT
+        );
+
+
+        HBox actieBalk =
+                new HBox(
+                        12,
                         overzichtLadenButton,
                         automatischeVerdelingButton
                 );
 
-        selectieBalk.setAlignment(
+        actieBalk.setAlignment(
                 Pos.CENTER_LEFT
         );
+
+
+        VBox selectieBalk =
+                new VBox(
+                        10,
+                        filterBalk,
+                        actieBalk
+                );
 
         selectieBalk
                 .getStyleClass()
@@ -1385,9 +1458,9 @@ public class VerdelingView extends BorderPane {
     }
 
     private String formatteerDoelgroep(
-            IngerichtTalent ingerichtTalent
+            Doelgroep doelgroep
     ) {
-        return switch (ingerichtTalent.getDoelgroep()) {
+        return switch (doelgroep) {
             case OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB ->
                     "Observatie / opleidingsfase";
 
@@ -1610,6 +1683,15 @@ public class VerdelingView extends BorderPane {
         );
     }
 
+    public Doelgroep getGeselecteerdeDoelgroep() {
+        DoelgroepKeuze keuze =
+                doelgroepComboBox.getValue();
+
+        return keuze == null
+                ? null
+                : keuze.doelgroep();
+    }
+
     public void setWijzigingenToegestaan(
             boolean toegestaan
     ) {
@@ -1749,6 +1831,10 @@ public class VerdelingView extends BorderPane {
         return periodeComboBox;
     }
 
+    public ComboBox<DoelgroepKeuze> getDoelgroepComboBox() {
+        return doelgroepComboBox;
+    }
+
     public Button getOverzichtLadenButton() {
         return overzichtLadenButton;
     }
@@ -1793,5 +1879,11 @@ public class VerdelingView extends BorderPane {
 
     public Button getVerplaatsLeerlingButton() {
         return verplaatsLeerlingButton;
+    }
+
+    public record DoelgroepKeuze(
+            String label,
+            Doelgroep doelgroep
+    ) {
     }
 }

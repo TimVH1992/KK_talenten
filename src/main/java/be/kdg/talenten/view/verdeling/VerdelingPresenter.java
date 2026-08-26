@@ -1,6 +1,7 @@
 package be.kdg.talenten.view.verdeling;
 
 import be.kdg.talenten.config.ApplicationConfig;
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
@@ -64,8 +65,11 @@ public class VerdelingPresenter {
             );
         }
 
-        this.view = view;
-        this.terugNaarHoofdmenu = terugNaarHoofdmenu;
+        this.view =
+                view;
+
+        this.terugNaarHoofdmenu =
+                terugNaarHoofdmenu;
 
         this.schooljaarService =
                 config.getSchooljaarService();
@@ -108,13 +112,19 @@ public class VerdelingPresenter {
                                 schooljaarGewijzigd()
                 );
 
-        view.getOverzichtLadenButton()
+        view.getPeriodeComboBox()
                 .setOnAction(
                         event ->
                                 laadOverzicht()
                 );
 
-        view.getPeriodeComboBox()
+        view.getDoelgroepComboBox()
+                .setOnAction(
+                        event ->
+                                doelgroepGewijzigd()
+                );
+
+        view.getOverzichtLadenButton()
                 .setOnAction(
                         event ->
                                 laadOverzicht()
@@ -209,7 +219,8 @@ public class VerdelingPresenter {
 
     private void laadSchooljaren() {
         try {
-            schooljarenWordenGeladen = true;
+            schooljarenWordenGeladen =
+                    true;
 
             List<Schooljaar> schooljaren =
                     schooljaarService
@@ -220,28 +231,13 @@ public class VerdelingPresenter {
             );
 
             if (schooljaren.isEmpty()) {
+                wisAlleOverzichten();
+
                 view.setPeriodes(
                         List.of()
                 );
 
                 view.setKlassen(
-                        List.of()
-                );
-
-                view.setOverzichten(
-                        List.of()
-                );
-
-                view.setToewijzingen(
-                        null,
-                        List.of()
-                );
-
-                view.setKlasOverzicht(
-                        null
-                );
-
-                view.setNietToegewezenLeerlingen(
                         List.of()
                 );
 
@@ -286,7 +282,8 @@ public class VerdelingPresenter {
             );
 
         } finally {
-            schooljarenWordenGeladen = false;
+            schooljarenWordenGeladen =
+                    false;
         }
     }
 
@@ -309,22 +306,7 @@ public class VerdelingPresenter {
                     List.of()
             );
 
-            view.setOverzichten(
-                    List.of()
-            );
-
-            view.setToewijzingen(
-                    null,
-                    List.of()
-            );
-
-            view.setKlasOverzicht(
-                    null
-            );
-
-            view.setNietToegewezenLeerlingen(
-                    List.of()
-            );
+            wisAlleOverzichten();
 
             view.setExportToegestaan(
                     false
@@ -362,6 +344,23 @@ public class VerdelingPresenter {
         }
     }
 
+    private void doelgroepGewijzigd() {
+        Schooljaar schooljaar =
+                view
+                        .getSchooljaarComboBox()
+                        .getValue();
+
+        if (schooljaar == null) {
+            return;
+        }
+
+        laadKlassen(
+                schooljaar
+        );
+
+        laadOverzicht();
+    }
+
     private void laadGegevensVoorSchooljaar(
             Schooljaar schooljaar
     ) {
@@ -388,22 +387,7 @@ public class VerdelingPresenter {
         );
 
         if (periodes.isEmpty()) {
-            view.setOverzichten(
-                    List.of()
-            );
-
-            view.setToewijzingen(
-                    null,
-                    List.of()
-            );
-
-            view.setKlasOverzicht(
-                    null
-            );
-
-            view.setNietToegewezenLeerlingen(
-                    List.of()
-            );
+            wisAlleOverzichten();
 
             view.setExportToegestaan(
                     false
@@ -474,6 +458,9 @@ public class VerdelingPresenter {
     private void laadKlassen(
             Schooljaar schooljaar
     ) {
+        Doelgroep doelgroep =
+                view.getGeselecteerdeDoelgroep();
+
         view
                 .getKlasComboBox()
                 .getSelectionModel()
@@ -490,6 +477,13 @@ public class VerdelingPresenter {
                                                 .equals(
                                                         schooljaar
                                                 )
+                        )
+                        .filter(
+                                klas ->
+                                        doelgroep == null
+                                                || klas
+                                                .getDoelgroep()
+                                                == doelgroep
                         )
                         .sorted(
                                 Comparator.comparing(
@@ -522,6 +516,9 @@ public class VerdelingPresenter {
                         .getPeriodeComboBox()
                         .getValue();
 
+        Doelgroep doelgroep =
+                view.getGeselecteerdeDoelgroep();
+
         pasWijzigMogelijkhedenAan(
                 periode
         );
@@ -533,22 +530,7 @@ public class VerdelingPresenter {
         wisGeselecteerdeLeerling();
 
         if (periode == null) {
-            view.setOverzichten(
-                    List.of()
-            );
-
-            view.setToewijzingen(
-                    null,
-                    List.of()
-            );
-
-            view.setKlasOverzicht(
-                    null
-            );
-
-            view.setNietToegewezenLeerlingen(
-                    List.of()
-            );
+            wisAlleOverzichten();
 
             view.toonMelding(
                     "Selecteer eerst een talentenperiode."
@@ -561,13 +543,16 @@ public class VerdelingPresenter {
             List<IngerichtTalentOverzicht> overzichten =
                     verdelingBekijkenService
                             .bekijkPerIngerichtTalent(
-                                    periode
+                                    periode,
+                                    doelgroep
                             );
 
-            List<NietToegewezenLeerlingOverzicht> nietToegewezenLeerlingen =
+            List<NietToegewezenLeerlingOverzicht>
+                    nietToegewezenLeerlingen =
                     verdelingBekijkenService
                             .bekijkNietToegewezenLeerlingen(
-                                    periode
+                                    periode,
+                                    doelgroep
                             );
 
             view.setOverzichten(
@@ -587,7 +572,7 @@ public class VerdelingPresenter {
 
             if (overzichten.isEmpty()) {
                 view.toonMelding(
-                        "Voor deze periode zijn nog geen talenten ingericht."
+                        "Voor deze periode en doelgroep zijn geen actieve talenten ingericht."
                 );
 
                 return;
@@ -609,6 +594,10 @@ public class VerdelingPresenter {
             String melding =
                     "Overzicht geladen voor "
                             + periode.getNaam()
+                            + " — "
+                            + naamVanDoelgroep(
+                            doelgroep
+                    )
                             + ". "
                             + totaalToegewezen
                             + " leerlingen toegewezen. "
@@ -825,6 +814,27 @@ public class VerdelingPresenter {
         );
     }
 
+    private void wisAlleOverzichten() {
+        view.setOverzichten(
+                List.of()
+        );
+
+        view.setToewijzingen(
+                null,
+                List.of()
+        );
+
+        view.setKlasOverzicht(
+                null
+        );
+
+        view.setNietToegewezenLeerlingen(
+                List.of()
+        );
+
+        wisGeselecteerdeLeerling();
+    }
+
     private void voerAutomatischeVerdelingUit() {
         TalentenPeriode periode =
                 view
@@ -861,10 +871,19 @@ public class VerdelingPresenter {
                             ? "De bestaande automatische toewijzingen voor "
                             + periode.getNaam()
                             + " worden opnieuw berekend. "
-                            + "Manuele toewijzingen blijven behouden. Doorgaan?"
+                            + "Manuele toewijzingen blijven behouden."
                             : "De automatische verdeling voor "
                             + periode.getNaam()
-                            + " wordt uitgevoerd en opgeslagen. Doorgaan?";
+                            + " wordt uitgevoerd en opgeslagen.";
+
+            if (view.getGeselecteerdeDoelgroep() != null) {
+                boodschap +=
+                        "\n\nLet op: de gekozen doelgroep is alleen een filter voor het overzicht. "
+                                + "De automatische verdeling wordt voor alle doelgroepen uitgevoerd.";
+            }
+
+            boodschap +=
+                    "\n\nDoorgaan?";
 
             if (!view.vraagBevestiging(
                     "Automatische verdeling",
@@ -884,7 +903,7 @@ public class VerdelingPresenter {
             String melding =
                     resultaat.getAantalToewijzingen()
                             + " leerlingen automatisch toegewezen. "
-                            + "Niet toegewezen: "
+                            + "Niet toegewezen over alle doelgroepen: "
                             + resultaat
                             .getNietToegewezenLeerlingen()
                             .size()
@@ -954,6 +973,16 @@ public class VerdelingPresenter {
             return;
         }
 
+        if (geselecteerdeLeerling.getKlas().getDoelgroep()
+                != doelTalent.getDoelgroep()) {
+
+            view.toonFout(
+                    "De leerling kan niet worden toegewezen aan een talent van een andere doelgroep."
+            );
+
+            return;
+        }
+
         try {
             String leerlingNaam =
                     geselecteerdeLeerling.toString();
@@ -990,6 +1019,9 @@ public class VerdelingPresenter {
                         .getPeriodeComboBox()
                         .getValue();
 
+        Doelgroep doelgroep =
+                view.getGeselecteerdeDoelgroep();
+
         if (periode == null) {
             view.toonFout(
                     "Selecteer eerst een talentenperiode."
@@ -1004,6 +1036,9 @@ public class VerdelingPresenter {
                                 + maakVeiligeBestandsnaam(
                                 periode.getNaam()
                         )
+                                + maakDoelgroepBestandsSuffix(
+                                doelgroep
+                        )
                                 + ".xlsx"
                 );
 
@@ -1015,6 +1050,7 @@ public class VerdelingPresenter {
             verdelingExcelService
                     .exporteerPerIngerichtTalent(
                             periode,
+                            doelgroep,
                             bestand
                     );
 
@@ -1038,6 +1074,9 @@ public class VerdelingPresenter {
                         .getPeriodeComboBox()
                         .getValue();
 
+        Doelgroep doelgroep =
+                view.getGeselecteerdeDoelgroep();
+
         if (periode == null) {
             view.toonFout(
                     "Selecteer eerst een talentenperiode."
@@ -1052,6 +1091,9 @@ public class VerdelingPresenter {
                                 + maakVeiligeBestandsnaam(
                                 periode.getNaam()
                         )
+                                + maakDoelgroepBestandsSuffix(
+                                doelgroep
+                        )
                                 + ".xlsx"
                 );
 
@@ -1063,6 +1105,7 @@ public class VerdelingPresenter {
             verdelingExcelService
                     .exporteerPerKlas(
                             periode,
+                            doelgroep,
                             bestand
                     );
 
@@ -1159,6 +1202,22 @@ public class VerdelingPresenter {
                 : resultaat;
     }
 
+    private String naamVanDoelgroep(
+            Doelgroep doelgroep
+    ) {
+        if (doelgroep == null) {
+            return "alle doelgroepen";
+        }
+
+        return switch (doelgroep) {
+            case OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB ->
+                    "Observatie / opleidingsfase";
+
+            case KWALIFICATIEFASE_TWEEDEGRAAD_AB ->
+                    "Kwalificatiefase";
+        };
+    }
+
     private void pasWijzigMogelijkhedenAan(
             TalentenPeriode periode
     ) {
@@ -1191,5 +1250,20 @@ public class VerdelingPresenter {
                 .getClass()
                 .getSimpleName()
                 : exception.getMessage();
+    }
+    private String maakDoelgroepBestandsSuffix(
+            Doelgroep doelgroep
+    ) {
+        if (doelgroep == null) {
+            return "";
+        }
+
+        return switch (doelgroep) {
+            case OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB ->
+                    "-observatie-opleidingsfase";
+
+            case KWALIFICATIEFASE_TWEEDEGRAAD_AB ->
+                    "-kwalificatiefase";
+        };
     }
 }

@@ -1,5 +1,6 @@
 package be.kdg.talenten.service.verdeling;
 
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.IngerichtTalent;
 import be.kdg.talenten.domain.Klas;
 import be.kdg.talenten.domain.Leerling;
@@ -63,12 +64,27 @@ public class VerdelingExcelService {
             );
         }
 
-        this.verdelingBekijkenService = verdelingBekijkenService;
-        this.klasService = klasService;
+        this.verdelingBekijkenService =
+                verdelingBekijkenService;
+
+        this.klasService =
+                klasService;
     }
 
     public void exporteerPerIngerichtTalent(
             TalentenPeriode periode,
+            Path bestand
+    ) {
+        exporteerPerIngerichtTalent(
+                periode,
+                null,
+                bestand
+        );
+    }
+
+    public void exporteerPerIngerichtTalent(
+            TalentenPeriode periode,
+            Doelgroep doelgroep,
             Path bestand
     ) {
         valideerExport(
@@ -79,12 +95,14 @@ public class VerdelingExcelService {
         List<IngerichtTalentOverzicht> overzichten =
                 verdelingBekijkenService
                         .bekijkPerIngerichtTalent(
-                                periode
+                                periode,
+                                doelgroep
                         );
 
         List<Klas> klassen =
                 geefKlassenVoorPeriode(
-                        periode
+                        periode,
+                        doelgroep
                 );
 
         Map<String, Klas> historischeKlasPerLeerling =
@@ -93,16 +111,20 @@ public class VerdelingExcelService {
                         klassen
                 );
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook();
+        try (XSSFWorkbook workbook =
+                     new XSSFWorkbook();
              OutputStream outputStream =
                      Files.newOutputStream(bestand)) {
 
             ExcelStijlen stijlen =
-                    maakStijlen(workbook);
+                    maakStijlen(
+                            workbook
+                    );
 
             maakTalentSamenvatting(
                     workbook,
                     periode,
+                    doelgroep,
                     overzichten,
                     stijlen
             );
@@ -114,7 +136,9 @@ public class VerdelingExcelService {
                     "Overzicht"
             );
 
-            for (IngerichtTalentOverzicht overzicht : overzichten) {
+            for (IngerichtTalentOverzicht overzicht :
+                    overzichten) {
+
                 maakTalentSheet(
                         workbook,
                         periode,
@@ -125,7 +149,9 @@ public class VerdelingExcelService {
                 );
             }
 
-            workbook.write(outputStream);
+            workbook.write(
+                    outputStream
+            );
 
         } catch (IOException e) {
             throw new IllegalStateException(
@@ -139,6 +165,18 @@ public class VerdelingExcelService {
             TalentenPeriode periode,
             Path bestand
     ) {
+        exporteerPerKlas(
+                periode,
+                null,
+                bestand
+        );
+    }
+
+    public void exporteerPerKlas(
+            TalentenPeriode periode,
+            Doelgroep doelgroep,
+            Path bestand
+    ) {
         valideerExport(
                 periode,
                 bestand
@@ -146,15 +184,19 @@ public class VerdelingExcelService {
 
         List<Klas> klassen =
                 geefKlassenVoorPeriode(
-                        periode
+                        periode,
+                        doelgroep
                 );
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook();
+        try (XSSFWorkbook workbook =
+                     new XSSFWorkbook();
              OutputStream outputStream =
                      Files.newOutputStream(bestand)) {
 
             ExcelStijlen stijlen =
-                    maakStijlen(workbook);
+                    maakStijlen(
+                            workbook
+                    );
 
             Set<String> gebruikteSheetNamen =
                     new HashSet<>();
@@ -164,9 +206,13 @@ public class VerdelingExcelService {
                         workbook,
                         "Geen klassen",
                         "Er zijn geen klassen gevonden voor "
-                                + periode.getSchooljaar().getNaam(),
+                                + periode.getSchooljaar().getNaam()
+                                + " binnen "
+                                + formatteerDoelgroepFilter(doelgroep)
+                                + ".",
                         stijlen
                 );
+
             } else {
                 for (Klas klas : klassen) {
                     KlasOverzicht overzicht =
@@ -185,7 +231,9 @@ public class VerdelingExcelService {
                 }
             }
 
-            workbook.write(outputStream);
+            workbook.write(
+                    outputStream
+            );
 
         } catch (IOException e) {
             throw new IllegalStateException(
@@ -198,6 +246,7 @@ public class VerdelingExcelService {
     private void maakTalentSamenvatting(
             XSSFWorkbook workbook,
             TalentenPeriode periode,
+            Doelgroep doelgroep,
             List<IngerichtTalentOverzicht> overzichten,
             ExcelStijlen stijlen
     ) {
@@ -217,7 +266,9 @@ public class VerdelingExcelService {
                 sheet,
                 1,
                 "Periode",
-                formatteerPeriode(periode),
+                formatteerPeriode(
+                        periode
+                ),
                 stijlen,
                 4
         );
@@ -226,12 +277,26 @@ public class VerdelingExcelService {
                 sheet,
                 2,
                 "Schooljaar",
-                periode.getSchooljaar().getNaam(),
+                periode
+                        .getSchooljaar()
+                        .getNaam(),
                 stijlen,
                 4
         );
 
-        int headerRij = 4;
+        schrijfInfoRij(
+                sheet,
+                3,
+                "Doelgroep",
+                formatteerDoelgroepFilter(
+                        doelgroep
+                ),
+                stijlen,
+                4
+        );
+
+        int headerRij =
+                5;
 
         Row header =
                 sheet.createRow(
@@ -276,7 +341,9 @@ public class VerdelingExcelService {
         int rijIndex =
                 headerRij + 1;
 
-        for (IngerichtTalentOverzicht overzicht : overzichten) {
+        for (IngerichtTalentOverzicht overzicht :
+                overzichten) {
+
             Row row =
                     sheet.createRow(
                             rijIndex++
@@ -325,24 +392,46 @@ public class VerdelingExcelService {
             );
         }
 
-        sheet.setColumnWidth(0, 34 * 256);
-        sheet.setColumnWidth(1, 14 * 256);
-        sheet.setColumnWidth(2, 14 * 256);
-        sheet.setColumnWidth(3, 16 * 256);
-        sheet.setColumnWidth(4, 38 * 256);
+        sheet.setColumnWidth(
+                0,
+                34 * 256
+        );
+
+        sheet.setColumnWidth(
+                1,
+                14 * 256
+        );
+
+        sheet.setColumnWidth(
+                2,
+                14 * 256
+        );
+
+        sheet.setColumnWidth(
+                3,
+                16 * 256
+        );
+
+        sheet.setColumnWidth(
+                4,
+                38 * 256
+        );
 
         sheet.createFreezePane(
                 0,
                 headerRij + 1
         );
 
-        sheet.setDisplayGridlines(false);
+        sheet.setDisplayGridlines(
+                false
+        );
 
         if (!overzichten.isEmpty()) {
             sheet.setAutoFilter(
                     new CellRangeAddress(
                             headerRij,
-                            headerRij + overzichten.size(),
+                            headerRij
+                                    + overzichten.size(),
                             0,
                             4
                     )
@@ -383,7 +472,9 @@ public class VerdelingExcelService {
                 sheet,
                 1,
                 "Periode",
-                formatteerPeriode(periode),
+                formatteerPeriode(
+                        periode
+                ),
                 stijlen,
                 2
         );
@@ -441,7 +532,8 @@ public class VerdelingExcelService {
                         .comparing(
                                 (Toewijzing toewijzing) ->
                                         geefHistorischeKlasNaam(
-                                                toewijzing.getLeerling(),
+                                                toewijzing
+                                                        .getLeerling(),
                                                 historischeKlasPerLeerling
                                         )
                         )
@@ -462,7 +554,9 @@ public class VerdelingExcelService {
         int rijIndex =
                 headerRij + 1;
 
-        for (Toewijzing toewijzing : toewijzingen) {
+        for (Toewijzing toewijzing :
+                toewijzingen) {
+
             Row row =
                     sheet.createRow(
                             rijIndex++
@@ -525,22 +619,36 @@ public class VerdelingExcelService {
             );
         }
 
-        sheet.setColumnWidth(0, 22 * 256);
-        sheet.setColumnWidth(1, 28 * 256);
-        sheet.setColumnWidth(2, 16 * 256);
+        sheet.setColumnWidth(
+                0,
+                22 * 256
+        );
+
+        sheet.setColumnWidth(
+                1,
+                28 * 256
+        );
+
+        sheet.setColumnWidth(
+                2,
+                16 * 256
+        );
 
         sheet.createFreezePane(
                 0,
                 headerRij + 1
         );
 
-        sheet.setDisplayGridlines(false);
+        sheet.setDisplayGridlines(
+                false
+        );
 
         if (!toewijzingen.isEmpty()) {
             sheet.setAutoFilter(
                     new CellRangeAddress(
                             headerRij,
-                            headerRij + toewijzingen.size(),
+                            headerRij
+                                    + toewijzingen.size(),
                             0,
                             2
                     )
@@ -582,7 +690,9 @@ public class VerdelingExcelService {
                 sheet,
                 1,
                 "Periode",
-                formatteerPeriode(periode),
+                formatteerPeriode(
+                        periode
+                ),
                 stijlen,
                 2
         );
@@ -592,7 +702,9 @@ public class VerdelingExcelService {
                 2,
                 "Doelgroep",
                 formatteerDoelgroep(
-                        klas.getDoelgroep().name()
+                        klas
+                                .getDoelgroep()
+                                .name()
                 ),
                 stijlen,
                 2
@@ -651,7 +763,9 @@ public class VerdelingExcelService {
         int rijIndex =
                 headerRij + 1;
 
-        for (LeerlingToewijzingOverzicht leerlingOverzicht : leerlingen) {
+        for (LeerlingToewijzingOverzicht leerlingOverzicht :
+                leerlingen) {
+
             Leerling leerling =
                     leerlingOverzicht.leerling();
 
@@ -723,22 +837,36 @@ public class VerdelingExcelService {
             );
         }
 
-        sheet.setColumnWidth(0, 22 * 256);
-        sheet.setColumnWidth(1, 28 * 256);
-        sheet.setColumnWidth(2, 42 * 256);
+        sheet.setColumnWidth(
+                0,
+                22 * 256
+        );
+
+        sheet.setColumnWidth(
+                1,
+                28 * 256
+        );
+
+        sheet.setColumnWidth(
+                2,
+                42 * 256
+        );
 
         sheet.createFreezePane(
                 0,
                 headerRij + 1
         );
 
-        sheet.setDisplayGridlines(false);
+        sheet.setDisplayGridlines(
+                false
+        );
 
         if (!leerlingen.isEmpty()) {
             sheet.setAutoFilter(
                     new CellRangeAddress(
                             headerRij,
-                            headerRij + leerlingen.size(),
+                            headerRij
+                                    + leerlingen.size(),
                             0,
                             2
                     )
@@ -747,16 +875,25 @@ public class VerdelingExcelService {
     }
 
     private List<Klas> geefKlassenVoorPeriode(
-            TalentenPeriode periode
+            TalentenPeriode periode,
+            Doelgroep doelgroep
     ) {
         return klasService
                 .geefAlleKlassen()
                 .stream()
-                .filter(klas ->
-                        klas.getSchooljaar()
-                                .equals(
-                                        periode.getSchooljaar()
-                                )
+                .filter(
+                        klas ->
+                                klas
+                                        .getSchooljaar()
+                                        .equals(
+                                                periode.getSchooljaar()
+                                        )
+                )
+                .filter(
+                        klas ->
+                                doelgroep == null
+                                        || klas.getDoelgroep()
+                                        == doelgroep
                 )
                 .sorted(
                         Comparator.comparing(
@@ -816,7 +953,8 @@ public class VerdelingExcelService {
             Leerling leerling
     ) {
         if (leerling.getId() != null) {
-            return "ID:" + leerling.getId();
+            return "ID:"
+                    + leerling.getId();
         }
 
         return "NAAM:"
@@ -847,11 +985,29 @@ public class VerdelingExcelService {
     ) {
         return periode.getNaam()
                 + " · "
-                + periode.getStartDatum()
-                .format(DATUM_FORMATTER)
+                + periode
+                .getStartDatum()
+                .format(
+                        DATUM_FORMATTER
+                )
                 + " - "
-                + periode.getEindDatum()
-                .format(DATUM_FORMATTER);
+                + periode
+                .getEindDatum()
+                .format(
+                        DATUM_FORMATTER
+                );
+    }
+
+    private String formatteerDoelgroepFilter(
+            Doelgroep doelgroep
+    ) {
+        if (doelgroep == null) {
+            return "Alle doelgroepen";
+        }
+
+        return formatteerDoelgroep(
+                doelgroep.name()
+        );
     }
 
     private String formatteerDoelgroep(
@@ -1109,7 +1265,8 @@ public class VerdelingExcelService {
 
         if (basisNaam == null
                 || basisNaam.isBlank()) {
-            basisNaam = "Overzicht";
+            basisNaam =
+                    "Overzicht";
         }
 
         if (!gebruikteNamen.contains(
@@ -1122,14 +1279,16 @@ public class VerdelingExcelService {
             return basisNaam;
         }
 
-        int nummer = 2;
+        int nummer =
+                2;
 
         while (true) {
             String suffix =
                     " (" + nummer + ")";
 
             int maximaleBasisLengte =
-                    31 - suffix.length();
+                    31
+                            - suffix.length();
 
             String ingekorteBasis =
                     basisNaam.length()
@@ -1141,7 +1300,8 @@ public class VerdelingExcelService {
                             : basisNaam;
 
             String kandidaat =
-                    ingekorteBasis + suffix;
+                    ingekorteBasis
+                            + suffix;
 
             if (!gebruikteNamen.contains(
                     kandidaat
@@ -1180,25 +1340,37 @@ public class VerdelingExcelService {
         Font font =
                 workbook.createFont();
 
-        font.setBold(true);
-        font.setFontHeightInPoints((short) 16);
+        font.setBold(
+                true
+        );
+
+        font.setFontHeightInPoints(
+                (short) 16
+        );
+
         font.setColor(
                 IndexedColors.WHITE.getIndex()
         );
 
-        style.setFont(font);
+        style.setFont(
+                font
+        );
+
         style.setAlignment(
                 HorizontalAlignment.LEFT
         );
+
         style.setVerticalAlignment(
                 VerticalAlignment.CENTER
         );
+
         style.setFillForegroundColor(
                 new XSSFColor(
                         PETROL_DONKER,
                         null
                 )
         );
+
         style.setFillPattern(
                 FillPatternType.SOLID_FOREGROUND
         );
@@ -1215,29 +1387,40 @@ public class VerdelingExcelService {
         Font font =
                 workbook.createFont();
 
-        font.setBold(true);
+        font.setBold(
+                true
+        );
+
         font.setColor(
                 IndexedColors.WHITE.getIndex()
         );
 
-        style.setFont(font);
+        style.setFont(
+                font
+        );
+
         style.setAlignment(
                 HorizontalAlignment.CENTER
         );
+
         style.setVerticalAlignment(
                 VerticalAlignment.CENTER
         );
+
         style.setFillForegroundColor(
                 new XSSFColor(
                         PETROL_DONKER,
                         null
                 )
         );
+
         style.setFillPattern(
                 FillPatternType.SOLID_FOREGROUND
         );
 
-        voegRandenToe(style);
+        voegRandenToe(
+                style
+        );
 
         return style;
     }
@@ -1263,7 +1446,9 @@ public class VerdelingExcelService {
                 FillPatternType.SOLID_FOREGROUND
         );
 
-        voegRandenToe(style);
+        voegRandenToe(
+                style
+        );
 
         return style;
     }
@@ -1277,9 +1462,14 @@ public class VerdelingExcelService {
         Font font =
                 workbook.createFont();
 
-        font.setBold(true);
+        font.setBold(
+                true
+        );
 
-        style.setFont(font);
+        style.setFont(
+                font
+        );
+
         style.setVerticalAlignment(
                 VerticalAlignment.CENTER
         );
@@ -1295,7 +1485,9 @@ public class VerdelingExcelService {
                 FillPatternType.SOLID_FOREGROUND
         );
 
-        voegRandenToe(style);
+        voegRandenToe(
+                style
+        );
 
         return style;
     }
@@ -1321,7 +1513,9 @@ public class VerdelingExcelService {
                 FillPatternType.SOLID_FOREGROUND
         );
 
-        voegRandenToe(style);
+        voegRandenToe(
+                style
+        );
 
         return style;
     }
@@ -1335,12 +1529,18 @@ public class VerdelingExcelService {
         Font font =
                 workbook.createFont();
 
-        font.setItalic(true);
+        font.setItalic(
+                true
+        );
+
         font.setColor(
                 IndexedColors.GREY_50_PERCENT.getIndex()
         );
 
-        style.setFont(font);
+        style.setFont(
+                font
+        );
+
         style.setVerticalAlignment(
                 VerticalAlignment.CENTER
         );
@@ -1380,7 +1580,9 @@ public class VerdelingExcelService {
                 FillPatternType.SOLID_FOREGROUND
         );
 
-        voegRandenToe(style);
+        voegRandenToe(
+                style
+        );
 
         return style;
     }
