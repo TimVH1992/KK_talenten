@@ -62,7 +62,7 @@ public class LeerlingenBulkView extends BorderPane {
         kaart.setMaxWidth(980);
         kaart.setPadding(new Insets(20));
         kaart.getStyleClass().add("content-card");
-        plakVeld.setPromptText("Voornaam\tAchternaam\nJan\tPeeters");
+        plakVeld.setPromptText("Plak hier de Excelkolommen Voornaam | Achternaam");
         plakVeld.setPrefRowCount(10);
         plakVeld.setMinHeight(250);
         plakVeld.setWrapText(false);

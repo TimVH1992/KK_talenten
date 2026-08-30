@@ -24,6 +24,7 @@ public class LeerlingView extends BorderPane {
     private final Button wijzigenButton = new Button("Wijzigen");
     private final Button klasWijzigenButton = new Button("Klas wijzigen");
     private final Button actiefWijzigenButton = new Button("Deactiveren");
+    private final Label zichtbaarheidLabel = new Label();
     private final Label statusLabel = new Label();
 
     public LeerlingView() {
@@ -113,28 +114,36 @@ public class LeerlingView extends BorderPane {
         tabelTitel.getStyleClass().add("card-section-title");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        toevoegenButton.getStyleClass().add("primary-button");
-        tabelHeader.getChildren().addAll(tabelTitel, spacer, toevoegenButton);
-
-        tabel.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-        tabel.setPlaceholder(new Label("Geen leerlingen gevonden."));
-        tabel.setMinHeight(440);
-        VBox.setVgrow(tabel, Priority.ALWAYS);
-
-        HBox acties = new HBox(12);
-        acties.setAlignment(Pos.CENTER_RIGHT);
         wijzigenButton.getStyleClass().add("secondary-button");
         klasWijzigenButton.getStyleClass().add("secondary-button");
         actiefWijzigenButton.getStyleClass().add("secondary-button");
         wijzigSelectieActies(false, true);
-        acties.getChildren().addAll(wijzigenButton, klasWijzigenButton, actiefWijzigenButton);
+        toevoegenButton.getStyleClass().add("primary-button");
+        tabelHeader.getChildren().addAll(
+                tabelTitel,
+                spacer,
+                wijzigenButton,
+                klasWijzigenButton,
+                actiefWijzigenButton,
+                toevoegenButton
+        );
+
+        tabel.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tabel.setPlaceholder(new Label("Geen leerlingen gevonden."));
+        tabel.setMinHeight(265);
+        tabel.setPrefHeight(265);
+        tabel.setMaxHeight(265);
+        VBox.setVgrow(tabel, Priority.ALWAYS);
 
         statusLabel.setWrapText(true);
         statusLabel.getStyleClass().add("status-message");
         statusLabel.setVisible(false);
         statusLabel.setManaged(false);
 
-        tabelKaart.getChildren().addAll(tabelHeader, tabel, acties, statusLabel);
+        zichtbaarheidLabel.setWrapText(true);
+        zichtbaarheidLabel.getStyleClass().add("content-subtitle");
+
+        tabelKaart.getChildren().addAll(tabelHeader, tabel, zichtbaarheidLabel, statusLabel);
         inhoud.getChildren().addAll(intro, filters, tabelKaart);
         return inhoud;
     }
@@ -153,7 +162,7 @@ public class LeerlingView extends BorderPane {
         uitleg.setWrapText(true);
         uitleg.getStyleClass().add("content-subtitle");
 
-        plakVeld.setPromptText("Voornaam\tAchternaam\nJan\tPeeters");
+        plakVeld.setPromptText("Plak hier de Excelkolommen Voornaam | Achternaam");
         plakVeld.setPrefRowCount(3);
         plakVeld.setWrapText(false);
 
@@ -194,7 +203,7 @@ public class LeerlingView extends BorderPane {
 
         TableColumn<Leerling, String> statusKolom = new TableColumn<>("Status");
         statusKolom.setCellValueFactory(data ->
-                new ReadOnlyStringWrapper(data.getValue().isActief() ? "Actief" : "Inactief")
+                new ReadOnlyStringWrapper(data.getValue().isActief() ? "Neemt deel" : "Inactief")
         );
         statusKolom.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -206,7 +215,7 @@ public class LeerlingView extends BorderPane {
                     return;
                 }
                 setText(item);
-                getStyleClass().add(item.equals("Actief") ? "status-active" : "status-inactive");
+                getStyleClass().add(item.equals("Neemt deel") ? "status-active" : "status-inactive");
             }
         });
 
@@ -240,6 +249,18 @@ public class LeerlingView extends BorderPane {
     public Button getWijzigenButton() { return wijzigenButton; }
     public Button getKlasWijzigenButton() { return klasWijzigenButton; }
     public Button getActiefWijzigenButton() { return actiefWijzigenButton; }
+
+    public void toonAantalLeerlingen(int aantal) {
+        if (aantal > 5) {
+            zichtbaarheidLabel.setText(
+                    "5 van " + aantal + " leerlingen zichtbaar — scroll om de overige leerlingen te bekijken."
+            );
+        } else if (aantal == 1) {
+            zichtbaarheidLabel.setText("1 leerling zichtbaar.");
+        } else {
+            zichtbaarheidLabel.setText(aantal + " leerlingen zichtbaar.");
+        }
+    }
 
     public void toonPlakValidatie(String boodschap, boolean fout, boolean kanOpslaan) {
         validatieLabel.setText(boodschap);

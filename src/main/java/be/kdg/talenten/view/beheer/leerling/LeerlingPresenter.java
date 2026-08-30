@@ -12,10 +12,22 @@ import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.beheer.BeheerView;
 import be.kdg.talenten.view.theme.ThemeManager;
 import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.time.LocalDate;
 
 public class LeerlingPresenter {
     private final LeerlingView view;
@@ -75,6 +87,10 @@ public class LeerlingPresenter {
         });
         view.getValiderenButton().setOnAction(event -> valideerPlakGegevens());
         view.getBulkToevoegenButton().setOnAction(event -> voegLeerlingenInBulkToe());
+        view.getToevoegenButton().setOnAction(event -> voegLeerlingToe());
+        view.getWijzigenButton().setOnAction(event -> wijzigLeerling());
+        view.getKlasWijzigenButton().setOnAction(event -> wijzigKlas());
+        view.getActiefWijzigenButton().setOnAction(event -> wijzigActieveStatus());
         view.getTabel().getSelectionModel().selectedItemProperty().addListener(
                 (observable, oud, geselecteerd) -> view.wijzigSelectieActies(
                         geselecteerd != null,
@@ -113,6 +129,7 @@ public class LeerlingPresenter {
             view.getKlasComboBox().setItems(FXCollections.observableArrayList());
             leerlingenVoorSchooljaar = List.of();
             view.getTabel().setItems(FXCollections.observableArrayList());
+            view.toonAantalLeerlingen(0);
             return;
         }
         try {
@@ -131,6 +148,7 @@ public class LeerlingPresenter {
         } catch (RuntimeException exception) {
             leerlingenVoorSchooljaar = List.of();
             view.getTabel().setItems(FXCollections.observableArrayList());
+            view.toonAantalLeerlingen(0);
             view.toonStatus("De leerlingen konden niet geladen worden. Controleer de databankverbinding.", true);
         }
     }
@@ -147,7 +165,193 @@ public class LeerlingPresenter {
                         || (leerling.getVoornaam() + " " + leerling.getAchternaam()).toLowerCase().contains(zoekterm))
                 .toList();
         view.getTabel().setItems(FXCollections.observableArrayList(gefilterd));
+        view.toonAantalLeerlingen(gefilterd.size());
         view.getTabel().refresh();
+    }
+
+    private void voegLeerlingToe() {
+        Klas klas = view.getKlasComboBox().getValue();
+        if (klas == null) {
+            view.toonStatus("Selecteer eerst een klas.", true);
+            return;
+        }
+
+        toonLeerlingDialoog(klas).ifPresent(invoer -> {
+            try {
+                Leerling toegevoegd = leerlingService.maakLeerling(
+                        invoer.voornaam(),
+                        invoer.achternaam(),
+                        klas
+                );
+                herlaadLeerlingenEnSelecteer(toegevoegd);
+                view.toonStatus(
+                        toegevoegd.getVoornaam() + " " + toegevoegd.getAchternaam() + " is toegevoegd.",
+                        false
+                );
+            } catch (RuntimeException exception) {
+                view.toonStatus(
+                        exception.getMessage() == null || exception.getMessage().isBlank()
+                                ? "De leerling kon niet toegevoegd worden."
+                                : exception.getMessage(),
+                        true
+                );
+            }
+        });
+    }
+
+    private Optional<LeerlingInvoer> toonLeerlingDialoog(Klas klas) {
+        Dialog<LeerlingInvoer> dialoog = new Dialog<>();
+        dialoog.setTitle("Leerling toevoegen");
+        dialoog.setHeaderText("Leerling toevoegen aan klas " + klas.getNaam());
+        dialoog.initOwner(scene.getWindow());
+        dialoog.getDialogPane().getStyleClass().add("app-dialog");
+        dialoog.getDialogPane().getStylesheets().setAll(scene.getStylesheets());
+
+        ButtonType opslaan = new ButtonType("Opslaan", ButtonBar.ButtonData.OK_DONE);
+        dialoog.getDialogPane().getButtonTypes().addAll(opslaan, ButtonType.CANCEL);
+
+        TextField voornaam = new TextField();
+        voornaam.setPromptText("Voornaam");
+        TextField achternaam = new TextField();
+        achternaam.setPromptText("Achternaam");
+
+        GridPane formulier = new GridPane();
+        formulier.setHgap(12);
+        formulier.setVgap(12);
+        formulier.setPadding(new Insets(8, 0, 4, 0));
+        formulier.addRow(0, new Label("Voornaam"), voornaam);
+        formulier.addRow(1, new Label("Achternaam"), achternaam);
+        dialoog.getDialogPane().setContent(formulier);
+        dialoog.setResultConverter(knop -> knop == opslaan
+                ? new LeerlingInvoer(voornaam.getText(), achternaam.getText())
+                : null
+        );
+        return dialoog.showAndWait();
+    }
+
+    private void wijzigLeerling() {
+        Leerling leerling = view.getTabel().getSelectionModel().getSelectedItem();
+        if (leerling == null) return;
+
+        toonWijzigLeerlingDialoog(leerling).ifPresent(invoer -> {
+            try {
+                leerlingService.wijzigLeerling(leerling, invoer.voornaam(), invoer.achternaam());
+                herlaadLeerlingenEnSelecteer(leerling);
+                view.toonStatus("De gegevens van " + leerling + " zijn gewijzigd.", false);
+            } catch (RuntimeException exception) {
+                view.toonStatus(boodschap(exception, "De leerling kon niet gewijzigd worden."), true);
+            }
+        });
+    }
+
+    private Optional<LeerlingInvoer> toonWijzigLeerlingDialoog(Leerling leerling) {
+        Dialog<LeerlingInvoer> dialoog = new Dialog<>();
+        configureerDialoog(dialoog, "Leerling wijzigen", "Gegevens van " + leerling + " wijzigen");
+        ButtonType opslaan = new ButtonType("Opslaan", ButtonBar.ButtonData.OK_DONE);
+        dialoog.getDialogPane().getButtonTypes().addAll(opslaan, ButtonType.CANCEL);
+        TextField voornaam = new TextField(leerling.getVoornaam());
+        TextField achternaam = new TextField(leerling.getAchternaam());
+        GridPane formulier = maakFormulier();
+        formulier.addRow(0, new Label("Voornaam"), voornaam);
+        formulier.addRow(1, new Label("Achternaam"), achternaam);
+        dialoog.getDialogPane().setContent(formulier);
+        dialoog.setResultConverter(knop -> knop == opslaan
+                ? new LeerlingInvoer(voornaam.getText(), achternaam.getText()) : null);
+        return dialoog.showAndWait();
+    }
+
+    private void wijzigKlas() {
+        Leerling leerling = view.getTabel().getSelectionModel().getSelectedItem();
+        if (leerling == null) return;
+
+        toonKlasWijzigDialoog(leerling).ifPresent(invoer -> {
+            try {
+                leerlingService.wijzigKlas(leerling, invoer.klas(), invoer.wisseldatum());
+                herlaadLeerlingenEnSelecteer(leerling);
+                view.toonStatus(leerling + " is verplaatst naar klas " + invoer.klas().getNaam() + ".", false);
+            } catch (RuntimeException exception) {
+                view.toonStatus(boodschap(exception, "De klas kon niet gewijzigd worden."), true);
+            }
+        });
+    }
+
+    private Optional<KlasWijzigInvoer> toonKlasWijzigDialoog(Leerling leerling) {
+        Dialog<KlasWijzigInvoer> dialoog = new Dialog<>();
+        configureerDialoog(dialoog, "Klas wijzigen", "Klas van " + leerling + " wijzigen");
+        ButtonType opslaan = new ButtonType("Opslaan", ButtonBar.ButtonData.OK_DONE);
+        dialoog.getDialogPane().getButtonTypes().addAll(opslaan, ButtonType.CANCEL);
+
+        ComboBox<Klas> klas = new ComboBox<>(view.getKlasComboBox().getItems());
+        klas.setEditable(false);
+        klas.setMaxWidth(Double.MAX_VALUE);
+        klas.setValue(leerling.getKlas());
+        DatePicker wisseldatum = new DatePicker(LocalDate.now());
+        wisseldatum.setMaxWidth(Double.MAX_VALUE);
+
+        GridPane formulier = maakFormulier();
+        formulier.addRow(0, new Label("Nieuwe klas"), klas);
+        formulier.addRow(1, new Label("Wisseldatum"), wisseldatum);
+        dialoog.getDialogPane().setContent(formulier);
+        dialoog.setResultConverter(knop -> knop == opslaan
+                ? new KlasWijzigInvoer(klas.getValue(), wisseldatum.getValue()) : null);
+        return dialoog.showAndWait();
+    }
+
+    private void wijzigActieveStatus() {
+        Leerling leerling = view.getTabel().getSelectionModel().getSelectedItem();
+        if (leerling == null) return;
+        String actie = leerling.isActief() ? "deactiveren" : "activeren";
+        Alert bevestiging = new Alert(Alert.AlertType.CONFIRMATION,
+                "Wilt u " + leerling + " " + actie + "?", ButtonType.OK, ButtonType.CANCEL);
+        bevestiging.setTitle("Leerling " + actie);
+        bevestiging.setHeaderText("Actieve status wijzigen");
+        bevestiging.initOwner(scene.getWindow());
+        if (bevestiging.showAndWait().filter(ButtonType.OK::equals).isEmpty()) return;
+
+        try {
+            if (leerling.isActief()) leerlingService.deactiveerLeerling(leerling);
+            else leerlingService.activeerLeerling(leerling);
+            herlaadLeerlingenEnSelecteer(leerling);
+            view.toonStatus(leerling + " is " + (leerling.isActief() ? "geactiveerd." : "gedeactiveerd."), false);
+        } catch (RuntimeException exception) {
+            view.toonStatus(boodschap(exception, "De status kon niet gewijzigd worden."), true);
+        }
+    }
+
+    private <T> void configureerDialoog(Dialog<T> dialoog, String titel, String header) {
+        dialoog.setTitle(titel);
+        dialoog.setHeaderText(header);
+        dialoog.initOwner(scene.getWindow());
+        dialoog.getDialogPane().getStyleClass().add("app-dialog");
+        dialoog.getDialogPane().getStylesheets().setAll(scene.getStylesheets());
+    }
+
+    private GridPane maakFormulier() {
+        GridPane formulier = new GridPane();
+        formulier.setHgap(12);
+        formulier.setVgap(12);
+        formulier.setPadding(new Insets(8, 0, 4, 0));
+        return formulier;
+    }
+
+    private void herlaadLeerlingenEnSelecteer(Leerling teSelecteren) {
+        Schooljaar schooljaar = view.getSchooljaarComboBox().getValue();
+        if (schooljaar == null) return;
+        leerlingenVoorSchooljaar = leerlingService.geefLeerlingenVoorSchooljaar(schooljaar).stream()
+                .sorted(Comparator.comparing((Leerling leerling) -> leerling.getKlas().getNaam())
+                        .thenComparing(Leerling::getAchternaam)
+                        .thenComparing(Leerling::getVoornaam))
+                .toList();
+        view.getKlasComboBox().getItems().stream()
+                .filter(klas -> klas.equals(teSelecteren.getKlas()))
+                .findFirst()
+                .ifPresent(klas -> view.getKlasComboBox().setValue(klas));
+        view.getZoekVeld().clear();
+        filterLeerlingen();
+        view.getTabel().getItems().stream()
+                .filter(leerling -> leerling.getId() != null && leerling.getId().equals(teSelecteren.getId()))
+                .findFirst()
+                .ifPresent(leerling -> view.getTabel().getSelectionModel().select(leerling));
     }
 
     private void valideerPlakGegevens() {
@@ -192,10 +396,21 @@ public class LeerlingPresenter {
         return eerste.equals(tweede);
     }
 
+    private String boodschap(RuntimeException exception, String standaard) {
+        return exception.getMessage() == null || exception.getMessage().isBlank()
+                ? standaard : exception.getMessage();
+    }
+
     private void toggleTheme() {
         themeManager.toggle(scene);
         boolean dark = themeManager.isDark();
         view.updateThemeIcon(dark);
         beheerView.updateThemeIcon(dark);
+    }
+
+    private record LeerlingInvoer(String voornaam, String achternaam) {
+    }
+
+    private record KlasWijzigInvoer(Klas klas, LocalDate wisseldatum) {
     }
 }
