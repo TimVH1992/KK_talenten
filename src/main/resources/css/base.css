@@ -1,0 +1,127 @@
+.app-root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.top-banner {
+    -fx-min-height: 132px;
+    -fx-pref-height: 132px;
+}
+
+.app-title {
+    -fx-font-size: 44px;
+    -fx-font-weight: 700;
+}
+
+.welcome-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+}
+
+.welcome-subtitle {
+    -fx-font-size: 15px;
+}
+
+.dashboard-card {
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 22px;
+}
+
+.dashboard-card:hover {
+    -fx-translate-y: -2px;
+}
+
+.card-icon {
+    -fx-font-size: 40px;
+    -fx-font-weight: 700;
+}
+
+.card-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+}
+
+.card-subtitle {
+    -fx-font-size: 14px;
+}
+
+.theme-toggle {
+    -fx-min-width: 44px;
+    -fx-min-height: 44px;
+    -fx-background-radius: 22px;
+    -fx-font-size: 20px;
+    -fx-cursor: hand;
+}
+
+.info-bar {
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+}
+
+.info-icon {
+    -fx-font-size: 21px;
+    -fx-font-weight: 700;
+}
+
+.info-text {
+    -fx-font-size: 13.5px;
+}
+
+.section-header {
+    -fx-min-height: 76px;
+    -fx-pref-height: 76px;
+}
+
+.section-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 700;
+}
+
+.secondary-button {
+    -fx-background-radius: 9px;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-padding: 9px 14px;
+}
+
+.manage-card {
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-cursor: hand;
+    -fx-padding: 16px 20px;
+    -fx-min-height: 74px;
+}
+
+.manage-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+}
+
+.manage-subtitle {
+    -fx-font-size: 13px;
+}
+
+.manage-arrow {
+    -fx-font-size: 28px;
+    -fx-padding: 0 4px 0 20px;
+}
+
+.placeholder-icon {
+    -fx-font-size: 54px;
+}
+
+.placeholder-title {
+    -fx-font-size: 32px;
+    -fx-font-weight: 700;
+}
+
+.placeholder-text {
+    -fx-font-size: 17px;
+}
+
+.placeholder-status {
+    -fx-font-size: 13px;
+    -fx-padding: 14px 18px;
+    -fx-background-radius: 9px;
+}

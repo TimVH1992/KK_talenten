@@ -1,0 +1,71 @@
+.app-root {
+    -fx-background-color: #151B22;
+}
+
+.top-banner {
+    -fx-background-color: linear-gradient(to bottom right, #0F6370, #0A4652);
+}
+
+.app-title {
+    -fx-text-fill: #F7FAFC;
+}
+
+.welcome-title, .section-title, .card-title, .manage-title, .placeholder-title {
+    -fx-text-fill: #E8F1F8;
+}
+
+.welcome-subtitle, .card-subtitle, .manage-subtitle, .placeholder-text {
+    -fx-text-fill: #AEBCC9;
+}
+
+.dashboard-card, .manage-card {
+    -fx-background-color: #222B34;
+    -fx-border-color: #34414D;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 16, 0.16, 0, 4);
+}
+
+.dashboard-card:hover, .manage-card:hover {
+    -fx-background-color: #293640;
+    -fx-border-color: #3E7781;
+}
+
+.card-icon, .info-icon, .manage-arrow, .placeholder-icon {
+    -fx-text-fill: #54B3C0;
+}
+
+.theme-toggle {
+    -fx-background-color: rgba(255,255,255,0.11);
+    -fx-text-fill: #F4F8FA;
+}
+
+.theme-toggle:hover {
+    -fx-background-color: rgba(255,255,255,0.18);
+}
+
+.info-bar {
+    -fx-background-color: #1C2B31;
+    -fx-border-color: #31535B;
+}
+
+.info-text {
+    -fx-text-fill: #B7C7D1;
+}
+
+.section-header {
+    -fx-background-color: #1B232B;
+    -fx-border-color: transparent transparent #34414D transparent;
+}
+
+.secondary-button {
+    -fx-background-color: #2A3540;
+    -fx-text-fill: #E5EDF3;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #35434F;
+}
+
+.placeholder-status {
+    -fx-background-color: #1D2C33;
+    -fx-text-fill: #AFC5CF;
+}
