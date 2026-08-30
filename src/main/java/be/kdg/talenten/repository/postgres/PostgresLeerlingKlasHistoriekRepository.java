@@ -342,5 +342,62 @@ public class PostgresLeerlingKlasHistoriekRepository
         }
     }
 
+    @Override
+    public void wijzigHuidigeKlas(
+            Leerling leerling,
+            Klas nieuweKlas
+    ) {
+        if (leerling == null || leerling.getId() == null) {
+            throw new IllegalArgumentException(
+                    "De leerling moet eerst opgeslagen zijn."
+            );
+        }
+
+        if (nieuweKlas == null || nieuweKlas.getId() == null) {
+            throw new IllegalArgumentException(
+                    "De klas moet eerst opgeslagen zijn."
+            );
+        }
+
+        String sql = """
+            UPDATE leerling_klas_historiek
+            SET klas_id = ?
+            WHERE leerling_id = ?
+              AND tot IS NULL
+            """;
+
+        try (Connection connection =
+                     DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
+
+            statement.setLong(
+                    1,
+                    nieuweKlas.getId()
+            );
+
+            statement.setLong(
+                    2,
+                    leerling.getId()
+            );
+
+            int aantalAangepasteRijen =
+                    statement.executeUpdate();
+
+            if (aantalAangepasteRijen == 0) {
+                throw new IllegalStateException(
+                        "Er is geen huidige klashistoriek gevonden voor leerling "
+                                + leerling.getId()
+                );
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De huidige klas in de klashistoriek kon niet gewijzigd worden.",
+                    e
+            );
+        }
+    }
+
 
 }

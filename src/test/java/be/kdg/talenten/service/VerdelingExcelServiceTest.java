@@ -1248,8 +1248,7 @@ class VerdelingExcelServiceTest {
         private final List<LeerlingKlasHistoriek> historiek =
                 new ArrayList<>();
 
-        private long volgendId =
-                1;
+        private long volgendId = 1;
 
         @Override
         public void startHistoriek(
@@ -1273,18 +1272,13 @@ class VerdelingExcelServiceTest {
                 Leerling leerling,
                 LocalDate tot
         ) {
-            for (int i = 0;
-                 i < historiek.size();
-                 i++) {
-
+            for (int i = 0; i < historiek.size(); i++) {
                 LeerlingKlasHistoriek registratie =
                         historiek.get(i);
 
                 if (registratie
                         .getLeerling()
-                        .equals(
-                                leerling
-                        )
+                        .equals(leerling)
                         && registratie.isHuidig()) {
 
                     historiek.set(
@@ -1308,18 +1302,48 @@ class VerdelingExcelServiceTest {
         }
 
         @Override
+        public void wijzigHuidigeKlas(
+                Leerling leerling,
+                Klas nieuweKlas
+        ) {
+            for (int i = 0; i < historiek.size(); i++) {
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie
+                        .getLeerling()
+                        .equals(leerling)
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    nieuweKlas,
+                                    registratie.getVanaf(),
+                                    null
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
         public List<LeerlingKlasHistoriek> zoekVoorLeerling(
                 Leerling leerling
         ) {
-            return historiek
-                    .stream()
-                    .filter(
-                            registratie ->
-                                    registratie
-                                            .getLeerling()
-                                            .equals(
-                                                    leerling
-                                            )
+            return historiek.stream()
+                    .filter(registratie ->
+                            registratie
+                                    .getLeerling()
+                                    .equals(leerling)
                     )
                     .toList();
         }
@@ -1329,28 +1353,20 @@ class VerdelingExcelServiceTest {
                 Klas klas,
                 LocalDate datum
         ) {
-            return historiek
-                    .stream()
-                    .filter(
-                            registratie ->
-                                    registratie
-                                            .getKlas()
-                                            .equals(
-                                                    klas
-                                            )
-                                            && !registratie
-                                            .getVanaf()
-                                            .isAfter(
-                                                    datum
-                                            )
-                                            && (
-                                            registratie.getTot() == null
-                                                    || registratie
-                                                    .getTot()
-                                                    .isAfter(
-                                                            datum
-                                                    )
-                                    )
+            return historiek.stream()
+                    .filter(registratie ->
+                            registratie
+                                    .getKlas()
+                                    .equals(klas)
+                                    && !registratie
+                                    .getVanaf()
+                                    .isAfter(datum)
+                                    && (
+                                    registratie.getTot() == null
+                                            || registratie
+                                            .getTot()
+                                            .isAfter(datum)
+                            )
                     )
                     .toList();
         }

@@ -484,95 +484,6 @@ public class LeerlingServiceTest {
         }
     }
 
-    private static class TestLeerlingKlasHistoriekRepository
-            implements LeerlingKlasHistoriekRepository {
-
-        private final List<LeerlingKlasHistoriek> historiek =
-                new ArrayList<>();
-
-        private long volgendId = 1;
-
-        @Override
-        public void startHistoriek(
-                Leerling leerling,
-                Klas klas,
-                LocalDate vanaf
-        ) {
-            historiek.add(
-                    new LeerlingKlasHistoriek(
-                            volgendId++,
-                            leerling,
-                            klas,
-                            vanaf,
-                            null
-                    )
-            );
-        }
-
-        @Override
-        public void sluitHuidigeHistoriekAf(
-                Leerling leerling,
-                LocalDate tot
-        ) {
-            for (int i = 0; i < historiek.size(); i++) {
-                LeerlingKlasHistoriek registratie =
-                        historiek.get(i);
-
-                if (
-                        registratie
-                                .getLeerling()
-                                .equals(leerling)
-                                && registratie.isHuidig()
-                ) {
-                    historiek.set(
-                            i,
-                            new LeerlingKlasHistoriek(
-                                    registratie.getId(),
-                                    registratie.getLeerling(),
-                                    registratie.getKlas(),
-                                    registratie.getVanaf(),
-                                    tot
-                            )
-                    );
-
-                    return;
-                }
-            }
-
-            throw new IllegalStateException(
-                    "Geen huidige klashistoriek gevonden."
-            );
-        }
-
-        @Override
-        public List<LeerlingKlasHistoriek> zoekVoorLeerling(
-                Leerling leerling
-        ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getLeerling()
-                                    .equals(leerling)
-                    )
-                    .toList();
-        }
-        @Override
-        public List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(
-                Klas klas,
-                LocalDate datum
-        ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie.getKlas().equals(klas)
-                                    && !registratie.getVanaf().isAfter(datum)
-                                    && (
-                                    registratie.getTot() == null
-                                            || registratie.getTot().isAfter(datum)
-                            )
-                    )
-                    .toList();
-        }
-    }
     @Test
     void deactiveerLeerlingZetLeerlingOpNietActiefEnUpdateRepository() {
         // ARRANGE
@@ -680,4 +591,118 @@ public class LeerlingServiceTest {
                 () -> service.activeerLeerling(null)
         );
     }
+
+    private static class TestLeerlingKlasHistoriekRepository
+            implements LeerlingKlasHistoriekRepository {
+
+        private final List<LeerlingKlasHistoriek> historiek =
+                new ArrayList<>();
+
+        private long volgendId = 1;
+
+        @Override
+        public void startHistoriek(
+                Leerling leerling,
+                Klas klas,
+                LocalDate vanaf
+        ) {
+            historiek.add(
+                    new LeerlingKlasHistoriek(
+                            volgendId++,
+                            leerling,
+                            klas,
+                            vanaf,
+                            null
+                    )
+            );
+        }
+
+        @Override
+        public void sluitHuidigeHistoriekAf(
+                Leerling leerling,
+                LocalDate tot
+        ) {
+            for (int i = 0; i < historiek.size(); i++) {
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie
+                        .getLeerling()
+                        .equals(leerling)
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    registratie.getKlas(),
+                                    registratie.getVanaf(),
+                                    tot
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
+        public void wijzigHuidigeKlas(
+                Leerling leerling,
+                Klas nieuweKlas
+        ) {
+            for (int i = 0; i < historiek.size(); i++) {
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie
+                        .getLeerling()
+                        .equals(leerling)
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    nieuweKlas,
+                                    registratie.getVanaf(),
+                                    null
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
+        public List<LeerlingKlasHistoriek> zoekVoorLeerling(
+                Leerling leerling
+        ) {
+            return historiek.stream()
+                    .filter(registratie ->
+                            registratie
+                                    .getLeerling()
+                                    .equals(leerling)
+                    )
+                    .toList();
+        }
+
+        @Override
+        public List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(Klas klas, LocalDate datum) {
+            return List.of();
+        }
+    }
+
+
 }

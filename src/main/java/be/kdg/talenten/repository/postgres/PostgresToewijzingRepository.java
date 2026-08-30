@@ -1375,4 +1375,149 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             );
         }
     }
+    @Override
+    public void vervangAutomatischeToewijzingenVoorPeriodeEnDoelgroep(
+            TalentenPeriode periode,
+            Doelgroep doelgroep,
+            List<Toewijzing> nieuweToewijzingen
+    ) {
+        valideerOpgeslagenPeriode(
+                periode
+        );
+
+        if (doelgroep == null) {
+            throw new IllegalArgumentException(
+                    "Doelgroep mag niet null zijn"
+            );
+        }
+
+        if (nieuweToewijzingen == null) {
+            throw new IllegalArgumentException(
+                    "De nieuwe toewijzingen mogen niet null zijn"
+            );
+        }
+
+        for (Toewijzing toewijzing :
+                nieuweToewijzingen) {
+
+            valideerToewijzingVoorOpslag(
+                    toewijzing
+            );
+
+            if (toewijzing.getToewijzingsType()
+                    != ToewijzingsType.AUTOMATISCH) {
+
+                throw new IllegalArgumentException(
+                        "Alle nieuwe toewijzingen moeten automatisch zijn"
+                );
+            }
+
+            if (!periode
+                    .getId()
+                    .equals(
+                            toewijzing
+                                    .getIngerichtTalent()
+                                    .getTalentenPeriode()
+                                    .getId()
+                    )) {
+
+                throw new IllegalArgumentException(
+                        "Alle nieuwe toewijzingen moeten tot de gekozen periode behoren"
+                );
+            }
+
+            if (toewijzing
+                    .getIngerichtTalent()
+                    .getDoelgroep()
+                    != doelgroep) {
+
+                throw new IllegalArgumentException(
+                        "Alle nieuwe toewijzingen moeten tot de gekozen doelgroep behoren"
+                );
+            }
+        }
+
+        String verwijderSql = """
+            DELETE FROM toewijzingen tw
+            USING ingerichte_talenten it
+            WHERE tw.ingericht_talent_id = it.ingericht_talent_id
+              AND tw.talenten_periode_id = ?
+              AND tw.toewijzings_type = 'AUTOMATISCH'
+              AND it.doelgroep = ?
+            """;
+
+        String invoegSql = """
+            INSERT INTO toewijzingen (
+                toewijzings_type,
+                voorkeur_nummer,
+                leerling_id,
+                talenten_periode_id,
+                ingericht_talent_id,
+                toegewezen_op,
+                gewijzigd_op
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """;
+
+        try (Connection connection =
+                     DatabaseConnectionFactory.maakVerbinding()) {
+
+            connection.setAutoCommit(
+                    false
+            );
+
+            try {
+                try (PreparedStatement verwijderStatement =
+                             connection.prepareStatement(
+                                     verwijderSql
+                             )) {
+
+                    verwijderStatement.setLong(
+                            1,
+                            periode.getId()
+                    );
+
+                    verwijderStatement.setString(
+                            2,
+                            doelgroep.name()
+                    );
+
+                    verwijderStatement.executeUpdate();
+                }
+
+                if (!nieuweToewijzingen.isEmpty()) {
+                    try (PreparedStatement invoegStatement =
+                                 connection.prepareStatement(
+                                         invoegSql
+                                 )) {
+
+                        for (Toewijzing toewijzing :
+                                nieuweToewijzingen) {
+
+                            vulInsertStatement(
+                                    invoegStatement,
+                                    toewijzing
+                            );
+
+                            invoegStatement.addBatch();
+                        }
+
+                        invoegStatement.executeBatch();
+                    }
+                }
+
+                connection.commit();
+
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "De automatische toewijzingen voor de gekozen doelgroep konden niet veilig herberekend worden",
+                    e
+            );
+        }
+    }
 }

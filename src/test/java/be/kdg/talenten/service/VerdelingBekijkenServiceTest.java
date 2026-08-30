@@ -1345,6 +1345,38 @@ class VerdelingBekijkenServiceTest {
         }
 
         @Override
+        public void wijzigHuidigeKlas(
+                Leerling leerling,
+                Klas nieuweKlas
+        ) {
+            for (int i = 0; i < historiek.size(); i++) {
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie.getLeerling().equals(leerling)
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    nieuweKlas,
+                                    registratie.getVanaf(),
+                                    null
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
         public List<LeerlingKlasHistoriek> zoekVoorLeerling(
                 Leerling leerling
         ) {

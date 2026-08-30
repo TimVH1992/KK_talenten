@@ -1,5 +1,6 @@
 package be.kdg.talenten.service.verdeling;
 
+import be.kdg.talenten.domain.Doelgroep;
 import be.kdg.talenten.domain.Leerling;
 import be.kdg.talenten.domain.TalentenPeriode;
 import be.kdg.talenten.domain.Toewijzing;
@@ -67,24 +68,35 @@ public class AutomatischeVerdelingService {
     }
 
     public boolean heeftBestaandeToewijzingen(
-            TalentenPeriode talentenPeriode
+            TalentenPeriode talentenPeriode,
+            Doelgroep doelgroep
     ) {
-        valideerTalentenPeriode(
-                talentenPeriode
+        valideerContext(
+                talentenPeriode,
+                doelgroep
         );
 
-        return !toewijzingRepository
+        return toewijzingRepository
                 .zoekVoorPeriode(
                         talentenPeriode
                 )
-                .isEmpty();
+                .stream()
+                .anyMatch(
+                        toewijzing ->
+                                toewijzing
+                                        .getIngerichtTalent()
+                                        .getDoelgroep()
+                                        == doelgroep
+                );
     }
 
     public VerdelingsResultaat voerAutomatischeVerdelingUit(
-            TalentenPeriode talentenPeriode
+            TalentenPeriode talentenPeriode,
+            Doelgroep doelgroep
     ) {
-        valideerTalentenPeriode(
-                talentenPeriode
+        valideerContext(
+                talentenPeriode,
+                doelgroep
         );
 
         if (talentenPeriode
@@ -98,10 +110,11 @@ public class AutomatischeVerdelingService {
             );
         }
 
-
         /*
-         * Alleen leerlingen die deelnemen aan de talentenwerking
-         * mogen automatisch verdeeld worden.
+         * Alleen actieve leerlingen uit de gekozen doelgroep
+         * nemen deel aan deze verdeling.
+         *
+         * De doelgroep van een leerling volgt uit zijn klas.
          */
         List<Leerling> leerlingen =
                 leerlingRepository
@@ -112,29 +125,20 @@ public class AutomatischeVerdelingService {
                         .filter(
                                 Leerling::isActief
                         )
+                        .filter(
+                                leerling ->
+                                        leerling.getKlas()
+                                                .getDoelgroep()
+                                                == doelgroep
+                        )
                         .toList();
 
-
         /*
-         * De voorkeuren blijven volledig behouden.
+         * Alleen voorkeuren van leerlingen uit deze verdelingsgroep
+         * worden aan de verdeler doorgegeven.
          *
-         * We filteren hier alleen voorkeuren van leerlingen
-         * die niet deelnemen.
-         *
-         * BELANGRIJK:
-         * Voorkeuren naar een inactief IngerichtTalent worden
-         * hier NIET verwijderd.
-         *
-         * AutomatischeVerdeler slaat zo'n voorkeur tijdens
-         * het verdelen over.
-         *
-         * Daardoor kan een leerling bijvoorbeeld nog:
-         *
-         * 1. Digitale Media  -> inactief
-         * 2. Voetbal         -> actief
-         * 3. Koken           -> actief
-         *
-         * hebben en alsnog op voorkeur 2 terechtkomen.
+         * Een voorkeur naar een andere doelgroep is foutieve data
+         * en wordt bewust niet stil genegeerd.
          */
         List<Voorkeur> voorkeuren =
                 voorkeurRepository
@@ -144,17 +148,25 @@ public class AutomatischeVerdelingService {
                         .stream()
                         .filter(
                                 voorkeur ->
-                                        voorkeur
-                                                .getLeerling()
-                                                .isActief()
+                                        bevatLeerling(
+                                                leerlingen,
+                                                voorkeur.getLeerling()
+                                        )
                         )
                         .toList();
 
+        valideerVoorkeurDoelgroepen(
+                voorkeuren,
+                doelgroep
+        );
 
         /*
-         * Historische toewijzingen uit hetzelfde schooljaar
-         * worden meegegeven aan de verdeler zodat een leerling
-         * indien mogelijk niet opnieuw hetzelfde basistalent volgt.
+         * Historiek wordt alleen meegenomen voor leerlingen die
+         * momenteel in deze verdeling zitten.
+         *
+         * We filteren historische ingerichte talenten niet op
+         * doelgroep: als een leerling hetzelfde basistalent eerder
+         * al gevolgd heeft, blijft dat relevante historiek.
          */
         List<Toewijzing> historischeToewijzingen =
                 toewijzingRepository
@@ -164,21 +176,16 @@ public class AutomatischeVerdelingService {
                         .stream()
                         .filter(
                                 toewijzing ->
-                                        toewijzing
-                                                .getIngerichtTalent()
-                                                .getTalentenPeriode()
-                                                .getSchooljaar()
-                                                .equals(
-                                                        talentenPeriode
-                                                                .getSchooljaar()
-                                                )
+                                        bevatLeerling(
+                                                leerlingen,
+                                                toewijzing.getLeerling()
+                                        )
                         )
                         .toList();
 
-
         /*
-         * Manuele toewijzingen worden behouden.
-         * De automatische verdeler moet hier rekening mee houden.
+         * Alleen manuele toewijzingen uit deze doelgroep moeten
+         * de capaciteit binnen deze verdeling beïnvloeden.
          */
         List<Toewijzing> manueleToewijzingen =
                 toewijzingRepository
@@ -192,8 +199,14 @@ public class AutomatischeVerdelingService {
                                                 .getToewijzingsType()
                                                 == ToewijzingsType.MANUEEL
                         )
+                        .filter(
+                                toewijzing ->
+                                        toewijzing
+                                                .getIngerichtTalent()
+                                                .getDoelgroep()
+                                                == doelgroep
+                        )
                         .toList();
-
 
         AutomatischeVerdeler verdeler =
                 new AutomatischeVerdeler(
@@ -203,57 +216,124 @@ public class AutomatischeVerdelingService {
                         manueleToewijzingen
                 );
 
-
         VerdelingsResultaat resultaat =
                 verdeler.verdeel();
 
-
         /*
-         * Eventuele problemen uit de voorkeurimport worden
-         * alleen toegevoegd wanneer de betreffende leerling
-         * uiteindelijk niet toegewezen kon worden.
+         * Importproblemen worden alleen toegevoegd voor leerlingen
+         * die tot deze doelgroep behoren én uiteindelijk niet
+         * toegewezen zijn.
          */
-        for (VoorkeurImportProbleem voorkeurImportProbleem :
+        for (VoorkeurImportProbleem probleem :
                 voorkeurImportProbleemRepository
                         .zoekVoorPeriode(
                                 talentenPeriode
                         )) {
 
-            if (resultaat
-                    .getNietToegewezenLeerlingen()
-                    .contains(
-                            voorkeurImportProbleem.getLeerling()
-                    )) {
+            if (!bevatLeerling(
+                    leerlingen,
+                    probleem.getLeerling()
+            )) {
+                continue;
+            }
 
+            if (bevatLeerling(
+                    resultaat.getNietToegewezenLeerlingen(),
+                    probleem.getLeerling()
+            )) {
                 resultaat.voegImportProbleemToe(
-                        voorkeurImportProbleem
+                        probleem
                 );
             }
         }
 
-
         /*
-         * Alleen de automatische toewijzingen voor deze periode
+         * CRUCIAAL:
+         *
+         * Alleen automatische toewijzingen van DEZE doelgroep
          * worden vervangen.
          *
-         * Manuele toewijzingen blijven in de databank staan.
+         * De andere doelgroep blijft volledig onaangeroerd.
          */
         toewijzingRepository
-                .vervangAutomatischeToewijzingenVoorPeriode(
+                .vervangAutomatischeToewijzingenVoorPeriodeEnDoelgroep(
                         talentenPeriode,
+                        doelgroep,
                         resultaat.getToewijzingen()
                 );
-
 
         return resultaat;
     }
 
-    private void valideerTalentenPeriode(
-            TalentenPeriode talentenPeriode
+    private void valideerVoorkeurDoelgroepen(
+            List<Voorkeur> voorkeuren,
+            Doelgroep doelgroep
+    ) {
+        for (Voorkeur voorkeur : voorkeuren) {
+            if (voorkeur
+                    .getIngerichtTalent()
+                    .getDoelgroep()
+                    != doelgroep) {
+
+                throw new IllegalStateException(
+                        "Leerling "
+                                + voorkeur.getLeerling()
+                                + " heeft een voorkeur voor een talent uit een andere doelgroep."
+                );
+            }
+        }
+    }
+
+    private boolean bevatLeerling(
+            List<Leerling> leerlingen,
+            Leerling gezochteLeerling
+    ) {
+        for (Leerling leerling : leerlingen) {
+            if (zelfdeLeerling(
+                    leerling,
+                    gezochteLeerling
+            )) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean zelfdeLeerling(
+            Leerling eerste,
+            Leerling tweede
+    ) {
+        if (eerste == null || tweede == null) {
+            return false;
+        }
+
+        if (eerste.getId() != null
+                && tweede.getId() != null) {
+
+            return eerste
+                    .getId()
+                    .equals(
+                            tweede.getId()
+                    );
+        }
+
+        return eerste == tweede;
+    }
+
+    private void valideerContext(
+            TalentenPeriode talentenPeriode,
+            Doelgroep doelgroep
     ) {
         if (talentenPeriode == null) {
             throw new IllegalArgumentException(
                     "Talentenperiode mag niet null zijn."
+            );
+        }
+
+        if (doelgroep == null) {
+            throw new IllegalArgumentException(
+                    "Doelgroep mag niet null zijn."
             );
         }
     }

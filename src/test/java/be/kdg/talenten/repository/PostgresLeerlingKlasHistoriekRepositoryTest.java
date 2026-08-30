@@ -484,4 +484,61 @@ public class PostgresLeerlingKlasHistoriekRepositoryTest {
         );
     }
 
+    @Test
+    void wijzigHuidigeKlasVervangtKlasZonderNieuweHistoriekTeMaken() {
+        // ARRANGE
+        Klas klas2B =
+                klasRepository.save(
+                        new Klas(
+                                "2B",
+                                schooljaar,
+                                2,
+                                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        )
+                );
+
+        historiekRepository.startHistoriek(
+                leerling,
+                klas2A,
+                schooljaar.getStartDatum()
+        );
+
+        // ACT
+        historiekRepository.wijzigHuidigeKlas(
+                leerling,
+                klas2B
+        );
+
+        // ASSERT
+        List<LeerlingKlasHistoriek> historiek =
+                historiekRepository.zoekVoorLeerling(
+                        leerling
+                );
+
+        Assertions.assertEquals(
+                1,
+                historiek.size()
+        );
+
+        LeerlingKlasHistoriek registratie =
+                historiek.getFirst();
+
+        Assertions.assertEquals(
+                klas2B.getId(),
+                registratie.getKlas().getId()
+        );
+
+        Assertions.assertEquals(
+                schooljaar.getStartDatum(),
+                registratie.getVanaf()
+        );
+
+        Assertions.assertNull(
+                registratie.getTot()
+        );
+
+        Assertions.assertTrue(
+                registratie.isHuidig()
+        );
+    }
 }

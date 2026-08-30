@@ -21,6 +21,14 @@ public interface ToewijzingRepository {
     Toewijzing update(Toewijzing toewijzing);
 
     List<Toewijzing> zoekVoorPeriode(TalentenPeriode periode);
+
     List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(Leerling leerling, Schooljaar schooljaar);
+
     void verwijderVoorIngerichtTalent(IngerichtTalent ingerichtTalent);
+
+    void vervangAutomatischeToewijzingenVoorPeriodeEnDoelgroep(
+            TalentenPeriode periode,
+            Doelgroep doelgroep,
+            List<Toewijzing> nieuweToewijzingen
+    );
 }

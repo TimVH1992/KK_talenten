@@ -62,3 +62,17 @@ GROUP BY
     it.ingericht_talent_id,
     it.naam,
     it.actief;
+
+SELECT
+    l.leerling_id,
+    l.voornaam,
+    l.achternaam,
+    l.klas_id,
+    h.leerling_klas_historiek_id,
+    h.vanaf,
+    h.tot
+FROM leerlingen l
+         LEFT JOIN leerling_klas_historiek h
+                   ON h.leerling_id = l.leerling_id
+                       AND h.tot IS NULL
+ORDER BY l.leerling_id;

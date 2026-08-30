@@ -16,4 +16,9 @@ public interface LeerlingKlasHistoriekRepository {
     List<LeerlingKlasHistoriek> zoekVoorLeerling(Leerling leerling);
 
     List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(Klas klas, LocalDate datum);
+
+    void wijzigHuidigeKlas(
+            Leerling leerling,
+            Klas nieuweKlas
+    );
 }

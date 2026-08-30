@@ -85,32 +85,64 @@ public class LeerlingService {
             LocalDate wisseldatum
     ) {
         if (leerling == null) {
-            throw new IllegalArgumentException("Leerling mag niet null zijn.");
+            throw new IllegalArgumentException(
+                    "Leerling mag niet null zijn."
+            );
         }
+
         if (nieuweKlas == null) {
-            throw new IllegalArgumentException("Nieuwe klas mag niet null zijn.");
+            throw new IllegalArgumentException(
+                    "Nieuwe klas mag niet null zijn."
+            );
         }
+
         if (wisseldatum == null) {
-            throw new IllegalArgumentException("Wisseldatum mag niet null zijn.");
+            throw new IllegalArgumentException(
+                    "Wisseldatum mag niet null zijn."
+            );
         }
+
         if (leerling.getKlas().equals(nieuweKlas)) {
-            throw new IllegalArgumentException("De leerling zit al in deze klas.");
+            throw new IllegalArgumentException(
+                    "De leerling zit al in deze klas."
+            );
         }
 
-        leerlingKlasHistoriekRepository.sluitHuidigeHistoriekAf(
-                leerling,
-                wisseldatum
+        LocalDate startSchooljaar =
+                leerling
+                        .getKlas()
+                        .getSchooljaar()
+                        .getStartDatum();
+
+        if (!wisseldatum.isAfter(startSchooljaar)) {
+            wijzigKlasVoorStartSchooljaar(
+                    leerling,
+                    nieuweKlas
+            );
+
+            return;
+        }
+
+        leerlingKlasHistoriekRepository
+                .sluitHuidigeHistoriekAf(
+                        leerling,
+                        wisseldatum
+                );
+
+        leerling.wijsKlasToe(
+                nieuweKlas
         );
 
-        leerling.wijsKlasToe(nieuweKlas);
-
-        leerlingRepository.update(leerling);
-
-        leerlingKlasHistoriekRepository.startHistoriek(
-                leerling,
-                nieuweKlas,
-                wisseldatum
+        leerlingRepository.update(
+                leerling
         );
+
+        leerlingKlasHistoriekRepository
+                .startHistoriek(
+                        leerling,
+                        nieuweKlas,
+                        wisseldatum
+                );
     }
 
     public void deactiveerLeerling(Leerling leerling) {
@@ -129,5 +161,24 @@ public class LeerlingService {
 
         leerling.activeer();
         leerlingRepository.update(leerling);
+    }
+
+    private void wijzigKlasVoorStartSchooljaar(
+            Leerling leerling,
+            Klas nieuweKlas
+    ) {
+        leerlingKlasHistoriekRepository
+                .wijzigHuidigeKlas(
+                        leerling,
+                        nieuweKlas
+                );
+
+        leerling.wijsKlasToe(
+                nieuweKlas
+        );
+
+        leerlingRepository.update(
+                leerling
+        );
     }
 }

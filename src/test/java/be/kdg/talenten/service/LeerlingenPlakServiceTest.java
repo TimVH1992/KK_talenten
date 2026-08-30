@@ -27,32 +27,40 @@ class LeerlingenPlakServiceTest {
 
     @BeforeEach
     void setUp() {
-        repository = new TestLeerlingRepository();
+        repository =
+                new TestLeerlingRepository();
+
         leerlingKlasHistoriekRepository =
                 new TestLeerlingKlasHistoriekRepository();
 
-        LeerlingService leerlingService = new LeerlingService(
-                repository,
-                leerlingKlasHistoriekRepository
-        );
+        LeerlingService leerlingService =
+                new LeerlingService(
+                        repository,
+                        leerlingKlasHistoriekRepository
+                );
 
-        plakService = new LeerlingenPlakService(leerlingService);
+        plakService =
+                new LeerlingenPlakService(
+                        leerlingService
+                );
 
-        Schooljaar schooljaar = new Schooljaar(
-                1L,
-                "2026-2027",
-                LocalDate.of(2026, 7, 1),
-                LocalDate.of(2027, 6, 30),
-                true
-        );
+        Schooljaar schooljaar =
+                new Schooljaar(
+                        1L,
+                        "2026-2027",
+                        LocalDate.of(2026, 7, 1),
+                        LocalDate.of(2027, 6, 30),
+                        true
+                );
 
-        klas = new Klas(
-                1L,
-                "1AA",
-                schooljaar,
-                1,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
-        );
+        klas =
+                new Klas(
+                        1L,
+                        "1AA",
+                        schooljaar,
+                        1,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
     }
 
     @Test
@@ -66,7 +74,9 @@ class LeerlingenPlakServiceTest {
 
         // ACT
         LeerlingenPlakResultaat resultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ASSERT
         Assertions.assertFalse(
@@ -80,32 +90,50 @@ class LeerlingenPlakServiceTest {
 
         Assertions.assertEquals(
                 "Jan",
-                resultaat.getGeldigeRegels().get(0).voornaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .get(0)
+                        .voornaam()
         );
 
         Assertions.assertEquals(
                 "Peeters",
-                resultaat.getGeldigeRegels().get(0).achternaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .get(0)
+                        .achternaam()
         );
 
         Assertions.assertEquals(
                 "Sofie",
-                resultaat.getGeldigeRegels().get(1).voornaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .get(1)
+                        .voornaam()
         );
 
         Assertions.assertEquals(
                 "Janssens",
-                resultaat.getGeldigeRegels().get(1).achternaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .get(1)
+                        .achternaam()
         );
 
         Assertions.assertEquals(
                 "Mohamed",
-                resultaat.getGeldigeRegels().get(2).voornaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .get(2)
+                        .voornaam()
         );
 
         Assertions.assertEquals(
                 "El Amrani",
-                resultaat.getGeldigeRegels().get(2).achternaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .get(2)
+                        .achternaam()
         );
     }
 
@@ -120,7 +148,9 @@ class LeerlingenPlakServiceTest {
 
         // ACT
         LeerlingenPlakResultaat resultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ASSERT
         Assertions.assertFalse(
@@ -134,12 +164,18 @@ class LeerlingenPlakServiceTest {
 
         Assertions.assertEquals(
                 "Jan",
-                resultaat.getGeldigeRegels().getFirst().voornaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .getFirst()
+                        .voornaam()
         );
 
         Assertions.assertEquals(
                 "Peeters",
-                resultaat.getGeldigeRegels().getFirst().achternaam()
+                resultaat
+                        .getGeldigeRegels()
+                        .getFirst()
+                        .achternaam()
         );
     }
 
@@ -151,7 +187,9 @@ class LeerlingenPlakServiceTest {
 
         // ACT
         LeerlingenPlakResultaat resultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ASSERT
         Assertions.assertFalse(
@@ -172,7 +210,9 @@ class LeerlingenPlakServiceTest {
 
         // ACT
         LeerlingenPlakResultaat resultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ASSERT
         Assertions.assertTrue(
@@ -191,7 +231,9 @@ class LeerlingenPlakServiceTest {
 
         Assertions.assertEquals(
                 "Regel 2: achternaam ontbreekt",
-                resultaat.getProblemen().getFirst()
+                resultaat
+                        .getProblemen()
+                        .getFirst()
         );
     }
 
@@ -205,7 +247,9 @@ class LeerlingenPlakServiceTest {
 
         // ACT
         LeerlingenPlakResultaat resultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ASSERT
         Assertions.assertTrue(
@@ -219,7 +263,9 @@ class LeerlingenPlakServiceTest {
 
         Assertions.assertEquals(
                 "Regel 1 moet exact twee kolommen bevatten: voornaam en achternaam",
-                resultaat.getProblemen().getFirst()
+                resultaat
+                        .getProblemen()
+                        .getFirst()
         );
     }
 
@@ -233,7 +279,9 @@ class LeerlingenPlakServiceTest {
                 """;
 
         LeerlingenPlakResultaat analyseResultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ACT
         List<Leerling> opgeslagenLeerlingen =
@@ -250,34 +298,50 @@ class LeerlingenPlakServiceTest {
 
         Assertions.assertEquals(
                 3,
-                repository.zoekVoorKlas(klas).size()
+                repository
+                        .zoekVoorKlas(
+                                klas
+                        )
+                        .size()
         );
 
         Assertions.assertEquals(
                 "Jan",
-                opgeslagenLeerlingen.get(0).getVoornaam()
+                opgeslagenLeerlingen
+                        .get(0)
+                        .getVoornaam()
         );
 
         Assertions.assertEquals(
                 "Peeters",
-                opgeslagenLeerlingen.get(0).getAchternaam()
+                opgeslagenLeerlingen
+                        .get(0)
+                        .getAchternaam()
         );
 
         Assertions.assertEquals(
                 klas,
-                opgeslagenLeerlingen.get(0).getKlas()
+                opgeslagenLeerlingen
+                        .get(0)
+                        .getKlas()
         );
 
         Assertions.assertNotNull(
-                opgeslagenLeerlingen.get(0).getId()
+                opgeslagenLeerlingen
+                        .get(0)
+                        .getId()
         );
 
         Assertions.assertNotNull(
-                opgeslagenLeerlingen.get(1).getId()
+                opgeslagenLeerlingen
+                        .get(1)
+                        .getId()
         );
 
         Assertions.assertNotNull(
-                opgeslagenLeerlingen.get(2).getId()
+                opgeslagenLeerlingen
+                        .get(2)
+                        .getId()
         );
     }
 
@@ -291,7 +355,9 @@ class LeerlingenPlakServiceTest {
                 """;
 
         LeerlingenPlakResultaat analyseResultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ACT
         List<Leerling> opgeslagenLeerlingen =
@@ -341,7 +407,9 @@ class LeerlingenPlakServiceTest {
         );
 
         Assertions.assertEquals(
-                klas.getSchooljaar().getStartDatum(),
+                klas
+                        .getSchooljaar()
+                        .getStartDatum(),
                 historiek.getVanaf()
         );
 
@@ -363,19 +431,26 @@ class LeerlingenPlakServiceTest {
                 """;
 
         LeerlingenPlakResultaat analyseResultaat =
-                plakService.analyseer(tekst);
+                plakService.analyseer(
+                        tekst
+                );
 
         // ACT & ASSERT
         Assertions.assertThrows(
                 IllegalStateException.class,
-                () -> plakService.slaLeerlingenOp(
-                        klas,
-                        analyseResultaat
-                )
+                () ->
+                        plakService.slaLeerlingenOp(
+                                klas,
+                                analyseResultaat
+                        )
         );
 
         Assertions.assertTrue(
-                repository.zoekVoorKlas(klas).isEmpty()
+                repository
+                        .zoekVoorKlas(
+                                klas
+                        )
+                        .isEmpty()
         );
     }
 
@@ -385,19 +460,30 @@ class LeerlingenPlakServiceTest {
         private final List<Leerling> leerlingen =
                 new ArrayList<>();
 
-        private long volgendId = 1;
+        private long volgendId =
+                1;
 
         @Override
-        public List<Leerling> zoekVoorKlas(Klas klas) {
-            return leerlingen.stream()
-                    .filter(leerling ->
-                            leerling.getKlas().equals(klas)
+        public List<Leerling> zoekVoorKlas(
+                Klas klas
+        ) {
+            return leerlingen
+                    .stream()
+                    .filter(
+                            leerling ->
+                                    leerling
+                                            .getKlas()
+                                            .equals(
+                                                    klas
+                                            )
                     )
                     .toList();
         }
 
         @Override
-        public Leerling save(Leerling leerling) {
+        public Leerling save(
+                Leerling leerling
+        ) {
             Leerling opgeslagenLeerling =
                     new Leerling(
                             volgendId++,
@@ -415,17 +501,22 @@ class LeerlingenPlakServiceTest {
         }
 
         @Override
-        public Leerling zoekOpId(long id) {
-            return leerlingen.stream()
-                    .filter(leerling ->
-                            leerling.getId() != null
-                                    && leerling.getId() == id
+        public Leerling zoekOpId(
+                long id
+        ) {
+            return leerlingen
+                    .stream()
+                    .filter(
+                            leerling ->
+                                    leerling.getId() != null
+                                            && leerling.getId() == id
                     )
                     .findFirst()
-                    .orElseThrow(() ->
-                            new IllegalStateException(
-                                    "Leerling niet gevonden"
-                            )
+                    .orElseThrow(
+                            () ->
+                                    new IllegalStateException(
+                                            "Leerling niet gevonden"
+                                    )
                     );
         }
 
@@ -433,26 +524,35 @@ class LeerlingenPlakServiceTest {
         public List<Leerling> zoekVoorSchooljaar(
                 Schooljaar schooljaar
         ) {
-            return leerlingen.stream()
-                    .filter(leerling ->
-                            leerling
-                                    .getKlas()
-                                    .getSchooljaar()
-                                    .equals(schooljaar)
+            return leerlingen
+                    .stream()
+                    .filter(
+                            leerling ->
+                                    leerling
+                                            .getKlas()
+                                            .getSchooljaar()
+                                            .equals(
+                                                    schooljaar
+                                            )
                     )
                     .toList();
         }
 
         @Override
-        public void update(Leerling leerling) {
-            for (int i = 0; i < leerlingen.size(); i++) {
+        public void update(
+                Leerling leerling
+        ) {
+            for (int i = 0;
+                 i < leerlingen.size();
+                 i++) {
 
-                if (
-                        leerlingen
-                                .get(i)
-                                .getId()
-                                .equals(leerling.getId())
-                ) {
+                if (leerlingen
+                        .get(i)
+                        .getId()
+                        .equals(
+                                leerling.getId()
+                        )) {
+
                     leerlingen.set(
                             i,
                             leerling
@@ -474,7 +574,8 @@ class LeerlingenPlakServiceTest {
         private final List<LeerlingKlasHistoriek> historiek =
                 new ArrayList<>();
 
-        private long volgendId = 1;
+        private long volgendId =
+                1;
 
         @Override
         public void startHistoriek(
@@ -498,17 +599,20 @@ class LeerlingenPlakServiceTest {
                 Leerling leerling,
                 LocalDate tot
         ) {
-            for (int i = 0; i < historiek.size(); i++) {
+            for (int i = 0;
+                 i < historiek.size();
+                 i++) {
 
                 LeerlingKlasHistoriek registratie =
                         historiek.get(i);
 
-                if (
-                        registratie
-                                .getLeerling()
-                                .equals(leerling)
-                                && registratie.isHuidig()
-                ) {
+                if (registratie
+                        .getLeerling()
+                        .equals(
+                                leerling
+                        )
+                        && registratie.isHuidig()) {
+
                     historiek.set(
                             i,
                             new LeerlingKlasHistoriek(
@@ -530,14 +634,57 @@ class LeerlingenPlakServiceTest {
         }
 
         @Override
+        public void wijzigHuidigeKlas(
+                Leerling leerling,
+                Klas nieuweKlas
+        ) {
+            for (int i = 0;
+                 i < historiek.size();
+                 i++) {
+
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie
+                        .getLeerling()
+                        .equals(
+                                leerling
+                        )
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    nieuweKlas,
+                                    registratie.getVanaf(),
+                                    null
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
         public List<LeerlingKlasHistoriek> zoekVoorLeerling(
                 Leerling leerling
         ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getLeerling()
-                                    .equals(leerling)
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getLeerling()
+                                            .equals(
+                                                    leerling
+                                            )
                     )
                     .toList();
         }
@@ -547,14 +694,28 @@ class LeerlingenPlakServiceTest {
                 Klas klas,
                 LocalDate datum
         ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie.getKlas().equals(klas)
-                                    && !registratie.getVanaf().isAfter(datum)
-                                    && (
-                                    registratie.getTot() == null
-                                            || registratie.getTot().isAfter(datum)
-                            )
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getKlas()
+                                            .equals(
+                                                    klas
+                                            )
+                                            && !registratie
+                                            .getVanaf()
+                                            .isAfter(
+                                                    datum
+                                            )
+                                            && (
+                                            registratie.getTot() == null
+                                                    || registratie
+                                                    .getTot()
+                                                    .isAfter(
+                                                            datum
+                                                    )
+                                    )
                     )
                     .toList();
         }

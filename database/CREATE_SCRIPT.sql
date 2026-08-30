@@ -8,14 +8,15 @@ DROP TABLE IF EXISTS
     ingericht_talent_leerkrachten,
     voorkeuren,
     toewijzingen,
+    voorkeur_import_problemen,
+    leerling_klas_historiek,
     leerlingen,
     ingerichte_talenten,
     leerkrachten,
     talenten,
     talenten_periodes,
-    schooljaren,
     klassen,
-    voorkeur_import_problemen
+    schooljaren
     CASCADE;
 
 DROP FUNCTION IF EXISTS controleer_talentenperiode_binnen_schooljaar();

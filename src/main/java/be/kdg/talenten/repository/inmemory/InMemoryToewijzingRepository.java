@@ -185,4 +185,50 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
                                 == ingerichtTalent
         );
     }
+
+    @Override
+    public void vervangAutomatischeToewijzingenVoorPeriodeEnDoelgroep(
+            TalentenPeriode periode,
+            Doelgroep doelgroep,
+            List<Toewijzing> nieuweToewijzingen
+    ) {
+        if (periode == null) {
+            throw new IllegalArgumentException(
+                    "Talentenperiode mag niet null zijn"
+            );
+        }
+
+        if (doelgroep == null) {
+            throw new IllegalArgumentException(
+                    "Doelgroep mag niet null zijn"
+            );
+        }
+
+        if (nieuweToewijzingen == null) {
+            throw new IllegalArgumentException(
+                    "Nieuwe toewijzingen mogen niet null zijn"
+            );
+        }
+
+        opgeslagenToewijzingen.removeIf(
+                toewijzing ->
+                        toewijzing.getToewijzingsType()
+                                == ToewijzingsType.AUTOMATISCH
+                                && toewijzing
+                                .getIngerichtTalent()
+                                .getTalentenPeriode()
+                                .equals(
+                                        periode
+                                )
+                                && toewijzing
+                                .getIngerichtTalent()
+                                .getDoelgroep()
+                                == doelgroep
+        );
+
+        opgeslagenToewijzingen.addAll(
+                nieuweToewijzingen
+        );
+    }
+
 }

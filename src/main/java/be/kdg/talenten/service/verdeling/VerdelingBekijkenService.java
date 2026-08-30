@@ -74,25 +74,13 @@ public class VerdelingBekijkenService {
                 leerlingKlasHistoriekRepository;
     }
 
-    /*
-     * Bestaande methode blijft bestaan.
-     * null als doelgroep betekent: alle doelgroepen.
-     */
-    public List<IngerichtTalentOverzicht> bekijkPerIngerichtTalent(
-            TalentenPeriode periode
-    ) {
-        return bekijkPerIngerichtTalent(
-                periode,
-                null
-        );
-    }
-
     public List<IngerichtTalentOverzicht> bekijkPerIngerichtTalent(
             TalentenPeriode periode,
             Doelgroep doelgroep
     ) {
-        valideerPeriode(
-                periode
+        valideerContext(
+                periode,
+                doelgroep
         );
 
         Map<IngerichtTalent, List<Toewijzing>> toewijzingenPerTalent =
@@ -109,8 +97,7 @@ public class VerdelingBekijkenService {
                         )
                         .filter(
                                 ingerichtTalent ->
-                                        doelgroep == null
-                                                || ingerichtTalent
+                                        ingerichtTalent
                                                 .getDoelgroep()
                                                 == doelgroep
                         )
@@ -130,6 +117,14 @@ public class VerdelingBekijkenService {
                         .zoekVoorPeriode(
                                 periode
                         )) {
+
+            if (toewijzing
+                    .getIngerichtTalent()
+                    .getDoelgroep()
+                    != doelgroep) {
+
+                continue;
+            }
 
             List<Toewijzing> toewijzingen =
                     toewijzingenPerTalent.get(
@@ -175,6 +170,10 @@ public class VerdelingBekijkenService {
         return overzichten;
     }
 
+    /*
+     * Een Klas behoort zelf al tot exact één doelgroep.
+     * Daarom is hier geen aparte doelgroepparameter nodig.
+     */
     public KlasOverzicht bekijkVoorKlas(
             TalentenPeriode periode,
             Klas klas
@@ -186,6 +185,17 @@ public class VerdelingBekijkenService {
         if (klas == null) {
             throw new IllegalArgumentException(
                     "Klas mag niet null zijn"
+            );
+        }
+
+        if (!klas
+                .getSchooljaar()
+                .equals(
+                        periode.getSchooljaar()
+                )) {
+
+            throw new IllegalArgumentException(
+                    "De klas behoort niet tot het schooljaar van de talentenperiode."
             );
         }
 
@@ -212,6 +222,21 @@ public class VerdelingBekijkenService {
                                     periode
                             );
 
+            /*
+             * Een cross-doelgroep-toewijzing hoort nooit te bestaan.
+             * Als oude/verkeerde data toch zo'n toewijzing bevat,
+             * tonen we die niet als geldige toewijzing voor deze klas.
+             */
+            if (toewijzing != null
+                    && toewijzing
+                    .getIngerichtTalent()
+                    .getDoelgroep()
+                    != klas.getDoelgroep()) {
+
+                toewijzing =
+                        null;
+            }
+
             toewijzingenPerKlas.add(
                     new LeerlingToewijzingOverzicht(
                             leerling,
@@ -227,27 +252,14 @@ public class VerdelingBekijkenService {
         );
     }
 
-    /*
-     * Bestaande methode blijft bestaan.
-     * Zonder doelgroepfilter worden alle doelgroepen weergegeven.
-     */
-    public List<NietToegewezenLeerlingOverzicht>
-    bekijkNietToegewezenLeerlingen(
-            TalentenPeriode periode
-    ) {
-        return bekijkNietToegewezenLeerlingen(
-                periode,
-                null
-        );
-    }
-
     public List<NietToegewezenLeerlingOverzicht>
     bekijkNietToegewezenLeerlingen(
             TalentenPeriode periode,
             Doelgroep doelgroep
     ) {
-        valideerPeriode(
-                periode
+        valideerContext(
+                periode,
+                doelgroep
         );
 
         List<LeerlingMetKlas> leerlingen =
@@ -271,12 +283,12 @@ public class VerdelingBekijkenService {
                         )
                         .filter(
                                 leerlingMetKlas ->
-                                        leerlingMetKlas.klas() != null
+                                        leerlingMetKlas.klas()
+                                                != null
                         )
                         .filter(
                                 leerlingMetKlas ->
-                                        doelgroep == null
-                                                || leerlingMetKlas
+                                        leerlingMetKlas
                                                 .klas()
                                                 .getDoelgroep()
                                                 == doelgroep
@@ -294,6 +306,13 @@ public class VerdelingBekijkenService {
                                         toewijzing
                                                 .getIngerichtTalent()
                                                 .isActief()
+                        )
+                        .filter(
+                                toewijzing ->
+                                        toewijzing
+                                                .getIngerichtTalent()
+                                                .getDoelgroep()
+                                                == doelgroep
                         )
                         .map(
                                 Toewijzing::getLeerling
@@ -382,6 +401,21 @@ public class VerdelingBekijkenService {
                 .orElse(
                         leerling.getKlas()
                 );
+    }
+
+    private void valideerContext(
+            TalentenPeriode periode,
+            Doelgroep doelgroep
+    ) {
+        valideerPeriode(
+                periode
+        );
+
+        if (doelgroep == null) {
+            throw new IllegalArgumentException(
+                    "Doelgroep mag niet null zijn"
+            );
+        }
     }
 
     private void valideerPeriode(
