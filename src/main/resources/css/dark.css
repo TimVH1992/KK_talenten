@@ -142,6 +142,48 @@
     -fx-text-fill: #9CAAB5;
 }
 
+.status-upcoming { -fx-text-fill: #75B7E8; }
+.status-current { -fx-text-fill: #68D69A; }
+.status-past { -fx-text-fill: #9CAAB5; }
+
+.combo-box, .text-field, .date-picker, .text-area {
+    -fx-background-color: #222B34;
+    -fx-border-color: #34414D;
+    -fx-text-fill: #D8E2E8;
+}
+
+.text-area .content { -fx-background-color: #222B34; }
+.text-area { -fx-prompt-text-fill: #9CAAB5; }
+
+.app-root .combo-box {
+    -fx-prompt-text-fill: #D8E2E8;
+}
+
+.app-root .combo-box > .list-cell {
+    -fx-text-fill: #D8E2E8;
+}
+
+.date-picker-popup > * > .spinner > .label,
+.date-picker-popup .spinner .label {
+    -fx-text-fill: #102F50;
+    -fx-font-weight: 700;
+}
+
+.field-label { -fx-text-fill: #B7C7D1; }
+
+.danger-button { -fx-text-fill: #E8AAB1; }
+.danger-button:hover { -fx-background-color: #3A2326; }
+
+.app-dialog { -fx-background-color: #222B34; }
+.app-dialog .header-panel { -fx-background-color: #29343E; }
+.app-dialog .label { -fx-text-fill: #D8E2E8; }
+.app-dialog .combo-box {
+    -fx-prompt-text-fill: #D8E2E8;
+}
+.app-dialog .combo-box > .list-cell {
+    -fx-text-fill: #D8E2E8;
+}
+
 .status-success {
     -fx-background-color: #19372A;
     -fx-border-color: #2D6043;

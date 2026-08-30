@@ -215,6 +215,26 @@
     -fx-font-weight: 500;
 }
 
+.status-upcoming,
+.status-current,
+.status-past {
+    -fx-font-weight: 700;
+}
+
+.combo-box,
+.text-field,
+.date-picker,
+.text-area {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-min-height: 40px;
+}
+
+.field-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
 .status-message {
     -fx-font-size: 13.5px;
     -fx-padding: 11px 14px;

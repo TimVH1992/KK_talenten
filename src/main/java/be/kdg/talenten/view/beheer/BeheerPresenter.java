@@ -2,8 +2,16 @@ package be.kdg.talenten.view.beheer;
 
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.beheer.klas.KlasPresenter;
+import be.kdg.talenten.view.beheer.klas.KlasView;
+import be.kdg.talenten.view.beheer.leerling.LeerlingPresenter;
+import be.kdg.talenten.view.beheer.leerling.LeerlingView;
+import be.kdg.talenten.view.beheer.leerling.LeerlingenKeuzePresenter;
+import be.kdg.talenten.view.beheer.leerling.LeerlingenKeuzeView;
 import be.kdg.talenten.view.beheer.schooljaar.SchooljaarPresenter;
 import be.kdg.talenten.view.beheer.schooljaar.SchooljaarView;
+import be.kdg.talenten.view.beheer.talentenperiode.TalentenPeriodePresenter;
+import be.kdg.talenten.view.beheer.talentenperiode.TalentenPeriodeView;
 import be.kdg.talenten.view.main.MainView;
 import be.kdg.talenten.view.shared.SectionView;
 import be.kdg.talenten.view.theme.ThemeManager;
@@ -45,18 +53,9 @@ public class BeheerPresenter {
         view.getThemeButton().setOnAction(event -> toggleTheme());
 
         view.getSchooljarenButton().setOnAction(event -> toonSchooljaren());
-        view.getPeriodesButton().setOnAction(event -> toonPlaceholder(
-                "Talentenperiodes",
-                "Beheer de talentenperiodes binnen een schooljaar."
-        ));
-        view.getKlassenButton().setOnAction(event -> toonPlaceholder(
-                "Klassen",
-                "Beheer klassen, leerjaren en doelgroepen."
-        ));
-        view.getLeerlingenButton().setOnAction(event -> toonPlaceholder(
-                "Leerlingen",
-                "Beheer leerlingen, actieve status en klaswissels met historiek."
-        ));
+        view.getPeriodesButton().setOnAction(event -> toonTalentenperiodes());
+        view.getKlassenButton().setOnAction(event -> toonKlassen());
+        view.getLeerlingenButton().setOnAction(event -> toonLeerlingen());
         view.getLeerkrachtenButton().setOnAction(event -> toonPlaceholder(
                 "Leerkrachten",
                 "Beheer leerkrachten en hun actieve status."
@@ -78,6 +77,50 @@ public class BeheerPresenter {
                 config.getSchooljaarService()
         );
         sceneManager.toon(schooljaarView);
+    }
+
+    private void toonTalentenperiodes() {
+        TalentenPeriodeView periodeView = new TalentenPeriodeView();
+        new TalentenPeriodePresenter(
+                periodeView,
+                view,
+                sceneManager,
+                themeManager,
+                scene,
+                config.getSchooljaarService(),
+                config.getTalentenPeriodeService()
+        );
+        sceneManager.toon(periodeView);
+    }
+
+    private void toonKlassen() {
+        KlasView klasView = new KlasView();
+        new KlasPresenter(
+                klasView,
+                view,
+                sceneManager,
+                themeManager,
+                scene,
+                config.getSchooljaarService(),
+                config.getKlasService()
+        );
+        sceneManager.toon(klasView);
+    }
+
+    private void toonLeerlingen() {
+        LeerlingenKeuzeView keuzeView = new LeerlingenKeuzeView();
+        new LeerlingenKeuzePresenter(
+                keuzeView,
+                view,
+                sceneManager,
+                themeManager,
+                scene,
+                config.getSchooljaarService(),
+                config.getLeerlingService(),
+                config.getKlasService(),
+                config.getLeerlingenPlakService()
+        );
+        sceneManager.toon(keuzeView);
     }
 
     private void toonPlaceholder(String titel, String uitleg) {
