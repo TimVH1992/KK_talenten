@@ -44,6 +44,18 @@ public class IngerichtTalentService {
             throw new IllegalArgumentException("Talent mag niet null zijn");
         }
 
+        String effectieveNaam = naam;
+
+        if (naam == null || naam.isBlank()) {
+            if (doelgroep == null) {
+                throw new IllegalArgumentException("Doelgroep mag niet null zijn.");
+            }
+            String voorvoegsel = doelgroep == Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                    ? "OBS_"
+                    : "KWA_";
+            effectieveNaam = voorvoegsel + talent.getNaam();
+        }
+
         String effectieveOmschrijving = omschrijving;
 
         if (omschrijving == null || omschrijving.isBlank()) {
@@ -53,7 +65,7 @@ public class IngerichtTalentService {
         IngerichtTalent ingerichtTalent = new IngerichtTalent(
                 talent,
                 periode,
-                naam,
+                effectieveNaam,
                 effectieveOmschrijving,
                 maxCapaciteit,
                 doelgroep,

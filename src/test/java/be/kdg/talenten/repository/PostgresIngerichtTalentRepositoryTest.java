@@ -147,6 +147,29 @@ class PostgresIngerichtTalentRepositoryTest {
     }
 
     @Test
+    void saveMetBestaandeNaamInDezelfdePeriodeGeeftBegrijpelijkeMelding() {
+        IngerichtTalent eerste = new IngerichtTalent(
+                opgeslagenTalent, opgeslagenPeriode, "Schaken - Herfst", "Eerste aanbod", 10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB, List.of()
+        );
+        IngerichtTalent tweede = new IngerichtTalent(
+                opgeslagenTalent, opgeslagenPeriode, "Schaken - Herfst", "Tweede aanbod", 10,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB, List.of()
+        );
+        ingerichtTalentRepository.save(eerste);
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> ingerichtTalentRepository.save(tweede)
+        );
+
+        assertEquals(
+                "Het ingerichte talent heeft een naam die al bestaat, kies een andere naam",
+                exception.getMessage()
+        );
+    }
+
+    @Test
     void saveEnZoekOpIdWerktZonderLeerkracht() {
         // ARRANGE
         IngerichtTalent ingerichtTalent = new IngerichtTalent(

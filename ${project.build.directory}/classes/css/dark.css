@@ -2,6 +2,13 @@
     -fx-background-color: #151B22;
 }
 
+.content-scroll,
+.content-scroll .viewport,
+.tab-pane,
+.tab-pane .tab-content-area {
+    -fx-background-color: #151B22;
+}
+
 .top-banner {
     -fx-background-color: linear-gradient(to bottom right, #0F6370, #0A4652);
 }
@@ -27,6 +34,16 @@
 .dashboard-card:hover, .manage-card:hover {
     -fx-background-color: #293640;
     -fx-border-color: #3E7781;
+}
+
+.manage-card-featured {
+    -fx-background-color: #1D343B;
+    -fx-border-color: #54B3C0;
+}
+
+.manage-card-featured:hover {
+    -fx-background-color: #24424A;
+    -fx-border-color: #73C6D1;
 }
 
 .card-icon, .info-icon, .manage-arrow, .placeholder-icon {
@@ -74,8 +91,21 @@
     -fx-text-fill: #E8F1F8;
 }
 
+/* Sterk contrast voor de bovenste uitleg en contextkeuzes. */
+.app-root .content-title {
+    -fx-text-fill: #F4F8FB;
+}
+
+.app-root .content-subtitle {
+    -fx-text-fill: #D5E0E8;
+}
+
+.app-root .field-label {
+    -fx-text-fill: #F0F5F8;
+}
+
 .content-subtitle, .summary-label {
-    -fx-text-fill: #AEBCC9;
+    -fx-text-fill: #C7D3DD;
 }
 
 .summary-card, .content-card {
@@ -134,12 +164,88 @@
     -fx-text-fill: #93A4B1;
 }
 
+.tab-pane .tab {
+    -fx-background-color: #29343E;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #34434F;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #1C8795;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #D8E2E8;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
 .status-active {
     -fx-text-fill: #68D69A;
 }
 
 .status-inactive {
     -fx-text-fill: #9CAAB5;
+}
+
+.status-upcoming { -fx-text-fill: #75B7E8; }
+.status-current { -fx-text-fill: #68D69A; }
+.status-past { -fx-text-fill: #9CAAB5; }
+
+.combo-box, .text-field, .date-picker, .text-area {
+    -fx-background-color: #222B34;
+    -fx-border-color: #34414D;
+    -fx-text-fill: #D8E2E8;
+}
+
+.text-area .content { -fx-background-color: #222B34; }
+.text-area { -fx-prompt-text-fill: #9CAAB5; }
+
+.list-view { -fx-background-color: #222B34; -fx-border-color: #34414D; }
+.list-view .list-cell { -fx-background-color: #222B34; -fx-text-fill: #D8E2E8; }
+.list-view .list-cell:filled:selected { -fx-background-color: #264851; }
+
+.app-root .combo-box {
+    -fx-prompt-text-fill: #D8E2E8;
+}
+
+.app-root .combo-box > .list-cell {
+    -fx-text-fill: #D8E2E8;
+}
+
+.date-picker-popup > * > .spinner > .label,
+.date-picker-popup .spinner .label {
+    -fx-text-fill: #102F50;
+    -fx-font-weight: 700;
+}
+
+.field-label { -fx-text-fill: #E2ECF2; }
+
+.app-root .combo-box .list-cell,
+.app-root .combo-box .list-cell:filled,
+.app-root .combo-box > .list-cell {
+    -fx-text-fill: #F0F5F8;
+}
+
+.app-root .combo-box .arrow-button {
+    -fx-background-color: #34434F;
+}
+
+.danger-button { -fx-text-fill: #E8AAB1; }
+.danger-button:hover { -fx-background-color: #3A2326; }
+
+.app-dialog { -fx-background-color: #222B34; }
+.app-dialog .header-panel { -fx-background-color: #29343E; }
+.app-dialog .label { -fx-text-fill: #D8E2E8; }
+.app-dialog .combo-box {
+    -fx-prompt-text-fill: #D8E2E8;
+}
+.app-dialog .combo-box > .list-cell {
+    -fx-text-fill: #D8E2E8;
 }
 
 .status-success {

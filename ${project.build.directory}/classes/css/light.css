@@ -29,6 +29,16 @@
     -fx-border-color: #AFC9EA;
 }
 
+.manage-card-featured {
+    -fx-background-color: #F0F6FD;
+    -fx-border-color: #2E69B7;
+}
+
+.manage-card-featured:hover {
+    -fx-background-color: #E7F1FC;
+    -fx-border-color: #255B9F;
+}
+
 .card-icon, .info-icon, .manage-arrow, .placeholder-icon {
     -fx-text-fill: #2E74D6;
 }
@@ -40,6 +50,15 @@
 
 .theme-toggle:hover {
     -fx-background-color: rgba(255,255,255,0.28);
+}
+
+.section-header .theme-toggle {
+    -fx-background-color: #EEF3F9;
+    -fx-text-fill: #163B68;
+}
+
+.section-header .theme-toggle:hover {
+    -fx-background-color: #E2EBF5;
 }
 
 .info-bar {
@@ -130,6 +149,26 @@
     -fx-text-fill: #33465C;
 }
 
+.tab-pane .tab {
+    -fx-background-color: #EEF4FA;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #E3EFFC;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #255B9F;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #294A70;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
 .status-active {
     -fx-text-fill: #17824B;
 }
@@ -137,6 +176,36 @@
 .status-inactive {
     -fx-text-fill: #738095;
 }
+
+.status-upcoming { -fx-text-fill: #2E69B7; }
+.status-current { -fx-text-fill: #17824B; }
+.status-past { -fx-text-fill: #738095; }
+
+.combo-box, .text-field, .date-picker, .text-area {
+    -fx-background-color: white;
+    -fx-border-color: #DCE3EC;
+}
+
+.text-area .content { -fx-background-color: white; }
+.text-area { -fx-text-fill: #33465C; -fx-prompt-text-fill: #738095; }
+
+.list-view { -fx-background-color: white; -fx-border-color: #DCE3EC; }
+.list-view .list-cell { -fx-background-color: white; -fx-text-fill: #33465C; }
+.list-view .list-cell:filled:selected { -fx-background-color: #E3EFFC; }
+
+.date-picker-popup > * > .spinner > .label,
+.date-picker-popup .spinner .label {
+    -fx-text-fill: #163B68;
+    -fx-font-weight: 700;
+}
+
+.field-label { -fx-text-fill: #46566A; }
+
+.danger-button { -fx-text-fill: #A13E3E; }
+.danger-button:hover { -fx-background-color: #FFF1F1; }
+
+.app-dialog { -fx-background-color: white; }
+.app-dialog .header-panel { -fx-background-color: #EEF4FA; }
 
 .status-success {
     -fx-background-color: #EDF8F1;

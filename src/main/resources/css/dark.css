@@ -2,6 +2,13 @@
     -fx-background-color: #151B22;
 }
 
+.content-scroll,
+.content-scroll .viewport,
+.tab-pane,
+.tab-pane .tab-content-area {
+    -fx-background-color: #151B22;
+}
+
 .top-banner {
     -fx-background-color: linear-gradient(to bottom right, #0F6370, #0A4652);
 }
@@ -84,8 +91,21 @@
     -fx-text-fill: #E8F1F8;
 }
 
+/* Sterk contrast voor de bovenste uitleg en contextkeuzes. */
+.app-root .content-title {
+    -fx-text-fill: #F4F8FB;
+}
+
+.app-root .content-subtitle {
+    -fx-text-fill: #D5E0E8;
+}
+
+.app-root .field-label {
+    -fx-text-fill: #F0F5F8;
+}
+
 .content-subtitle, .summary-label {
-    -fx-text-fill: #AEBCC9;
+    -fx-text-fill: #C7D3DD;
 }
 
 .summary-card, .content-card {
@@ -144,6 +164,26 @@
     -fx-text-fill: #93A4B1;
 }
 
+.tab-pane .tab {
+    -fx-background-color: #29343E;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #34434F;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #1C8795;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #D8E2E8;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
 .status-active {
     -fx-text-fill: #68D69A;
 }
@@ -183,7 +223,17 @@
     -fx-font-weight: 700;
 }
 
-.field-label { -fx-text-fill: #B7C7D1; }
+.field-label { -fx-text-fill: #E2ECF2; }
+
+.app-root .combo-box .list-cell,
+.app-root .combo-box .list-cell:filled,
+.app-root .combo-box > .list-cell {
+    -fx-text-fill: #F0F5F8;
+}
+
+.app-root .combo-box .arrow-button {
+    -fx-background-color: #34434F;
+}
 
 .danger-button { -fx-text-fill: #E8AAB1; }
 .danger-button:hover { -fx-background-color: #3A2326; }

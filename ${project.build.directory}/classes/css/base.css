@@ -93,6 +93,10 @@
     -fx-min-height: 74px;
 }
 
+.manage-card-featured {
+    -fx-border-width: 2px;
+}
+
 .manage-title {
     -fx-font-size: 17px;
     -fx-font-weight: 700;
@@ -207,12 +211,60 @@
     -fx-padding: 0 12px;
 }
 
+.tab-pane {
+    -fx-tab-min-height: 36px;
+    -fx-tab-max-height: 36px;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 0 0 8px 0;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-background-insets: 0;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+}
+
+.tab-pane .tab-label {
+    -fx-font-weight: 700;
+}
+
 .status-active {
     -fx-font-weight: 700;
 }
 
 .status-inactive {
     -fx-font-weight: 500;
+}
+
+.status-upcoming,
+.status-current,
+.status-past {
+    -fx-font-weight: 700;
+}
+
+.combo-box,
+.text-field,
+.date-picker,
+.text-area {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-min-height: 40px;
+}
+
+.field-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
+.list-view {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
 }
 
 .status-message {

@@ -2,6 +2,8 @@ package be.kdg.talenten.view.beheer;
 
 import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.beheer.basistalent.BasistalentPresenter;
+import be.kdg.talenten.view.beheer.basistalent.BasistalentView;
 import be.kdg.talenten.view.beheer.klas.KlasPresenter;
 import be.kdg.talenten.view.beheer.klas.KlasView;
 import be.kdg.talenten.view.beheer.ingerichttalent.IngerichtTalentPresenter;
@@ -17,7 +19,6 @@ import be.kdg.talenten.view.beheer.schooljaar.SchooljaarView;
 import be.kdg.talenten.view.beheer.talentenperiode.TalentenPeriodePresenter;
 import be.kdg.talenten.view.beheer.talentenperiode.TalentenPeriodeView;
 import be.kdg.talenten.view.main.MainView;
-import be.kdg.talenten.view.shared.SectionView;
 import be.kdg.talenten.view.theme.ThemeManager;
 import javafx.scene.Scene;
 
@@ -62,10 +63,7 @@ public class BeheerPresenter {
         view.getLeerlingenButton().setOnAction(event -> toonLeerlingen());
         view.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
         view.getIngerichteTalentenButton().setOnAction(event -> toonIngerichteTalenten());
-        view.getBasisTalentenButton().setOnAction(event -> toonPlaceholder(
-                "Basistalenten",
-                "Beheer de stabiele talentencatalogus die als basis dient voor het ingerichte aanbod."
-        ));
+        view.getBasisTalentenButton().setOnAction(event -> toonBasistalenten());
     }
 
     private void toonSchooljaren() {
@@ -149,18 +147,13 @@ public class BeheerPresenter {
         sceneManager.toon(ingerichtTalentView);
     }
 
-    private void toonPlaceholder(String titel, String uitleg) {
-        SectionView sectionView = new SectionView(titel, uitleg);
-        sectionView.updateThemeIcon(themeManager.isDark());
-        sectionView.getTerugButton().setOnAction(event -> sceneManager.toon(view));
-        sectionView.getThemeButton().setOnAction(event -> {
-            themeManager.toggle(scene);
-            boolean dark = themeManager.isDark();
-            sectionView.updateThemeIcon(dark);
-            view.updateThemeIcon(dark);
-            mainView.updateThemeIcon(dark);
-        });
-        sceneManager.toon(sectionView);
+    private void toonBasistalenten() {
+        BasistalentView basistalentView = new BasistalentView();
+        new BasistalentPresenter(
+                basistalentView, view, sceneManager, themeManager, scene,
+                config.getTalentService()
+        );
+        sceneManager.toon(basistalentView);
     }
 
     private void toggleTheme() {

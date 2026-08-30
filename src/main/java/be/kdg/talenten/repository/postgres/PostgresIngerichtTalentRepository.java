@@ -115,6 +115,12 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                 }
 
                 if (e instanceof SQLException sqlException) {
+                    if (isDubbeleNaam(sqlException)) {
+                        throw new IllegalStateException(
+                                "Het ingerichte talent heeft een naam die al bestaat, kies een andere naam",
+                                sqlException
+                        );
+                    }
                     throw new IllegalStateException(
                             "Het ingerichte talent kon niet opgeslagen worden",
                             sqlException
@@ -568,6 +574,12 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
                 }
 
                 if (e instanceof SQLException sqlException) {
+                    if (isDubbeleNaam(sqlException)) {
+                        throw new IllegalStateException(
+                                "Het ingerichte talent heeft een naam die al bestaat, kies een andere naam",
+                                sqlException
+                        );
+                    }
                     throw new IllegalStateException(
                             "Het ingerichte talent kon niet aangepast worden",
                             sqlException
@@ -597,5 +609,19 @@ public class PostgresIngerichtTalentRepository implements IngerichtTalentReposit
 
     private List<Leerkracht> zoekLeerkrachtenInMap(Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent, long ingerichtTalentId) {
         return leerkrachtenPerIngerichtTalent.getOrDefault(ingerichtTalentId, List.of());
+    }
+
+    private static boolean isDubbeleNaam(SQLException exception) {
+        SQLException huidige = exception;
+        while (huidige != null) {
+            String melding = huidige.getMessage();
+            if ("23505".equals(huidige.getSQLState())
+                    && melding != null
+                    && melding.contains("uq_ingerichte_talenten_naam_periode")) {
+                return true;
+            }
+            huidige = huidige.getNextException();
+        }
+        return false;
     }
 }

@@ -149,6 +149,26 @@
     -fx-text-fill: #33465C;
 }
 
+.tab-pane .tab {
+    -fx-background-color: #EEF4FA;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #E3EFFC;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #255B9F;
+}
+
+.tab-pane .tab-label {
+    -fx-text-fill: #294A70;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
 .status-active {
     -fx-text-fill: #17824B;
 }

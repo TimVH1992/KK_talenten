@@ -548,6 +548,36 @@ public class IngerichtTalentServiceTest {
         );
     }
 
+    @Test
+    void maakIngerichtTalentMetLegeNaamGebruiktOBSVoorvoegselVoorEersteDoelgroep() {
+        IngerichtTalent resultaat = service.maakIngerichtTalent(
+                talent,
+                periode,
+                " ",
+                "Leren schaken",
+                10,
+                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                List.of()
+        );
+
+        Assertions.assertEquals("OBS_Schaken", resultaat.getNaam());
+    }
+
+    @Test
+    void maakIngerichtTalentMetLegeNaamGebruiktKWAVoorvoegselVoorTweedeDoelgroep() {
+        IngerichtTalent resultaat = service.maakIngerichtTalent(
+                talent,
+                periode,
+                null,
+                "Leren schaken",
+                10,
+                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                List.of()
+        );
+
+        Assertions.assertEquals("KWA_Schaken", resultaat.getNaam());
+    }
+
     private IngerichtTalent maakIngerichtTalent(
             String naam,
             List<Leerkracht> leerkrachten

@@ -6,10 +6,14 @@ import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.beheer.BeheerView;
 import be.kdg.talenten.view.theme.ThemeManager;
 import javafx.collections.FXCollections;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.util.StringConverter;
 
 import java.time.LocalDate;
@@ -172,14 +176,16 @@ public class IngerichtTalentPresenter {
         try {
             List<Talent> talenten = talentService.geefAlleTalenten().stream()
                     .sorted(Comparator.comparing(Talent::getNaam)).toList();
-            List<Leerkracht> leerkrachten = leerkrachtService.geefActieveLeerkrachten().stream()
-                    .sorted(Comparator.comparing(Leerkracht::getAchternaam).thenComparing(Leerkracht::getVoornaam))
-                    .toList();
+            List<Leerkracht> leerkrachten = beschikbareLeerkrachten(
+                    leerkrachtService.geefActieveLeerkrachten(),
+                    ingerichtTalentService.geefIngerichteTalentenVoorPeriode(periode),
+                    null
+            );
             toonDialoog("Talent inrichten", null, talenten, leerkrachten).ifPresent(invoer -> {
                 try {
                     IngerichtTalent toegevoegd = ingerichtTalentService.maakIngerichtTalent(
                             invoer.talent(), periode, invoer.naam(), invoer.omschrijving(),
-                            Integer.parseInt(invoer.capaciteit()), doelgroep, invoer.leerkrachten());
+                            leesMaximumCapaciteit(invoer.capaciteit()), doelgroep, invoer.leerkrachten());
                     laadIngerichteTalenten(toegevoegd);
                     view.toonStatus(toegevoegd.getNaam() + " is ingericht.", false);
                 } catch (RuntimeException exception) {
@@ -195,14 +201,17 @@ public class IngerichtTalentPresenter {
         IngerichtTalent geselecteerd = view.getTabel().getSelectionModel().getSelectedItem();
         if (geselecteerd == null) return;
         try {
-            List<Leerkracht> leerkrachten = new ArrayList<>(leerkrachtService.geefActieveLeerkrachten());
-            geselecteerd.getLeerkrachten().stream().filter(l -> !leerkrachten.contains(l)).forEach(leerkrachten::add);
-            leerkrachten.sort(Comparator.comparing(Leerkracht::getAchternaam).thenComparing(Leerkracht::getVoornaam));
+            List<Leerkracht> leerkrachten = beschikbareLeerkrachten(
+                    leerkrachtService.geefActieveLeerkrachten(),
+                    ingerichtTalentService.geefIngerichteTalentenVoorPeriode(
+                            geselecteerd.getTalentenPeriode()),
+                    geselecteerd
+            );
             toonDialoog("Ingericht talent wijzigen", geselecteerd, List.of(geselecteerd.getTalent()), leerkrachten)
                     .ifPresent(invoer -> {
                         try {
                             ingerichtTalentService.wijzigIngerichtTalent(geselecteerd, invoer.naam(),
-                                    invoer.omschrijving(), Integer.parseInt(invoer.capaciteit()));
+                                    invoer.omschrijving(), leesMaximumCapaciteit(invoer.capaciteit()));
                             synchroniseerLeerkrachten(geselecteerd, invoer.leerkrachten());
                             laadIngerichteTalenten(geselecteerd);
                             view.toonStatus(geselecteerd.getNaam() + " is gewijzigd.", false);
@@ -225,6 +234,49 @@ public class IngerichtTalentPresenter {
         }
     }
 
+    static List<Leerkracht> beschikbareLeerkrachten(List<Leerkracht> actieveLeerkrachten,
+                                                     List<IngerichtTalent> talentenInPeriode,
+                                                     IngerichtTalent huidigTalent) {
+        Set<Leerkracht> bezetBijAnderTalent = talentenInPeriode.stream()
+                .filter(talent -> huidigTalent == null || !zelfdeTalent(talent, huidigTalent))
+                .flatMap(talent -> talent.getLeerkrachten().stream())
+                .collect(java.util.stream.Collectors.toSet());
+
+        LinkedHashSet<Leerkracht> beschikbaar = actieveLeerkrachten.stream()
+                .filter(leerkracht -> !bezetBijAnderTalent.contains(leerkracht))
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        if (huidigTalent != null) beschikbaar.addAll(huidigTalent.getLeerkrachten());
+
+        return beschikbaar.stream()
+                .sorted(Comparator.comparing(Leerkracht::getAchternaam, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Leerkracht::getVoornaam, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private static boolean zelfdeTalent(IngerichtTalent eerste, IngerichtTalent tweede) {
+        return eerste.getId() != null && tweede.getId() != null
+                ? eerste.getId().equals(tweede.getId())
+                : eerste == tweede;
+    }
+
+    static List<Leerkracht> filterEnSorteerLeerkrachten(List<Leerkracht> leerkrachten,
+                                                        Set<Leerkracht> geselecteerd,
+                                                        String zoekterm) {
+        String term = zoekterm == null ? "" : zoekterm.trim().toLowerCase(Locale.ROOT);
+        return leerkrachten.stream()
+                .filter(leerkracht -> geselecteerd.contains(leerkracht)
+                        || volledigeNaam(leerkracht).toLowerCase(Locale.ROOT).contains(term))
+                .sorted(Comparator.<Leerkracht, Boolean>comparing(
+                                leerkracht -> !geselecteerd.contains(leerkracht))
+                        .thenComparing(Leerkracht::getAchternaam, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Leerkracht::getVoornaam, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private static String volledigeNaam(Leerkracht leerkracht) {
+        return leerkracht.getVoornaam() + " " + leerkracht.getAchternaam();
+    }
+
     private Optional<FormulierInvoer> toonDialoog(String titel, IngerichtTalent bestaand,
                                                     List<Talent> talenten, List<Leerkracht> leerkrachten) {
         Dialog<FormulierInvoer> dialoog = new Dialog<>();
@@ -241,21 +293,46 @@ public class IngerichtTalentPresenter {
         basis.setValue(bestaand == null ? talenten.stream().findFirst().orElse(null) : bestaand.getTalent());
         basis.setDisable(bestaand != null);
         TextField naam = new TextField(bestaand == null ? "" : bestaand.getNaam());
+        naam.setPromptText(bestaand == null
+                ? "Optioneel — automatisch OBS_ of KWA_ indien leeg"
+                : "Naam van het ingerichte talent");
         TextArea omschrijving = new TextArea(bestaand == null ? "" : bestaand.getOmschrijving());
         omschrijving.setPrefRowCount(3);
         omschrijving.setWrapText(true);
         TextField capaciteit = new TextField(bestaand == null ? "" : Integer.toString(bestaand.getMaxCapaciteit()));
+        Map<Leerkracht, BooleanProperty> geselecteerdeLeerkrachten = new LinkedHashMap<>();
+        for (Leerkracht leerkracht : leerkrachten) {
+            geselecteerdeLeerkrachten.put(
+                    leerkracht,
+                    new SimpleBooleanProperty(bestaand != null && bestaand.getLeerkrachten().contains(leerkracht))
+            );
+        }
         ListView<Leerkracht> leerkrachtLijst = new ListView<>(FXCollections.observableArrayList(leerkrachten));
-        leerkrachtLijst.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        leerkrachtLijst.setPrefHeight(105);
-        leerkrachtLijst.setCellFactory(list -> new ListCell<>() {
-            @Override protected void updateItem(Leerkracht item, boolean empty) {
-                super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.getVoornaam() + " " + item.getAchternaam());
-            }
-        });
-        if (bestaand != null) bestaand.getLeerkrachten().forEach(
-                l -> leerkrachtLijst.getSelectionModel().select(l));
+        leerkrachtLijst.setPrefHeight(190);
+        leerkrachtLijst.setCellFactory(CheckBoxListCell.forListView(
+                geselecteerdeLeerkrachten::get,
+                new StringConverter<>() {
+                    @Override public String toString(Leerkracht leerkracht) {
+                        return leerkracht == null ? "" : leerkracht.getVoornaam() + " " + leerkracht.getAchternaam();
+                    }
+                    @Override public Leerkracht fromString(String string) { return null; }
+                }
+        ));
+
+        TextField leerkrachtZoeken = new TextField();
+        leerkrachtZoeken.setPromptText("Zoek een leerkracht op naam");
+        Runnable vernieuwLeerkrachten = () -> {
+            Set<Leerkracht> aangevinkt = geselecteerdeLeerkrachten.entrySet().stream()
+                    .filter(entry -> entry.getValue().get())
+                    .map(Map.Entry::getKey)
+                    .collect(java.util.stream.Collectors.toSet());
+            leerkrachtLijst.getItems().setAll(filterEnSorteerLeerkrachten(
+                    leerkrachten, aangevinkt, leerkrachtZoeken.getText()));
+        };
+        leerkrachtZoeken.textProperty().addListener((observable, oud, nieuw) -> vernieuwLeerkrachten.run());
+        geselecteerdeLeerkrachten.values().forEach(property ->
+                property.addListener((observable, oud, nieuw) -> vernieuwLeerkrachten.run()));
+        vernieuwLeerkrachten.run();
 
         GridPane formulier = new GridPane();
         formulier.setHgap(12); formulier.setVgap(10); formulier.setPadding(new Insets(6));
@@ -264,11 +341,19 @@ public class IngerichtTalentPresenter {
         formulier.addRow(2, new Label("Omschrijving"), omschrijving);
         formulier.addRow(3, new Label("Maximumcapaciteit"), capaciteit);
         formulier.addRow(4, new Label("Doelgroep"), new Label(doelgroepTekst(view.getDoelgroepComboBox().getValue())));
-        formulier.addRow(5, new Label("Leerkracht(en), maximaal 2"), leerkrachtLijst);
+        VBox leerkrachtKeuze = new VBox(5,
+                new Label("Vink de gewenste leerkrachten aan. Leeg laten is toegestaan."),
+                leerkrachtZoeken,
+                leerkrachtLijst
+        );
+        formulier.addRow(5, new Label("Leerkracht(en), maximaal 2"), leerkrachtKeuze);
         dialoog.getDialogPane().setContent(formulier);
         dialoog.setResultConverter(knop -> knop == opslaan
                 ? new FormulierInvoer(basis.getValue(), naam.getText(), omschrijving.getText(),
-                capaciteit.getText(), List.copyOf(leerkrachtLijst.getSelectionModel().getSelectedItems())) : null);
+                capaciteit.getText(), geselecteerdeLeerkrachten.entrySet().stream()
+                        .filter(entry -> entry.getValue().get())
+                        .map(Map.Entry::getKey)
+                        .toList()) : null);
         return dialoog.showAndWait();
     }
 
@@ -302,6 +387,16 @@ public class IngerichtTalentPresenter {
     }
     private String boodschap(RuntimeException e, String standaard) {
         return e.getMessage() == null || e.getMessage().isBlank() ? standaard : e.getMessage();
+    }
+    static int leesMaximumCapaciteit(String invoer) {
+        if (invoer == null || invoer.isBlank()) {
+            throw new IllegalArgumentException("Geef een maximum_capaciteit mee");
+        }
+        try {
+            return Integer.parseInt(invoer.trim());
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Geef een geldige maximum_capaciteit mee");
+        }
     }
     private void toggleTheme() {
         themeManager.toggle(scene);
