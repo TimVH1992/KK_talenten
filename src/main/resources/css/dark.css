@@ -29,6 +29,16 @@
     -fx-border-color: #3E7781;
 }
 
+.manage-card-featured {
+    -fx-background-color: #1D343B;
+    -fx-border-color: #54B3C0;
+}
+
+.manage-card-featured:hover {
+    -fx-background-color: #24424A;
+    -fx-border-color: #73C6D1;
+}
+
 .card-icon, .info-icon, .manage-arrow, .placeholder-icon {
     -fx-text-fill: #54B3C0;
 }
@@ -154,6 +164,10 @@
 
 .text-area .content { -fx-background-color: #222B34; }
 .text-area { -fx-prompt-text-fill: #9CAAB5; }
+
+.list-view { -fx-background-color: #222B34; -fx-border-color: #34414D; }
+.list-view .list-cell { -fx-background-color: #222B34; -fx-text-fill: #D8E2E8; }
+.list-view .list-cell:filled:selected { -fx-background-color: #264851; }
 
 .app-root .combo-box {
     -fx-prompt-text-fill: #D8E2E8;

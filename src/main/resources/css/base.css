@@ -93,6 +93,10 @@
     -fx-min-height: 74px;
 }
 
+.manage-card-featured {
+    -fx-border-width: 2px;
+}
+
 .manage-title {
     -fx-font-size: 17px;
     -fx-font-weight: 700;
@@ -233,6 +237,11 @@
 .field-label {
     -fx-font-size: 13px;
     -fx-font-weight: 700;
+}
+
+.list-view {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
 }
 
 .status-message {

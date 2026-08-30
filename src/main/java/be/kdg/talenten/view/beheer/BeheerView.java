@@ -15,10 +15,18 @@ public class BeheerView extends BorderPane {
     private final Button klassenButton = maakBeheerKnop("Klassen", "Klassen en doelgroepen beheren");
     private final Button leerlingenButton = maakBeheerKnop("Leerlingen", "Leerlingen en klaswissels beheren");
     private final Button leerkrachtenButton = maakBeheerKnop("Leerkrachten", "Leerkrachten activeren en beheren");
-    private final Button talentenButton = maakBeheerKnop("Talenten", "Basistalenten beheren");
+    private final Button ingerichteTalentenButton = maakBeheerKnop(
+            "Ingerichte talenten",
+            "Talentaanbod per periode, doelgroep en leerkracht beheren"
+    );
+    private final Button basisTalentenButton = maakBeheerKnop(
+            "Basistalenten",
+            "De stabiele talentencatalogus beheren"
+    );
 
     public BeheerView() {
         getStyleClass().add("app-root");
+        ingerichteTalentenButton.getStyleClass().add("manage-card-featured");
         setTop(maakHeader());
         setCenter(maakInhoud());
     }
@@ -44,21 +52,23 @@ public class BeheerView extends BorderPane {
     private Pane maakInhoud() {
         VBox inhoud = new VBox(22);
         inhoud.setAlignment(Pos.TOP_CENTER);
-        inhoud.setPadding(new Insets(36, 80, 40, 80));
+        inhoud.setPadding(new Insets(26, 80, 30, 80));
 
         Label uitleg = new Label("Deze onderdelen worden vooral bij de start van een schooljaar gebruikt.");
         uitleg.getStyleClass().add("welcome-subtitle");
 
-        VBox lijst = new VBox(14,
+        VBox lijst = new VBox(11,
                 schooljarenButton,
                 periodesButton,
                 klassenButton,
                 leerlingenButton,
                 leerkrachtenButton,
-                talentenButton
+                ingerichteTalentenButton,
+                basisTalentenButton
         );
         lijst.setMaxWidth(760);
-        for (Button button : new Button[]{schooljarenButton, periodesButton, klassenButton, leerlingenButton, leerkrachtenButton, talentenButton}) {
+        for (Button button : new Button[]{schooljarenButton, periodesButton, klassenButton,
+                leerlingenButton, leerkrachtenButton, ingerichteTalentenButton, basisTalentenButton}) {
             button.setMaxWidth(Double.MAX_VALUE);
         }
 
@@ -95,7 +105,8 @@ public class BeheerView extends BorderPane {
     public Button getKlassenButton() { return klassenButton; }
     public Button getLeerlingenButton() { return leerlingenButton; }
     public Button getLeerkrachtenButton() { return leerkrachtenButton; }
-    public Button getTalentenButton() { return talentenButton; }
+    public Button getIngerichteTalentenButton() { return ingerichteTalentenButton; }
+    public Button getBasisTalentenButton() { return basisTalentenButton; }
 
     public void updateThemeIcon(boolean darkMode) {
         themeButton.setText(darkMode ? "☀" : "☾");

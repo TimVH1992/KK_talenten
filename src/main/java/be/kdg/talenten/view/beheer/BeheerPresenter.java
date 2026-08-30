@@ -4,6 +4,10 @@ import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.beheer.klas.KlasPresenter;
 import be.kdg.talenten.view.beheer.klas.KlasView;
+import be.kdg.talenten.view.beheer.ingerichttalent.IngerichtTalentPresenter;
+import be.kdg.talenten.view.beheer.ingerichttalent.IngerichtTalentView;
+import be.kdg.talenten.view.beheer.leerkracht.LeerkrachtPresenter;
+import be.kdg.talenten.view.beheer.leerkracht.LeerkrachtView;
 import be.kdg.talenten.view.beheer.leerling.LeerlingPresenter;
 import be.kdg.talenten.view.beheer.leerling.LeerlingView;
 import be.kdg.talenten.view.beheer.leerling.LeerlingenKeuzePresenter;
@@ -56,13 +60,11 @@ public class BeheerPresenter {
         view.getPeriodesButton().setOnAction(event -> toonTalentenperiodes());
         view.getKlassenButton().setOnAction(event -> toonKlassen());
         view.getLeerlingenButton().setOnAction(event -> toonLeerlingen());
-        view.getLeerkrachtenButton().setOnAction(event -> toonPlaceholder(
-                "Leerkrachten",
-                "Beheer leerkrachten en hun actieve status."
-        ));
-        view.getTalentenButton().setOnAction(event -> toonPlaceholder(
-                "Talenten",
-                "Beheer de basistalenten die later per periode ingericht kunnen worden."
+        view.getLeerkrachtenButton().setOnAction(event -> toonLeerkrachten());
+        view.getIngerichteTalentenButton().setOnAction(event -> toonIngerichteTalenten());
+        view.getBasisTalentenButton().setOnAction(event -> toonPlaceholder(
+                "Basistalenten",
+                "Beheer de stabiele talentencatalogus die als basis dient voor het ingerichte aanbod."
         ));
     }
 
@@ -121,6 +123,30 @@ public class BeheerPresenter {
                 config.getLeerlingenPlakService()
         );
         sceneManager.toon(keuzeView);
+    }
+
+    private void toonLeerkrachten() {
+        LeerkrachtView leerkrachtView = new LeerkrachtView();
+        new LeerkrachtPresenter(
+                leerkrachtView,
+                view,
+                sceneManager,
+                themeManager,
+                scene,
+                config.getLeerkrachtService()
+        );
+        sceneManager.toon(leerkrachtView);
+    }
+
+    private void toonIngerichteTalenten() {
+        IngerichtTalentView ingerichtTalentView = new IngerichtTalentView();
+        new IngerichtTalentPresenter(
+                ingerichtTalentView, view, sceneManager, themeManager, scene,
+                config.getSchooljaarService(), config.getTalentenPeriodeService(),
+                config.getIngerichtTalentService(), config.getTalentService(),
+                config.getLeerkrachtService()
+        );
+        sceneManager.toon(ingerichtTalentView);
     }
 
     private void toonPlaceholder(String titel, String uitleg) {

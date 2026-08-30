@@ -29,6 +29,16 @@
     -fx-border-color: #AFC9EA;
 }
 
+.manage-card-featured {
+    -fx-background-color: #F0F6FD;
+    -fx-border-color: #2E69B7;
+}
+
+.manage-card-featured:hover {
+    -fx-background-color: #E7F1FC;
+    -fx-border-color: #255B9F;
+}
+
 .card-icon, .info-icon, .manage-arrow, .placeholder-icon {
     -fx-text-fill: #2E74D6;
 }
@@ -158,6 +168,10 @@
 
 .text-area .content { -fx-background-color: white; }
 .text-area { -fx-text-fill: #33465C; -fx-prompt-text-fill: #738095; }
+
+.list-view { -fx-background-color: white; -fx-border-color: #DCE3EC; }
+.list-view .list-cell { -fx-background-color: white; -fx-text-fill: #33465C; }
+.list-view .list-cell:filled:selected { -fx-background-color: #E3EFFC; }
 
 .date-picker-popup > * > .spinner > .label,
 .date-picker-popup .spinner .label {
