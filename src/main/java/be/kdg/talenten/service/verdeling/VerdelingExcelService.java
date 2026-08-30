@@ -43,7 +43,9 @@ public class VerdelingExcelService {
             new Color(252, 232, 232);
 
     private static final DateTimeFormatter DATUM_FORMATTER =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter.ofPattern(
+                    "dd/MM/yyyy"
+            );
 
     private final VerdelingBekijkenService verdelingBekijkenService;
     private final KlasService klasService;
@@ -73,22 +75,12 @@ public class VerdelingExcelService {
 
     public void exporteerPerIngerichtTalent(
             TalentenPeriode periode,
-            Path bestand
-    ) {
-        exporteerPerIngerichtTalent(
-                periode,
-                null,
-                bestand
-        );
-    }
-
-    public void exporteerPerIngerichtTalent(
-            TalentenPeriode periode,
             Doelgroep doelgroep,
             Path bestand
     ) {
         valideerExport(
                 periode,
+                doelgroep,
                 bestand
         );
 
@@ -114,7 +106,9 @@ public class VerdelingExcelService {
         try (XSSFWorkbook workbook =
                      new XSSFWorkbook();
              OutputStream outputStream =
-                     Files.newOutputStream(bestand)) {
+                     Files.newOutputStream(
+                             bestand
+                     )) {
 
             ExcelStijlen stijlen =
                     maakStijlen(
@@ -163,22 +157,12 @@ public class VerdelingExcelService {
 
     public void exporteerPerKlas(
             TalentenPeriode periode,
-            Path bestand
-    ) {
-        exporteerPerKlas(
-                periode,
-                null,
-                bestand
-        );
-    }
-
-    public void exporteerPerKlas(
-            TalentenPeriode periode,
             Doelgroep doelgroep,
             Path bestand
     ) {
         valideerExport(
                 periode,
+                doelgroep,
                 bestand
         );
 
@@ -191,7 +175,9 @@ public class VerdelingExcelService {
         try (XSSFWorkbook workbook =
                      new XSSFWorkbook();
              OutputStream outputStream =
-                     Files.newOutputStream(bestand)) {
+                     Files.newOutputStream(
+                             bestand
+                     )) {
 
             ExcelStijlen stijlen =
                     maakStijlen(
@@ -208,13 +194,14 @@ public class VerdelingExcelService {
                         "Er zijn geen klassen gevonden voor "
                                 + periode.getSchooljaar().getNaam()
                                 + " binnen "
-                                + formatteerDoelgroepFilter(doelgroep)
+                                + formatteerDoelgroep(doelgroep)
                                 + ".",
                         stijlen
                 );
-
             } else {
-                for (Klas klas : klassen) {
+                for (Klas klas :
+                        klassen) {
+
                     KlasOverzicht overzicht =
                             verdelingBekijkenService
                                     .bekijkVoorKlas(
@@ -288,7 +275,7 @@ public class VerdelingExcelService {
                 sheet,
                 3,
                 "Doelgroep",
-                formatteerDoelgroepFilter(
+                formatteerDoelgroep(
                         doelgroep
                 ),
                 stijlen,
@@ -384,9 +371,7 @@ public class VerdelingExcelService {
                     row,
                     4,
                     formatteerDoelgroep(
-                            ingerichtTalent
-                                    .getDoelgroep()
-                                    .name()
+                            ingerichtTalent.getDoelgroep()
                     ),
                     stijlen.normaalStyle()
             );
@@ -702,9 +687,7 @@ public class VerdelingExcelService {
                 2,
                 "Doelgroep",
                 formatteerDoelgroep(
-                        klas
-                                .getDoelgroep()
-                                .name()
+                        klas.getDoelgroep()
                 ),
                 stijlen,
                 2
@@ -891,8 +874,7 @@ public class VerdelingExcelService {
                 )
                 .filter(
                         klas ->
-                                doelgroep == null
-                                        || klas.getDoelgroep()
+                                klas.getDoelgroep()
                                         == doelgroep
                 )
                 .sorted(
@@ -910,7 +892,9 @@ public class VerdelingExcelService {
         Map<String, Klas> klasPerLeerling =
                 new HashMap<>();
 
-        for (Klas klas : klassen) {
+        for (Klas klas :
+                klassen) {
+
             KlasOverzicht overzicht =
                     verdelingBekijkenService
                             .bekijkVoorKlas(
@@ -965,11 +949,18 @@ public class VerdelingExcelService {
 
     private void valideerExport(
             TalentenPeriode periode,
+            Doelgroep doelgroep,
             Path bestand
     ) {
         if (periode == null) {
             throw new IllegalArgumentException(
                     "Talentenperiode mag niet null zijn"
+            );
+        }
+
+        if (doelgroep == null) {
+            throw new IllegalArgumentException(
+                    "Doelgroep mag niet null zijn"
             );
         }
 
@@ -998,30 +989,15 @@ public class VerdelingExcelService {
                 );
     }
 
-    private String formatteerDoelgroepFilter(
+    private String formatteerDoelgroep(
             Doelgroep doelgroep
     ) {
-        if (doelgroep == null) {
-            return "Alle doelgroepen";
-        }
-
-        return formatteerDoelgroep(
-                doelgroep.name()
-        );
-    }
-
-    private String formatteerDoelgroep(
-            String doelgroep
-    ) {
         return switch (doelgroep) {
-            case "OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB" ->
+            case OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB ->
                     "Observatie / opleidingsfase / 1e graad A-B";
 
-            case "KWALIFICATIEFASE_TWEEDEGRAAD_AB" ->
+            case KWALIFICATIEFASE_TWEEDEGRAAD_AB ->
                     "Kwalificatiefase / 2e graad A-B";
-
-            default ->
-                    doelgroep;
         };
     }
 
@@ -1265,6 +1241,7 @@ public class VerdelingExcelService {
 
         if (basisNaam == null
                 || basisNaam.isBlank()) {
+
             basisNaam =
                     "Overzicht";
         }
@@ -1272,6 +1249,7 @@ public class VerdelingExcelService {
         if (!gebruikteNamen.contains(
                 basisNaam
         )) {
+
             gebruikteNamen.add(
                     basisNaam
             );
@@ -1306,6 +1284,7 @@ public class VerdelingExcelService {
             if (!gebruikteNamen.contains(
                     kandidaat
             )) {
+
                 gebruikteNamen.add(
                         kandidaat
                 );

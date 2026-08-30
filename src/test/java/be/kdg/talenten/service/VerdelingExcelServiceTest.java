@@ -30,6 +30,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class VerdelingExcelServiceTest {
 
+    private static final Doelgroep OBSERVATIE =
+            Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+
     @TempDir
     Path tempDir;
 
@@ -68,7 +71,7 @@ class VerdelingExcelServiceTest {
                         "1AA",
                         schooljaar,
                         1,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        OBSERVATIE
                 );
 
         klas1AB =
@@ -77,7 +80,7 @@ class VerdelingExcelServiceTest {
                         "1AB",
                         schooljaar,
                         1,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        OBSERVATIE
                 );
 
         jan =
@@ -140,7 +143,7 @@ class VerdelingExcelServiceTest {
                         schaken.getNaam(),
                         schaken.getBeschrijving(),
                         10,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        OBSERVATIE,
                         List.of(leerkracht)
                 );
 
@@ -151,7 +154,7 @@ class VerdelingExcelServiceTest {
                         dansen.getNaam(),
                         dansen.getBeschrijving(),
                         8,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                        OBSERVATIE,
                         List.of(leerkracht)
                 );
 
@@ -244,7 +247,9 @@ class VerdelingExcelServiceTest {
     }
 
     @Test
-    void exporteerPerKlasMaaktExcelbestandMetSheetPerKlas() throws Exception {
+    void exporteerPerKlasMaaktExcelbestandMetSheetPerKlas()
+            throws Exception {
+
         // ARRANGE
         Path bestand =
                 tempDir.resolve(
@@ -254,22 +259,31 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerKlas(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         assertTrue(
-                Files.exists(bestand)
+                Files.exists(
+                        bestand
+                )
         );
 
         assertTrue(
-                Files.size(bestand) > 0
+                Files.size(
+                        bestand
+                ) > 0
         );
 
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             assertEquals(
                     2,
@@ -277,11 +291,15 @@ class VerdelingExcelServiceTest {
             );
 
             assertNotNull(
-                    workbook.getSheet("1AA")
+                    workbook.getSheet(
+                            "1AA"
+                    )
             );
 
             assertNotNull(
-                    workbook.getSheet("1AB")
+                    workbook.getSheet(
+                            "1AB"
+                    )
             );
         }
     }
@@ -299,42 +317,59 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerKlas(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             Sheet sheet =
                     workbook.getSheet(
                             "1AA"
                     );
 
-            assertNotNull(sheet);
+            assertNotNull(
+                    sheet
+            );
 
             Row header =
-                    sheet.getRow(4);
+                    sheet.getRow(
+                            4
+                    );
 
             assertEquals(
                     "Voornaam",
-                    header.getCell(0).getStringCellValue()
+                    header
+                            .getCell(0)
+                            .getStringCellValue()
             );
 
             assertEquals(
                     "Achternaam",
-                    header.getCell(1).getStringCellValue()
+                    header
+                            .getCell(1)
+                            .getStringCellValue()
             );
 
             assertEquals(
                     "Ingericht talent",
-                    header.getCell(2).getStringCellValue()
+                    header
+                            .getCell(2)
+                            .getStringCellValue()
             );
 
             assertNull(
-                    header.getCell(3)
+                    header.getCell(
+                            3
+                    )
             );
         }
     }
@@ -352,14 +387,19 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerKlas(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             Sheet sheet =
                     workbook.getSheet(
@@ -385,7 +425,9 @@ class VerdelingExcelServiceTest {
             );
 
             assertNull(
-                    janRij.getCell(3)
+                    janRij.getCell(
+                            3
+                    )
             );
         }
     }
@@ -403,14 +445,19 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerKlas(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             Sheet sheet =
                     workbook.getSheet(
@@ -450,18 +497,25 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerIngerichtTalent(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         assertTrue(
-                Files.exists(bestand)
+                Files.exists(
+                        bestand
+                )
         );
 
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             assertEquals(
                     3,
@@ -501,24 +555,33 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerIngerichtTalent(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             Sheet sheet =
                     workbook.getSheet(
                             "Schaken"
                     );
 
-            assertNotNull(sheet);
+            assertNotNull(
+                    sheet
+            );
 
             Row header =
-                    sheet.getRow(4);
+                    sheet.getRow(
+                            4
+                    );
 
             assertEquals(
                     "Voornaam",
@@ -542,7 +605,9 @@ class VerdelingExcelServiceTest {
             );
 
             assertNull(
-                    header.getCell(3)
+                    header.getCell(
+                            3
+                    )
             );
 
             Row janRij =
@@ -612,14 +677,19 @@ class VerdelingExcelServiceTest {
         // ACT
         service.exporteerPerIngerichtTalent(
                 herfst,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             Sheet sheet =
                     workbook.getSheet(
@@ -689,7 +759,9 @@ class VerdelingExcelServiceTest {
                         koken.getBeschrijving(),
                         10,
                         Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
-                        List.of(leerkracht)
+                        List.of(
+                                leerkracht
+                        )
                 );
 
         VerdelingExcelService filterService =
@@ -707,15 +779,19 @@ class VerdelingExcelServiceTest {
         // ACT
         filterService.exporteerPerIngerichtTalent(
                 herfst,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             assertNotNull(
                     workbook.getSheet(
@@ -791,7 +867,9 @@ class VerdelingExcelServiceTest {
                         koken.getBeschrijving(),
                         10,
                         Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
-                        List.of(leerkracht)
+                        List.of(
+                                leerkracht
+                        )
                 );
 
         VerdelingExcelService filterService =
@@ -809,15 +887,19 @@ class VerdelingExcelServiceTest {
         // ACT
         filterService.exporteerPerKlas(
                 herfst,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
+                OBSERVATIE,
                 bestand
         );
 
         // ASSERT
         try (InputStream inputStream =
-                     Files.newInputStream(bestand);
+                     Files.newInputStream(
+                             bestand
+                     );
              XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
+                     new XSSFWorkbook(
+                             inputStream
+                     )) {
 
             assertNotNull(
                     workbook.getSheet(
@@ -845,112 +927,52 @@ class VerdelingExcelServiceTest {
     }
 
     @Test
-    void exportMetNullDoelgroepExporteertAlleDoelgroepen()
-            throws Exception {
-
+    void exportMetNullDoelgroepWordtGeweigerd() {
         // ARRANGE
-        Klas kwalificatieKlas =
-                new Klas(
-                        3L,
-                        "3KA",
-                        schooljaar,
-                        3,
-                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
-                );
-
-        Leerling tom =
-                new Leerling(
-                        4L,
-                        "Tom",
-                        "Vermeulen",
-                        kwalificatieKlas,
-                        true
-                );
-
-        Talent koken =
-                new Talent(
-                        "Koken",
-                        "Leren koken"
-                );
-
-        Leerkracht leerkracht =
-                new Leerkracht(
-                        "Test",
-                        "Leerkracht"
-                );
-
-        IngerichtTalent kokenHerfst =
-                new IngerichtTalent(
-                        koken,
-                        herfst,
-                        koken.getNaam(),
-                        koken.getBeschrijving(),
-                        10,
-                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
-                        List.of(leerkracht)
-                );
-
-        VerdelingExcelService filterService =
-                maakFilterTestService(
-                        kwalificatieKlas,
-                        tom,
-                        kokenHerfst
-                );
-
-        Path bestand =
+        Path klasBestand =
                 tempDir.resolve(
-                        "alle-doelgroepen.xlsx"
+                        "klassen.xlsx"
                 );
 
-        // ACT
-        filterService.exporteerPerKlas(
-                herfst,
-                null,
-                bestand
+        Path talentBestand =
+                tempDir.resolve(
+                        "talenten.xlsx"
+                );
+
+        // ACT + ASSERT
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.exporteerPerKlas(
+                        herfst,
+                        null,
+                        klasBestand
+                )
         );
 
-        // ASSERT
-        try (InputStream inputStream =
-                     Files.newInputStream(bestand);
-             XSSFWorkbook workbook =
-                     new XSSFWorkbook(inputStream)) {
-
-            assertNotNull(
-                    workbook.getSheet(
-                            "1AA"
-                    )
-            );
-
-            assertNotNull(
-                    workbook.getSheet(
-                            "1AB"
-                    )
-            );
-
-            assertNotNull(
-                    workbook.getSheet(
-                            "3KA"
-                    )
-            );
-
-            assertEquals(
-                    3,
-                    workbook.getNumberOfSheets()
-            );
-        }
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.exporteerPerIngerichtTalent(
+                        herfst,
+                        null,
+                        talentBestand
+                )
+        );
     }
 
     @Test
     void exporteerPerKlasMetNullPeriodeGeeftException() {
+        // ARRANGE
         Path bestand =
                 tempDir.resolve(
                         "verdeling.xlsx"
                 );
 
+        // ACT + ASSERT
         assertThrows(
                 IllegalArgumentException.class,
                 () -> service.exporteerPerKlas(
                         null,
+                        OBSERVATIE,
                         bestand
                 )
         );
@@ -962,6 +984,7 @@ class VerdelingExcelServiceTest {
                 IllegalArgumentException.class,
                 () -> service.exporteerPerKlas(
                         herfst,
+                        OBSERVATIE,
                         null
                 )
         );
@@ -969,15 +992,18 @@ class VerdelingExcelServiceTest {
 
     @Test
     void exporteerPerIngerichtTalentMetNullPeriodeGeeftException() {
+        // ARRANGE
         Path bestand =
                 tempDir.resolve(
                         "verdeling.xlsx"
                 );
 
+        // ACT + ASSERT
         assertThrows(
                 IllegalArgumentException.class,
                 () -> service.exporteerPerIngerichtTalent(
                         null,
+                        OBSERVATIE,
                         bestand
                 )
         );
@@ -989,6 +1015,7 @@ class VerdelingExcelServiceTest {
                 IllegalArgumentException.class,
                 () -> service.exporteerPerIngerichtTalent(
                         herfst,
+                        OBSERVATIE,
                         null
                 )
         );
@@ -996,6 +1023,7 @@ class VerdelingExcelServiceTest {
 
     @Test
     void constructorMetNullVerdelingBekijkenServiceGeeftException() {
+        // ARRANGE
         KlasService klasService =
                 new KlasService(
                         new TestKlasRepository(
@@ -1003,6 +1031,7 @@ class VerdelingExcelServiceTest {
                         )
                 );
 
+        // ACT + ASSERT
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new VerdelingExcelService(
@@ -1014,6 +1043,7 @@ class VerdelingExcelServiceTest {
 
     @Test
     void constructorMetNullKlasServiceGeeftException() {
+        // ARRANGE
         IngerichtTalentRepository ingerichtTalentRepository =
                 new InMemoryIngerichtTalentRepository(
                         new ArrayList<>()
@@ -1037,6 +1067,7 @@ class VerdelingExcelServiceTest {
                         new TestLeerlingKlasHistoriekRepository()
                 );
 
+        // ACT + ASSERT
         assertThrows(
                 IllegalArgumentException.class,
                 () -> new VerdelingExcelService(
@@ -1167,6 +1198,7 @@ class VerdelingExcelServiceTest {
             if (row == null
                     || row.getCell(0) == null
                     || row.getCell(1) == null) {
+
                 continue;
             }
 
@@ -1178,8 +1210,12 @@ class VerdelingExcelServiceTest {
                     row.getCell(1)
                             .getStringCellValue();
 
-            if (gevondenVoornaam.equals(voornaam)
-                    && gevondenAchternaam.equals(achternaam)) {
+            if (gevondenVoornaam.equals(
+                    voornaam
+            )
+                    && gevondenAchternaam.equals(
+                    achternaam
+            )) {
 
                 return row;
             }
@@ -1248,7 +1284,8 @@ class VerdelingExcelServiceTest {
         private final List<LeerlingKlasHistoriek> historiek =
                 new ArrayList<>();
 
-        private long volgendId = 1;
+        private long volgendId =
+                1;
 
         @Override
         public void startHistoriek(
@@ -1272,13 +1309,20 @@ class VerdelingExcelServiceTest {
                 Leerling leerling,
                 LocalDate tot
         ) {
-            for (int i = 0; i < historiek.size(); i++) {
+            for (int i = 0;
+                 i < historiek.size();
+                 i++) {
+
                 LeerlingKlasHistoriek registratie =
-                        historiek.get(i);
+                        historiek.get(
+                                i
+                        );
 
                 if (registratie
                         .getLeerling()
-                        .equals(leerling)
+                        .equals(
+                                leerling
+                        )
                         && registratie.isHuidig()) {
 
                     historiek.set(
@@ -1306,13 +1350,20 @@ class VerdelingExcelServiceTest {
                 Leerling leerling,
                 Klas nieuweKlas
         ) {
-            for (int i = 0; i < historiek.size(); i++) {
+            for (int i = 0;
+                 i < historiek.size();
+                 i++) {
+
                 LeerlingKlasHistoriek registratie =
-                        historiek.get(i);
+                        historiek.get(
+                                i
+                        );
 
                 if (registratie
                         .getLeerling()
-                        .equals(leerling)
+                        .equals(
+                                leerling
+                        )
                         && registratie.isHuidig()) {
 
                     historiek.set(
@@ -1339,11 +1390,15 @@ class VerdelingExcelServiceTest {
         public List<LeerlingKlasHistoriek> zoekVoorLeerling(
                 Leerling leerling
         ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getLeerling()
-                                    .equals(leerling)
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getLeerling()
+                                            .equals(
+                                                    leerling
+                                            )
                     )
                     .toList();
         }
@@ -1353,20 +1408,28 @@ class VerdelingExcelServiceTest {
                 Klas klas,
                 LocalDate datum
         ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getKlas()
-                                    .equals(klas)
-                                    && !registratie
-                                    .getVanaf()
-                                    .isAfter(datum)
-                                    && (
-                                    registratie.getTot() == null
-                                            || registratie
-                                            .getTot()
-                                            .isAfter(datum)
-                            )
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getKlas()
+                                            .equals(
+                                                    klas
+                                            )
+                                            && !registratie
+                                            .getVanaf()
+                                            .isAfter(
+                                                    datum
+                                            )
+                                            && (
+                                            registratie.getTot() == null
+                                                    || registratie
+                                                    .getTot()
+                                                    .isAfter(
+                                                            datum
+                                                    )
+                                    )
                     )
                     .toList();
         }

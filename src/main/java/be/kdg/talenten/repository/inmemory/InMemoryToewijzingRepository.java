@@ -210,6 +210,42 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
             );
         }
 
+        for (Toewijzing toewijzing : nieuweToewijzingen) {
+            if (toewijzing == null) {
+                throw new IllegalArgumentException(
+                        "De lijst mag geen null-toewijzingen bevatten"
+                );
+            }
+
+            if (toewijzing.getToewijzingsType()
+                    != ToewijzingsType.AUTOMATISCH) {
+
+                throw new IllegalArgumentException(
+                        "Alle nieuwe toewijzingen moeten automatisch zijn"
+                );
+            }
+
+            if (!toewijzing
+                    .getIngerichtTalent()
+                    .getTalentenPeriode()
+                    .equals(periode)) {
+
+                throw new IllegalArgumentException(
+                        "Alle nieuwe toewijzingen moeten tot de gekozen periode behoren"
+                );
+            }
+
+            if (toewijzing
+                    .getIngerichtTalent()
+                    .getDoelgroep()
+                    != doelgroep) {
+
+                throw new IllegalArgumentException(
+                        "Alle nieuwe toewijzingen moeten tot de gekozen doelgroep behoren"
+                );
+            }
+        }
+
         opgeslagenToewijzingen.removeIf(
                 toewijzing ->
                         toewijzing.getToewijzingsType()
@@ -217,9 +253,7 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
                                 && toewijzing
                                 .getIngerichtTalent()
                                 .getTalentenPeriode()
-                                .equals(
-                                        periode
-                                )
+                                .equals(periode)
                                 && toewijzing
                                 .getIngerichtTalent()
                                 .getDoelgroep()

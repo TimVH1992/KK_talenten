@@ -29,6 +29,12 @@ class VerdelingBekijkenServiceTest {
     private Leerkracht testLeerkracht;
     private Schooljaar schooljaar2026_2027;
 
+    private static final Doelgroep OBSERVATIE =
+            Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+
+    private static final Doelgroep KWALIFICATIE =
+            Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB;
+
     @BeforeEach
     void setUp() {
         testLeerkracht =
@@ -169,7 +175,8 @@ class VerdelingBekijkenServiceTest {
         // ACT
         List<IngerichtTalentOverzicht> overzichten =
                 service.bekijkPerIngerichtTalent(
-                        herfst
+                        herfst,
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -333,7 +340,8 @@ class VerdelingBekijkenServiceTest {
         // ACT
         List<IngerichtTalentOverzicht> overzichten =
                 service.bekijkPerIngerichtTalent(
-                        herfst
+                        herfst,
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -556,7 +564,8 @@ class VerdelingBekijkenServiceTest {
         // ACT
         List<IngerichtTalentOverzicht> werkelijk =
                 service.bekijkPerIngerichtTalent(
-                        herfst
+                        herfst,
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -576,6 +585,26 @@ class VerdelingBekijkenServiceTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> service.bekijkPerIngerichtTalent(
+                        null,
+                        OBSERVATIE
+                )
+        );
+    }
+
+    @Test
+    void bekijkPerIngerichtTalentMetNullDoelgroepWordtGeweigerd() {
+        // ARRANGE
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        VerdelingBekijkenService service =
+                maakLegeVerdelingBekijkenService();
+
+        // ACT & ASSERT
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.bekijkPerIngerichtTalent(
+                        herfst,
                         null
                 )
         );
@@ -643,7 +672,9 @@ class VerdelingBekijkenServiceTest {
 
         IngerichtTalentRepository ingerichtTalentRepository =
                 new InMemoryIngerichtTalentRepository(
-                        List.of(schakenHerfst)
+                        List.of(
+                                schakenHerfst
+                        )
                 );
 
         ToewijzingRepository toewijzingRepository =
@@ -849,7 +880,9 @@ class VerdelingBekijkenServiceTest {
 
         IngerichtTalentRepository ingerichtTalentRepository =
                 new InMemoryIngerichtTalentRepository(
-                        List.of(schakenHerfst)
+                        List.of(
+                                schakenHerfst
+                        )
                 );
 
         ToewijzingRepository toewijzingRepository =
@@ -970,7 +1003,9 @@ class VerdelingBekijkenServiceTest {
 
         LeerlingRepository leerlingRepository =
                 new InMemoryLeerlingRepository(
-                        List.of(sofie)
+                        List.of(
+                                sofie
+                        )
                 );
 
         TestLeerlingKlasHistoriekRepository historiekRepository =
@@ -1100,7 +1135,9 @@ class VerdelingBekijkenServiceTest {
 
         IngerichtTalentRepository ingerichtTalentRepository =
                 new InMemoryIngerichtTalentRepository(
-                        List.of(schakenHerfst)
+                        List.of(
+                                schakenHerfst
+                        )
                 );
 
         ToewijzingRepository toewijzingRepository =
@@ -1109,7 +1146,9 @@ class VerdelingBekijkenServiceTest {
                 );
 
         toewijzingRepository.saveAll(
-                List.of(toewijzingJan)
+                List.of(
+                        toewijzingJan
+                )
         );
 
         LeerlingRepository leerlingRepository =
@@ -1120,8 +1159,20 @@ class VerdelingBekijkenServiceTest {
                         )
                 );
 
-        LeerlingKlasHistoriekRepository historiekRepository =
+        TestLeerlingKlasHistoriekRepository historiekRepository =
                 new TestLeerlingKlasHistoriekRepository();
+
+        historiekRepository.startHistoriek(
+                jan,
+                klas1AA,
+                schooljaar2026_2027.getStartDatum()
+        );
+
+        historiekRepository.startHistoriek(
+                sofie,
+                klas1AA,
+                schooljaar2026_2027.getStartDatum()
+        );
 
         VerdelingBekijkenService service =
                 new VerdelingBekijkenService(
@@ -1134,7 +1185,8 @@ class VerdelingBekijkenServiceTest {
         // ACT
         List<NietToegewezenLeerlingOverzicht> resultaat =
                 service.bekijkNietToegewezenLeerlingen(
-                        herfst
+                        herfst,
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -1145,7 +1197,9 @@ class VerdelingBekijkenServiceTest {
 
         assertEquals(
                 sofie,
-                resultaat.getFirst().leerling()
+                resultaat
+                        .getFirst()
+                        .leerling()
         );
     }
 
@@ -1182,11 +1236,19 @@ class VerdelingBekijkenServiceTest {
 
         LeerlingRepository leerlingRepository =
                 new InMemoryLeerlingRepository(
-                        List.of(sofie)
+                        List.of(
+                                sofie
+                        )
                 );
 
-        LeerlingKlasHistoriekRepository historiekRepository =
+        TestLeerlingKlasHistoriekRepository historiekRepository =
                 new TestLeerlingKlasHistoriekRepository();
+
+        historiekRepository.startHistoriek(
+                sofie,
+                klas1AA,
+                schooljaar2026_2027.getStartDatum()
+        );
 
         VerdelingBekijkenService service =
                 new VerdelingBekijkenService(
@@ -1199,7 +1261,8 @@ class VerdelingBekijkenServiceTest {
         // ACT
         List<NietToegewezenLeerlingOverzicht> resultaat =
                 service.bekijkNietToegewezenLeerlingen(
-                        herfst
+                        herfst,
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -1218,198 +1281,31 @@ class VerdelingBekijkenServiceTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> service.bekijkNietToegewezenLeerlingen(
+                        null,
+                        OBSERVATIE
+                )
+        );
+    }
+
+    @Test
+    void bekijkNietToegewezenLeerlingenMetNullDoelgroepWordtGeweigerd() {
+        // ARRANGE
+        TalentenPeriode herfst =
+                maakHerfstPeriode();
+
+        VerdelingBekijkenService service =
+                maakLegeVerdelingBekijkenService();
+
+        // ACT & ASSERT
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.bekijkNietToegewezenLeerlingen(
+                        herfst,
                         null
                 )
         );
     }
 
-    private Klas maakObservatieKlas(
-            String naam,
-            int leerjaar
-    ) {
-        return new Klas(
-                naam,
-                schooljaar2026_2027,
-                leerjaar,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
-        );
-    }
-
-    private TalentenPeriode maakHerfstPeriode() {
-        return new TalentenPeriode(
-                "Herfst",
-                LocalDate.of(2026, 9, 1),
-                LocalDate.of(2026, 10, 31),
-                schooljaar2026_2027
-        );
-    }
-
-    private IngerichtTalent richtTalentIn(
-            Talent talent,
-            TalentenPeriode periode,
-            int maximumCapaciteit
-    ) {
-        return new IngerichtTalent(
-                talent,
-                periode,
-                talent.getNaam(),
-                talent.getBeschrijving(),
-                maximumCapaciteit,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                List.of(testLeerkracht)
-        );
-    }
-
-    private VerdelingBekijkenService maakLegeVerdelingBekijkenService() {
-        IngerichtTalentRepository ingerichtTalentRepository =
-                new InMemoryIngerichtTalentRepository(
-                        new ArrayList<>()
-                );
-
-        ToewijzingRepository toewijzingRepository =
-                new InMemoryToewijzingRepository(
-                        new ArrayList<>()
-                );
-
-        LeerlingRepository leerlingRepository =
-                new InMemoryLeerlingRepository(
-                        new ArrayList<>()
-                );
-
-        LeerlingKlasHistoriekRepository historiekRepository =
-                new TestLeerlingKlasHistoriekRepository();
-
-        return new VerdelingBekijkenService(
-                ingerichtTalentRepository,
-                toewijzingRepository,
-                leerlingRepository,
-                historiekRepository
-        );
-    }
-
-    private static class TestLeerlingKlasHistoriekRepository
-            implements LeerlingKlasHistoriekRepository {
-
-        private final List<LeerlingKlasHistoriek> historiek =
-                new ArrayList<>();
-
-        private long volgendId = 1;
-
-        @Override
-        public void startHistoriek(
-                Leerling leerling,
-                Klas klas,
-                LocalDate vanaf
-        ) {
-            historiek.add(
-                    new LeerlingKlasHistoriek(
-                            volgendId++,
-                            leerling,
-                            klas,
-                            vanaf,
-                            null
-                    )
-            );
-        }
-
-        @Override
-        public void sluitHuidigeHistoriekAf(
-                Leerling leerling,
-                LocalDate tot
-        ) {
-            for (int i = 0; i < historiek.size(); i++) {
-                LeerlingKlasHistoriek registratie =
-                        historiek.get(i);
-
-                if (registratie.getLeerling().equals(leerling)
-                        && registratie.isHuidig()) {
-
-                    historiek.set(
-                            i,
-                            new LeerlingKlasHistoriek(
-                                    registratie.getId(),
-                                    registratie.getLeerling(),
-                                    registratie.getKlas(),
-                                    registratie.getVanaf(),
-                                    tot
-                            )
-                    );
-
-                    return;
-                }
-            }
-
-            throw new IllegalStateException(
-                    "Geen huidige klashistoriek gevonden."
-            );
-        }
-
-        @Override
-        public void wijzigHuidigeKlas(
-                Leerling leerling,
-                Klas nieuweKlas
-        ) {
-            for (int i = 0; i < historiek.size(); i++) {
-                LeerlingKlasHistoriek registratie =
-                        historiek.get(i);
-
-                if (registratie.getLeerling().equals(leerling)
-                        && registratie.isHuidig()) {
-
-                    historiek.set(
-                            i,
-                            new LeerlingKlasHistoriek(
-                                    registratie.getId(),
-                                    registratie.getLeerling(),
-                                    nieuweKlas,
-                                    registratie.getVanaf(),
-                                    null
-                            )
-                    );
-
-                    return;
-                }
-            }
-
-            throw new IllegalStateException(
-                    "Geen huidige klashistoriek gevonden."
-            );
-        }
-
-        @Override
-        public List<LeerlingKlasHistoriek> zoekVoorLeerling(
-                Leerling leerling
-        ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie
-                                    .getLeerling()
-                                    .equals(leerling)
-                    )
-                    .toList();
-        }
-
-        @Override
-        public List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(
-                Klas klas,
-                LocalDate datum
-        ) {
-            return historiek.stream()
-                    .filter(registratie ->
-                            registratie.getKlas().equals(klas)
-                                    && !registratie
-                                    .getVanaf()
-                                    .isAfter(datum)
-                                    && (
-                                    registratie.getTot() == null
-                                            || registratie
-                                            .getTot()
-                                            .isAfter(datum)
-                            )
-                    )
-                    .toList();
-        }
-    }
     @Test
     void leerlingWordtNietToegewezenNadatZijnIngerichtTalentGedeactiveerdIs() {
         // ARRANGE
@@ -1443,11 +1339,12 @@ class VerdelingBekijkenServiceTest {
                         "Digitale Media - Herfst",
                         "Foto en video",
                         10,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                        List.of(testLeerkracht),
+                        OBSERVATIE,
+                        List.of(
+                                testLeerkracht
+                        ),
                         true
                 );
-
 
         IngerichtTalentRepository ingerichtTalentRepository =
                 new InMemoryIngerichtTalentRepository(
@@ -1468,9 +1365,14 @@ class VerdelingBekijkenServiceTest {
                         )
                 );
 
-        LeerlingKlasHistoriekRepository historiekRepository =
+        TestLeerlingKlasHistoriekRepository historiekRepository =
                 new TestLeerlingKlasHistoriekRepository();
 
+        historiekRepository.startHistoriek(
+                jan,
+                klas1AA,
+                schooljaar2026_2027.getStartDatum()
+        );
 
         Toewijzing toewijzing =
                 new Toewijzing(
@@ -1483,7 +1385,6 @@ class VerdelingBekijkenServiceTest {
         toewijzingRepository.save(
                 toewijzing
         );
-
 
         IngerichtTalentService ingerichtTalentService =
                 new IngerichtTalentService(
@@ -1499,12 +1400,12 @@ class VerdelingBekijkenServiceTest {
                         historiekRepository
                 );
 
-
         // Eerst is Jan toegewezen.
         assertTrue(
                 verdelingBekijkenService
                         .bekijkNietToegewezenLeerlingen(
-                                herfst
+                                herfst,
+                                OBSERVATIE
                         )
                         .isEmpty()
         );
@@ -1517,12 +1418,10 @@ class VerdelingBekijkenServiceTest {
                         )
         );
 
-
         // ACT
         ingerichtTalentService.deactiveer(
                 digitaleMedia
         );
-
 
         // ASSERT
         assertFalse(
@@ -1537,13 +1436,12 @@ class VerdelingBekijkenServiceTest {
                         )
         );
 
-
         List<NietToegewezenLeerlingOverzicht> nietToegewezen =
                 verdelingBekijkenService
                         .bekijkNietToegewezenLeerlingen(
-                                herfst
+                                herfst,
+                                OBSERVATIE
                         );
-
 
         assertEquals(
                 1,
@@ -1557,6 +1455,7 @@ class VerdelingBekijkenServiceTest {
                         .leerling()
         );
     }
+
     @Test
     void bekijkPerIngerichtTalentToontGeenInactieveIngerichteTalenten() {
         // ARRANGE
@@ -1617,7 +1516,8 @@ class VerdelingBekijkenServiceTest {
         // ACT
         List<IngerichtTalentOverzicht> resultaat =
                 service.bekijkPerIngerichtTalent(
-                        herfst
+                        herfst,
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -1633,6 +1533,7 @@ class VerdelingBekijkenServiceTest {
                         .ingerichtTalent()
         );
     }
+
     @Test
     void bekijkPerIngerichtTalentFiltertOpDoelgroep() {
         // ARRANGE
@@ -1658,8 +1559,10 @@ class VerdelingBekijkenServiceTest {
                         "Schaken",
                         "Leren schaken",
                         10,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB,
-                        List.of(testLeerkracht)
+                        OBSERVATIE,
+                        List.of(
+                                testLeerkracht
+                        )
                 );
 
         IngerichtTalent kokenHerfst =
@@ -1669,8 +1572,10 @@ class VerdelingBekijkenServiceTest {
                         "Koken",
                         "Leren koken",
                         10,
-                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
-                        List.of(testLeerkracht)
+                        KWALIFICATIE,
+                        List.of(
+                                testLeerkracht
+                        )
                 );
 
         IngerichtTalentRepository ingerichtTalentRepository =
@@ -1706,7 +1611,7 @@ class VerdelingBekijkenServiceTest {
         List<IngerichtTalentOverzicht> resultaat =
                 service.bekijkPerIngerichtTalent(
                         herfst,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -1733,6 +1638,7 @@ class VerdelingBekijkenServiceTest {
                         )
         );
     }
+
     @Test
     void bekijkNietToegewezenLeerlingenFiltertOpDoelgroep() {
         // ARRANGE
@@ -1744,7 +1650,7 @@ class VerdelingBekijkenServiceTest {
                         "1AA",
                         schooljaar2026_2027,
                         1,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        OBSERVATIE
                 );
 
         Klas klas3KA =
@@ -1752,7 +1658,7 @@ class VerdelingBekijkenServiceTest {
                         "3KA",
                         schooljaar2026_2027,
                         3,
-                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                        KWALIFICATIE
                 );
 
         Leerling jan =
@@ -1814,7 +1720,7 @@ class VerdelingBekijkenServiceTest {
         List<NietToegewezenLeerlingOverzicht> resultaat =
                 service.bekijkNietToegewezenLeerlingen(
                         herfst,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        OBSERVATIE
                 );
 
         // ASSERT
@@ -1842,12 +1748,14 @@ class VerdelingBekijkenServiceTest {
                         .stream()
                         .anyMatch(
                                 overzicht ->
-                                        overzicht.leerling() == sofie
+                                        overzicht.leerling()
+                                                == sofie
                         )
         );
     }
+
     @Test
-    void bekijkNietToegewezenLeerlingenMetNullDoelgroepToontAlleDoelgroepen() {
+    void bekijkNietToegewezenLeerlingenVoorKwalificatieToontGeenObservatieLeerlingen() {
         // ARRANGE
         TalentenPeriode herfst =
                 maakHerfstPeriode();
@@ -1857,7 +1765,7 @@ class VerdelingBekijkenServiceTest {
                         "1AA",
                         schooljaar2026_2027,
                         1,
-                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                        OBSERVATIE
                 );
 
         Klas klas3KA =
@@ -1865,7 +1773,7 @@ class VerdelingBekijkenServiceTest {
                         "3KA",
                         schooljaar2026_2027,
                         3,
-                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB
+                        KWALIFICATIE
                 );
 
         Leerling jan =
@@ -1927,32 +1835,248 @@ class VerdelingBekijkenServiceTest {
         List<NietToegewezenLeerlingOverzicht> resultaat =
                 service.bekijkNietToegewezenLeerlingen(
                         herfst,
-                        null
+                        KWALIFICATIE
                 );
 
         // ASSERT
         assertEquals(
-                2,
+                1,
                 resultaat.size()
         );
 
-        assertTrue(
+        assertSame(
+                sofie,
                 resultaat
-                        .stream()
-                        .anyMatch(
-                                overzicht ->
-                                        overzicht.leerling() == jan
-                        )
+                        .getFirst()
+                        .leerling()
         );
 
-        assertTrue(
+        assertFalse(
                 resultaat
                         .stream()
                         .anyMatch(
                                 overzicht ->
-                                        overzicht.leerling() == sofie
+                                        overzicht.leerling()
+                                                == jan
                         )
         );
     }
 
+    private Klas maakObservatieKlas(
+            String naam,
+            int leerjaar
+    ) {
+        return new Klas(
+                naam,
+                schooljaar2026_2027,
+                leerjaar,
+                OBSERVATIE
+        );
+    }
+
+    private TalentenPeriode maakHerfstPeriode() {
+        return new TalentenPeriode(
+                "Herfst",
+                LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 10, 31),
+                schooljaar2026_2027
+        );
+    }
+
+    private IngerichtTalent richtTalentIn(
+            Talent talent,
+            TalentenPeriode periode,
+            int maximumCapaciteit
+    ) {
+        return new IngerichtTalent(
+                talent,
+                periode,
+                talent.getNaam(),
+                talent.getBeschrijving(),
+                maximumCapaciteit,
+                OBSERVATIE,
+                List.of(
+                        testLeerkracht
+                )
+        );
+    }
+
+    private VerdelingBekijkenService maakLegeVerdelingBekijkenService() {
+        IngerichtTalentRepository ingerichtTalentRepository =
+                new InMemoryIngerichtTalentRepository(
+                        new ArrayList<>()
+                );
+
+        ToewijzingRepository toewijzingRepository =
+                new InMemoryToewijzingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingRepository leerlingRepository =
+                new InMemoryLeerlingRepository(
+                        new ArrayList<>()
+                );
+
+        LeerlingKlasHistoriekRepository historiekRepository =
+                new TestLeerlingKlasHistoriekRepository();
+
+        return new VerdelingBekijkenService(
+                ingerichtTalentRepository,
+                toewijzingRepository,
+                leerlingRepository,
+                historiekRepository
+        );
+    }
+
+    private static class TestLeerlingKlasHistoriekRepository
+            implements LeerlingKlasHistoriekRepository {
+
+        private final List<LeerlingKlasHistoriek> historiek =
+                new ArrayList<>();
+
+        private long volgendId = 1;
+
+        @Override
+        public void startHistoriek(
+                Leerling leerling,
+                Klas klas,
+                LocalDate vanaf
+        ) {
+            historiek.add(
+                    new LeerlingKlasHistoriek(
+                            volgendId++,
+                            leerling,
+                            klas,
+                            vanaf,
+                            null
+                    )
+            );
+        }
+
+        @Override
+        public void sluitHuidigeHistoriekAf(
+                Leerling leerling,
+                LocalDate tot
+        ) {
+            for (int i = 0;
+                 i < historiek.size();
+                 i++) {
+
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie
+                        .getLeerling()
+                        .equals(
+                                leerling
+                        )
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    registratie.getKlas(),
+                                    registratie.getVanaf(),
+                                    tot
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
+        public void wijzigHuidigeKlas(
+                Leerling leerling,
+                Klas nieuweKlas
+        ) {
+            for (int i = 0;
+                 i < historiek.size();
+                 i++) {
+
+                LeerlingKlasHistoriek registratie =
+                        historiek.get(i);
+
+                if (registratie
+                        .getLeerling()
+                        .equals(
+                                leerling
+                        )
+                        && registratie.isHuidig()) {
+
+                    historiek.set(
+                            i,
+                            new LeerlingKlasHistoriek(
+                                    registratie.getId(),
+                                    registratie.getLeerling(),
+                                    nieuweKlas,
+                                    registratie.getVanaf(),
+                                    null
+                            )
+                    );
+
+                    return;
+                }
+            }
+
+            throw new IllegalStateException(
+                    "Geen huidige klashistoriek gevonden."
+            );
+        }
+
+        @Override
+        public List<LeerlingKlasHistoriek> zoekVoorLeerling(
+                Leerling leerling
+        ) {
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getLeerling()
+                                            .equals(
+                                                    leerling
+                                            )
+                    )
+                    .toList();
+        }
+
+        @Override
+        public List<LeerlingKlasHistoriek> zoekVoorKlasOpDatum(
+                Klas klas,
+                LocalDate datum
+        ) {
+            return historiek
+                    .stream()
+                    .filter(
+                            registratie ->
+                                    registratie
+                                            .getKlas()
+                                            .equals(
+                                                    klas
+                                            )
+                                            && !registratie
+                                            .getVanaf()
+                                            .isAfter(
+                                                    datum
+                                            )
+                                            && (
+                                            registratie.getTot() == null
+                                                    || registratie
+                                                    .getTot()
+                                                    .isAfter(
+                                                            datum
+                                                    )
+                                    )
+                    )
+                    .toList();
+        }
+    }
 }

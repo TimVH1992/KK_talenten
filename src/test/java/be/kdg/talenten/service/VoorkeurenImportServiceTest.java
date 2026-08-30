@@ -1180,4 +1180,43 @@ public class VoorkeurenImportServiceTest {
         assertTrue(resultaat.getProblemen().isEmpty());
     }
 
+    @Test
+    void importMetNullDoelgroepWordtGeweigerd(@TempDir Path tempDir) {
+        Schooljaar schooljaar =
+                new Schooljaar(
+                        "2026-2027",
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2027, 6, 30)
+                );
+
+        TalentenPeriode periode =
+                new TalentenPeriode(
+                        "Herfst",
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 12, 21),
+                        schooljaar
+                );
+
+        VoorkeurenImportService service =
+                new VoorkeurenImportService(
+                        new InMemoryLeerlingRepository(new ArrayList<>()),
+                        new InMemoryIngerichtTalentRepository(new ArrayList<>()),
+                        new InMemoryVoorkeurRepository(new ArrayList<>()),
+                        new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>())
+                );
+
+        Path bestand =
+                tempDir.resolve(
+                        "voorkeuren.xlsx"
+                );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.importeer(
+                        bestand,
+                        periode,
+                        null
+                )
+        );
+    }
 }

@@ -9,65 +9,84 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class VoorkeurTest {
-
     @Test
     public void voorkeurVoorVerkeerdeDoelgroepWordtGeweigerd() {
         // ARRANGE
-        LocalDate startDatum = LocalDate.of(2026, 9, 1);
-        LocalDate eindDatum = LocalDate.of(2026, 10, 31);
+        LocalDate startDatum =
+                LocalDate.of(2026, 9, 1);
 
-        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(startDatum, eindDatum);
+        LocalDate eindDatum =
+                LocalDate.of(2026, 10, 31);
 
-        Klas klas2AA = new Klas(
-                "2AA",
-                schooljaar,
-                2,
-                Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
-        );
+        Schooljaar schooljaar =
+                TestDataFactory.schooljaarVoorPeriode(
+                        startDatum,
+                        eindDatum
+                );
 
-        Leerling jan = new Leerling(
-                "Jan",
-                "Peeters",
-                klas2AA
-        );
+        Klas klas2AA =
+                new Klas(
+                        "2AA",
+                        schooljaar,
+                        2,
+                        Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB
+                );
 
-        TalentenPeriode herfst = new TalentenPeriode(
-                "Herfst",
-                startDatum,
-                eindDatum,
-                schooljaar
-        );
+        Leerling jan =
+                new Leerling(
+                        "Jan",
+                        "Peeters",
+                        klas2AA
+                );
 
-        Talent schaken = new Talent(
-                "Schaken",
-                "Leren schaken"
-        );
+        TalentenPeriode herfst =
+                new TalentenPeriode(
+                        "Herfst",
+                        startDatum,
+                        eindDatum,
+                        schooljaar
+                );
 
-        Leerkracht leerkracht = new Leerkracht(
-                "Tim",
-                "Van Herreweghe"
-        );
+        Talent schaken =
+                new Talent(
+                        "Schaken",
+                        "Leren schaken"
+                );
 
-        IngerichtTalent schakenBovenbouw = new IngerichtTalent(
-                schaken,
-                herfst,
-                schaken.getNaam(),
-                schaken.getBeschrijving(),
-                10,
-                Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
-                List.of(leerkracht)
-        );
+        Leerkracht leerkracht =
+                new Leerkracht(
+                        "Tim",
+                        "Van Herreweghe"
+                );
 
-        // ACT + ASSERT
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> new Voorkeur(
-                        null,
-                        jan,
+        IngerichtTalent schakenBovenbouw =
+                new IngerichtTalent(
+                        schaken,
                         herfst,
-                        schakenBovenbouw,
-                        1
-                )
+                        schaken.getNaam(),
+                        schaken.getBeschrijving(),
+                        10,
+                        Doelgroep.KWALIFICATIEFASE_TWEEDEGRAAD_AB,
+                        List.of(leerkracht)
+                );
+
+        // ACT
+        IllegalArgumentException exception =
+                Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Voorkeur(
+                                null,
+                                jan,
+                                herfst,
+                                schakenBovenbouw,
+                                1
+                        )
+                );
+
+        // ASSERT
+        Assertions.assertEquals(
+                "De leerling behoort niet tot de doelgroep van het ingericht talent.",
+                exception.getMessage()
         );
     }
 }
