@@ -1,6 +1,8 @@
 package be.kdg.talenten.view.main;
 
+import be.kdg.talenten.config.ApplicationConfig;
 import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.beheer.BeheerPresenter;
 import be.kdg.talenten.view.beheer.BeheerView;
 import be.kdg.talenten.view.shared.SectionView;
 import be.kdg.talenten.view.theme.ThemeManager;
@@ -11,9 +13,16 @@ public class MainPresenter {
     private final SceneManager sceneManager;
     private final ThemeManager themeManager;
     private final Scene scene;
+    private final ApplicationConfig config;
 
-    public MainPresenter(MainView view, SceneManager sceneManager, ThemeManager themeManager, Scene scene) {
-        if (view == null || sceneManager == null || themeManager == null || scene == null) {
+    public MainPresenter(
+            MainView view,
+            SceneManager sceneManager,
+            ThemeManager themeManager,
+            Scene scene,
+            ApplicationConfig config
+    ) {
+        if (view == null || sceneManager == null || themeManager == null || scene == null || config == null) {
             throw new IllegalArgumentException("MainPresenter kreeg een null-afhankelijkheid");
         }
 
@@ -21,6 +30,7 @@ public class MainPresenter {
         this.sceneManager = sceneManager;
         this.themeManager = themeManager;
         this.scene = scene;
+        this.config = config;
 
         configureer();
     }
@@ -45,26 +55,15 @@ public class MainPresenter {
 
     private void toonBeheer() {
         BeheerView beheerView = new BeheerView();
-        beheerView.updateThemeIcon(themeManager.isDark());
-        beheerView.getTerugButton().setOnAction(event -> sceneManager.toon(view));
-        beheerView.getThemeButton().setOnAction(event -> toggleTheme(beheerView::updateThemeIcon));
-
-        beheerView.getSchooljarenButton().setOnAction(event -> toonBeheerSectie(beheerView, "Schooljaren", "Maak het volgende schooljaar aan en beheer welk schooljaar actief is."));
-        beheerView.getPeriodesButton().setOnAction(event -> toonBeheerSectie(beheerView, "Talentenperiodes", "Beheer de talentenperiodes binnen een schooljaar."));
-        beheerView.getKlassenButton().setOnAction(event -> toonBeheerSectie(beheerView, "Klassen", "Beheer klassen, leerjaren en doelgroepen."));
-        beheerView.getLeerlingenButton().setOnAction(event -> toonBeheerSectie(beheerView, "Leerlingen", "Beheer leerlingen, actieve status en klaswissels met historiek."));
-        beheerView.getLeerkrachtenButton().setOnAction(event -> toonBeheerSectie(beheerView, "Leerkrachten", "Beheer leerkrachten en hun actieve status."));
-        beheerView.getTalentenButton().setOnAction(event -> toonBeheerSectie(beheerView, "Talenten", "Beheer de basistalenten die later per periode ingericht kunnen worden."));
-
+        new BeheerPresenter(
+                beheerView,
+                view,
+                sceneManager,
+                themeManager,
+                scene,
+                config
+        );
         sceneManager.toon(beheerView);
-    }
-
-    private void toonBeheerSectie(BeheerView beheerView, String titel, String uitleg) {
-        SectionView sectionView = new SectionView(titel, uitleg);
-        sectionView.updateThemeIcon(themeManager.isDark());
-        sectionView.getTerugButton().setOnAction(event -> sceneManager.toon(beheerView));
-        sectionView.getThemeButton().setOnAction(event -> toggleTheme(sectionView::updateThemeIcon));
-        sceneManager.toon(sectionView);
     }
 
     private void toonSectie(String titel, String uitleg) {

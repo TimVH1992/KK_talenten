@@ -1,0 +1,103 @@
+package be.kdg.talenten.view.beheer;
+
+import be.kdg.talenten.config.ApplicationConfig;
+import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.beheer.schooljaar.SchooljaarPresenter;
+import be.kdg.talenten.view.beheer.schooljaar.SchooljaarView;
+import be.kdg.talenten.view.main.MainView;
+import be.kdg.talenten.view.shared.SectionView;
+import be.kdg.talenten.view.theme.ThemeManager;
+import javafx.scene.Scene;
+
+public class BeheerPresenter {
+    private final BeheerView view;
+    private final MainView mainView;
+    private final SceneManager sceneManager;
+    private final ThemeManager themeManager;
+    private final Scene scene;
+    private final ApplicationConfig config;
+
+    public BeheerPresenter(
+            BeheerView view,
+            MainView mainView,
+            SceneManager sceneManager,
+            ThemeManager themeManager,
+            Scene scene,
+            ApplicationConfig config
+    ) {
+        if (view == null || mainView == null || sceneManager == null || themeManager == null || scene == null || config == null) {
+            throw new IllegalArgumentException("BeheerPresenter kreeg een null-afhankelijkheid");
+        }
+
+        this.view = view;
+        this.mainView = mainView;
+        this.sceneManager = sceneManager;
+        this.themeManager = themeManager;
+        this.scene = scene;
+        this.config = config;
+
+        configureer();
+    }
+
+    private void configureer() {
+        view.updateThemeIcon(themeManager.isDark());
+        view.getTerugButton().setOnAction(event -> sceneManager.toon(mainView));
+        view.getThemeButton().setOnAction(event -> toggleTheme());
+
+        view.getSchooljarenButton().setOnAction(event -> toonSchooljaren());
+        view.getPeriodesButton().setOnAction(event -> toonPlaceholder(
+                "Talentenperiodes",
+                "Beheer de talentenperiodes binnen een schooljaar."
+        ));
+        view.getKlassenButton().setOnAction(event -> toonPlaceholder(
+                "Klassen",
+                "Beheer klassen, leerjaren en doelgroepen."
+        ));
+        view.getLeerlingenButton().setOnAction(event -> toonPlaceholder(
+                "Leerlingen",
+                "Beheer leerlingen, actieve status en klaswissels met historiek."
+        ));
+        view.getLeerkrachtenButton().setOnAction(event -> toonPlaceholder(
+                "Leerkrachten",
+                "Beheer leerkrachten en hun actieve status."
+        ));
+        view.getTalentenButton().setOnAction(event -> toonPlaceholder(
+                "Talenten",
+                "Beheer de basistalenten die later per periode ingericht kunnen worden."
+        ));
+    }
+
+    private void toonSchooljaren() {
+        SchooljaarView schooljaarView = new SchooljaarView();
+        new SchooljaarPresenter(
+                schooljaarView,
+                view,
+                sceneManager,
+                themeManager,
+                scene,
+                config.getSchooljaarService()
+        );
+        sceneManager.toon(schooljaarView);
+    }
+
+    private void toonPlaceholder(String titel, String uitleg) {
+        SectionView sectionView = new SectionView(titel, uitleg);
+        sectionView.updateThemeIcon(themeManager.isDark());
+        sectionView.getTerugButton().setOnAction(event -> sceneManager.toon(view));
+        sectionView.getThemeButton().setOnAction(event -> {
+            themeManager.toggle(scene);
+            boolean dark = themeManager.isDark();
+            sectionView.updateThemeIcon(dark);
+            view.updateThemeIcon(dark);
+            mainView.updateThemeIcon(dark);
+        });
+        sceneManager.toon(sectionView);
+    }
+
+    private void toggleTheme() {
+        themeManager.toggle(scene);
+        boolean dark = themeManager.isDark();
+        view.updateThemeIcon(dark);
+        mainView.updateThemeIcon(dark);
+    }
+}

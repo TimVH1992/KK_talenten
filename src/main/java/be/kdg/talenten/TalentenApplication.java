@@ -1,30 +1,37 @@
 package be.kdg.talenten;
 
+import be.kdg.talenten.config.ApplicationConfig;
+import be.kdg.talenten.view.SceneManager;
+import be.kdg.talenten.view.main.MainPresenter;
+import be.kdg.talenten.view.main.MainView;
+import be.kdg.talenten.view.theme.ThemeManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class TalentenApplication extends Application {
+    private ApplicationConfig config;
+
+    @Override
+    public void init() {
+        config = new ApplicationConfig();
+    }
 
     @Override
     public void start(Stage stage) {
-        stage.setTitle("KK Talenten");
+        MainView mainView = new MainView();
+        Scene scene = new Scene(mainView, 1200, 800);
 
-        StackPane root =
-                new StackPane();
+        ThemeManager themeManager = new ThemeManager();
+        themeManager.apply(scene);
 
-        Scene scene =
-                new Scene(
-                        root,
-                        1200,
-                        800
-                );
+        SceneManager sceneManager = new SceneManager(scene);
+        new MainPresenter(mainView, sceneManager, themeManager, scene, config);
 
-        stage.setScene(
-                scene
-        );
-
+        stage.setTitle("Talenten KK");
+        stage.setMinWidth(900);
+        stage.setMinHeight(650);
+        stage.setScene(scene);
         stage.show();
     }
 
