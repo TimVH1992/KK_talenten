@@ -10,7 +10,7 @@ import javafx.scene.layout.*;
 public class MainView extends BorderPane {
     private final Button verdelingButton = maakKaart("☑", "Verdeling opstellen", "Verdelen, bekijken en manueel aanpassen");
     private final Button beheerButton = maakKaart("⚙", "Beheer", "Schooljaren, periodes, klassen, leerlingen en leerkrachten");
-    private final Button keuzelijstButton = maakKaart("☷", "Keuzelijst aanmaken", "Excelbestand maken voor de leerlingkeuzes");
+    private final Button keuzelijstButton = maakKaart("☷", "Keuzelijsten", "Lege keuzelijsten maken en ingevulde lijsten uploaden");
     private final Button exportButton = maakKaart("⇩", "Lijsten exporteren", "Per klas / per ingericht talent");
     private final Button themeButton = new Button("☾");
 

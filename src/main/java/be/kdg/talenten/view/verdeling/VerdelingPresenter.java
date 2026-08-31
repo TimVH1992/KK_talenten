@@ -4,9 +4,11 @@ import be.kdg.talenten.domain.*;
 import be.kdg.talenten.overzicht.IngerichtTalentOverzicht;
 import be.kdg.talenten.overzicht.NietToegewezenLeerlingOverzicht;
 import be.kdg.talenten.overzicht.LeerlingToewijzingOverzicht;
+import be.kdg.talenten.overzicht.LeerlingDetailsOverzicht;
 import be.kdg.talenten.service.beheer.KlasService;
 import be.kdg.talenten.service.beheer.SchooljaarService;
 import be.kdg.talenten.service.beheer.TalentenPeriodeService;
+import be.kdg.talenten.service.leerling.LeerlingDetailsService;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
 import be.kdg.talenten.service.verdeling.ManueleToewijzingService;
 import be.kdg.talenten.service.verdeling.VerdelingBekijkenService;
@@ -19,6 +21,7 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 import java.time.LocalDate;
@@ -38,6 +41,7 @@ public class VerdelingPresenter {
     private final AutomatischeVerdelingService automatischeService;
     private final ManueleToewijzingService manueleService;
     private final VerdelingBekijkenService bekijkenService;
+    private final LeerlingDetailsService leerlingDetailsService;
     private List<IngerichtTalentOverzicht> talentOverzichten = List.of();
     private final AtomicLong laadVersie = new AtomicLong();
 
@@ -45,10 +49,11 @@ public class VerdelingPresenter {
                               ThemeManager themeManager, Scene scene, SchooljaarService schooljaarService,
                               TalentenPeriodeService periodeService, KlasService klasService,
                               AutomatischeVerdelingService automatischeService,
-                              ManueleToewijzingService manueleService, VerdelingBekijkenService bekijkenService) {
+                              ManueleToewijzingService manueleService, VerdelingBekijkenService bekijkenService,
+                              LeerlingDetailsService leerlingDetailsService) {
         if (view == null || mainView == null || sceneManager == null || themeManager == null || scene == null
                 || schooljaarService == null || periodeService == null || klasService == null || automatischeService == null
-                || manueleService == null || bekijkenService == null) {
+                || manueleService == null || bekijkenService == null || leerlingDetailsService == null) {
             throw new IllegalArgumentException("VerdelingPresenter kreeg een null-afhankelijkheid");
         }
         this.view = view; this.mainView = mainView; this.sceneManager = sceneManager;
@@ -56,6 +61,7 @@ public class VerdelingPresenter {
         this.periodeService = periodeService; this.automatischeService = automatischeService;
         this.klasService = klasService;
         this.manueleService = manueleService; this.bekijkenService = bekijkenService;
+        this.leerlingDetailsService = leerlingDetailsService;
         configureer();
         laadSchooljaren();
     }
@@ -238,16 +244,34 @@ public class VerdelingPresenter {
         Doelgroep doelgroep = view.getDoelgroepComboBox().getValue();
         if (periode == null || doelgroep == null) return;
         try {
-            if (automatischeService.heeftBestaandeToewijzingen(periode, doelgroep)) {
-                Alert bevestiging = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Bestaande automatische toewijzingen voor deze doelgroep worden vervangen.",
-                        ButtonType.OK, ButtonType.CANCEL);
-                bevestiging.setTitle("Automatische verdeling uitvoeren");
-                bevestiging.setHeaderText("Wilt u de verdeling opnieuw uitvoeren?");
-                bevestiging.initOwner(scene.getWindow());
-                bevestiging.getDialogPane().getStylesheets().setAll(scene.getStylesheets());
-                if (bevestiging.showAndWait().filter(ButtonType.OK::equals).isEmpty()) return;
+            AutomatischeVerdelingService.VoorkeurenDekking dekking =
+                    automatischeService.bepaalVoorkeurenDekking(periode, doelgroep);
+            boolean bestaandeToewijzingen = automatischeService
+                    .heeftBestaandeToewijzingen(periode, doelgroep);
+            StringBuilder melding = new StringBuilder()
+                    .append(dekking.leerlingenMetVolledigeVoorkeuren())
+                    .append(" van de ")
+                    .append(dekking.totaalLeerlingen())
+                    .append(" leerlingen hebben drie opgeslagen voorkeuren.");
+            if (dekking.leerlingenZonderVolledigeVoorkeuren() > 0) {
+                melding.append(System.lineSeparator())
+                        .append(dekking.leerlingenZonderVolledigeVoorkeuren())
+                        .append(dekking.leerlingenZonderVolledigeVoorkeuren() == 1
+                                ? " leerling heeft geen of onvolledige voorkeuren."
+                                : " leerlingen hebben geen of onvolledige voorkeuren.");
             }
+            if (bestaandeToewijzingen) {
+                melding.append(System.lineSeparator()).append(System.lineSeparator())
+                        .append("Bestaande automatische toewijzingen voor deze doelgroep worden vervangen.");
+            }
+            Alert bevestiging = new Alert(Alert.AlertType.CONFIRMATION,
+                    melding.toString(), ButtonType.OK, ButtonType.CANCEL);
+            bevestiging.setTitle("Automatische verdeling uitvoeren");
+            bevestiging.setHeaderText("Wilt u de automatische verdeling uitvoeren?");
+            bevestiging.initOwner(scene.getWindow());
+            bevestiging.getDialogPane().getStylesheets().setAll(scene.getStylesheets());
+            if (bevestiging.showAndWait().filter(ButtonType.OK::equals).isEmpty()) return;
+
             VerdelingsResultaat resultaat = automatischeService.voerAutomatischeVerdelingUit(periode, doelgroep);
             laadOverzicht();
             view.toonStatus(resultaat.getAantalToewijzingen() + " leerlingen automatisch toegewezen · "
@@ -260,14 +284,56 @@ public class VerdelingPresenter {
         Leerling leerling = geselecteerdeLeerling();
         TalentenPeriode periode = view.getPeriodeComboBox().getValue();
         if (leerling == null || periode == null) return;
+
+        LeerlingDetailsOverzicht details;
+        try {
+            details = leerlingDetailsService.bekijk(leerling, periode);
+        } catch (RuntimeException e) {
+            view.toonStatus(boodschap(e, "De voorkeuren en historiek konden niet geladen worden."), true);
+            return;
+        }
+
         Dialog<IngerichtTalentOverzicht> dialoog = new Dialog<>();
         dialoog.setTitle("Handmatig toewijzen");
-        dialoog.setHeaderText(leerling.getVoornaam() + " " + leerling.getAchternaam() + " toewijzen");
+        dialoog.setHeaderText(leerling.getVoornaam() + " " + leerling.getAchternaam()
+                + " · " + leerling.getKlas().getNaam());
         dialoog.initOwner(scene.getWindow());
         dialoog.getDialogPane().getStyleClass().add("app-dialog");
         dialoog.getDialogPane().getStylesheets().setAll(scene.getStylesheets());
         ButtonType opslaan = new ButtonType("Toewijzen", ButtonBar.ButtonData.OK_DONE);
         dialoog.getDialogPane().getButtonTypes().addAll(opslaan, ButtonType.CANCEL);
+
+        Label voorkeurTitel = new Label("Opgeslagen voorkeuren voor " + periode.getNaam());
+        voorkeurTitel.getStyleClass().add("field-label");
+        ListView<String> voorkeurLijst = new ListView<>();
+        voorkeurLijst.setMaxHeight(112);
+        voorkeurLijst.setPlaceholder(new Label("Geen voorkeuren opgeslagen voor deze periode."));
+        voorkeurLijst.setItems(FXCollections.observableArrayList(details.voorkeuren().stream()
+                .sorted(Comparator.comparingInt(Voorkeur::getVoorkeurNummer))
+                .map(voorkeur -> "Voorkeur " + voorkeur.getVoorkeurNummer() + " — "
+                        + voorkeur.getIngerichtTalent().getNaam())
+                .toList()));
+
+        Label historiekTitel = new Label("Eerdere toewijzingen in " + periode.getSchooljaar().getNaam());
+        historiekTitel.getStyleClass().add("field-label");
+        ListView<String> historiekLijst = new ListView<>();
+        historiekLijst.setMaxHeight(140);
+        historiekLijst.setPlaceholder(new Label("Geen eerdere toewijzingen in dit schooljaar."));
+        historiekLijst.setItems(FXCollections.observableArrayList(details.historischeToewijzingen().stream()
+                .map(toewijzing -> {
+                    String voorkeur = toewijzing.getVoorkeurNummer() == null
+                            ? "geen voorkeur"
+                            : "voorkeur " + toewijzing.getVoorkeurNummer();
+                    String type = toewijzing.getToewijzingsType() == ToewijzingsType.MANUEEL
+                            ? "manueel" : "automatisch";
+                    return toewijzing.getIngerichtTalent().getTalentenPeriode().getNaam()
+                            + " — " + toewijzing.getIngerichtTalent().getNaam()
+                            + " · " + type + " · " + voorkeur;
+                })
+                .toList()));
+
+        Label talentTitel = new Label("Nieuw ingericht talent");
+        talentTitel.getStyleClass().add("field-label");
         ComboBox<IngerichtTalentOverzicht> talent = new ComboBox<>(FXCollections.observableArrayList(talentOverzichten));
         talent.setMaxWidth(Double.MAX_VALUE);
         talent.setPromptText("Selecteer een ingericht talent");
@@ -278,7 +344,16 @@ public class VerdelingPresenter {
             }
             @Override public IngerichtTalentOverzicht fromString(String s) { return null; }
         });
-        dialoog.getDialogPane().setContent(talent);
+
+        VBox inhoud = new VBox(8,
+                voorkeurTitel, voorkeurLijst,
+                historiekTitel, historiekLijst,
+                talentTitel, talent
+        );
+        inhoud.setPrefWidth(680);
+        dialoog.getDialogPane().setContent(inhoud);
+        Button toewijzenButton = (Button) dialoog.getDialogPane().lookupButton(opslaan);
+        toewijzenButton.disableProperty().bind(talent.valueProperty().isNull());
         dialoog.setResultConverter(knop -> knop == opslaan ? talent.getValue() : null);
         dialoog.showAndWait().ifPresent(keuze -> {
             try {

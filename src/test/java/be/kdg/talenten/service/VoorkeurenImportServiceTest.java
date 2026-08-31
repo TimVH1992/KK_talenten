@@ -1181,6 +1181,47 @@ public class VoorkeurenImportServiceTest {
     }
 
     @Test
+    void onbekendeLeerlingWordtGemeldEnBlokkeertAndereLeerlingenNiet(@TempDir Path tempDir) throws IOException {
+        Schooljaar schooljaar = new Schooljaar("2026-2027", LocalDate.of(2026, 9, 1), LocalDate.of(2027, 6, 30));
+        TalentenPeriode periode = new TalentenPeriode("Herfst", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 21), schooljaar);
+        Doelgroep doelgroep = Doelgroep.OBSERVATIE_OPLEIDINGSFASE_EERSTEGRAAD_AB;
+        Klas klas = new Klas("1AA", schooljaar, 1, doelgroep);
+        Leerling jan = new Leerling("Jan", "Mertens", klas);
+        Leerling onbekend = new Leerling("Nieuwe", "Leerling", klas);
+        Leerkracht leerkracht = new Leerkracht("Tom", "Peeters");
+        IngerichtTalent voetbal = new IngerichtTalent(new Talent("Voetbal", "Balsport"), periode, "Voetbal", "Balsport", 10, doelgroep, List.of(leerkracht));
+        IngerichtTalent schaken = new IngerichtTalent(new Talent("Schaken", "Denkspel"), periode, "Schaken", "Denkspel", 10, doelgroep, List.of(leerkracht));
+        IngerichtTalent koken = new IngerichtTalent(new Talent("Koken", "Kooktalent"), periode, "Koken", "Kooktalent", 10, doelgroep, List.of(leerkracht));
+        InMemoryIngerichtTalentRepository talenten = new InMemoryIngerichtTalentRepository(List.of(voetbal, schaken, koken));
+        Path bestand = tempDir.resolve("met_onbekende_leerling.xlsx");
+        new VoorkeurenExcelService(new InMemoryLeerlingRepository(List.of(jan, onbekend)), talenten)
+                .genereerTemplate(periode, doelgroep, bestand);
+        try (XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(bestand))) {
+            Sheet sheet = workbook.getSheet("1AA");
+            for (int rij = 1; rij <= 2; rij++) {
+                sheet.getRow(rij).getCell(2).setCellValue("Voetbal");
+                sheet.getRow(rij).getCell(3).setCellValue("Schaken");
+                sheet.getRow(rij).getCell(4).setCellValue("Koken");
+            }
+            try (OutputStream output = Files.newOutputStream(bestand)) { workbook.write(output); }
+        }
+        InMemoryVoorkeurRepository voorkeuren = new InMemoryVoorkeurRepository(new ArrayList<>());
+        VoorkeurenImportService service = new VoorkeurenImportService(
+                new InMemoryLeerlingRepository(List.of(jan)), talenten, voorkeuren,
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>())
+        );
+
+        VoorkeurenImportResultaat resultaat = service.importeer(bestand, periode, doelgroep);
+
+        assertEquals(3, voorkeuren.zoekVoorPeriode(periode).size());
+        assertTrue(resultaat.getProblemen().isEmpty());
+        assertEquals(1, resultaat.getNietGekoppeldeLeerlingen().size());
+        assertEquals("Nieuwe", resultaat.getNietGekoppeldeLeerlingen().getFirst().voornaam());
+        assertEquals("1AA", resultaat.getNietGekoppeldeLeerlingen().getFirst().klasNaam());
+        assertEquals(List.of("Voetbal", "Schaken", "Koken"), resultaat.getNietGekoppeldeLeerlingen().getFirst().keuzes());
+    }
+
+    @Test
     void importMetNullDoelgroepWordtGeweigerd(@TempDir Path tempDir) {
         Schooljaar schooljaar =
                 new Schooljaar(

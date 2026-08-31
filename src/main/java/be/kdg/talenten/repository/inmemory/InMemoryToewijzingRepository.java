@@ -151,13 +151,28 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
         }
         return toewijzingenVoorPeriode;
     }
+
     @Override
-    public List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(Leerling leerling, Schooljaar schooljaar) {
+    public List<Toewijzing> zoekAlleVoorLeerling(Leerling leerling) {
+        if (leerling == null) throw new IllegalArgumentException("De leerling mag niet null zijn");
+        return java.util.stream.Stream.concat(
+                        historischeToewijzingen.stream(),
+                        opgeslagenToewijzingen.stream()
+                )
+                .filter(toewijzing -> toewijzing.getLeerling().equals(leerling))
+                .distinct()
+                .toList();
+    }
+    @Override
+    public List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnPeriode(
+            Leerling leerling,
+            TalentenPeriode geselecteerdePeriode
+    ) {
         if (leerling == null) {
             throw new IllegalArgumentException("De leerling mag niet null zijn");
         }
-        if (schooljaar == null) {
-            throw new IllegalArgumentException("Het schooljaar mag niet null zijn");
+        if (geselecteerdePeriode == null) {
+            throw new IllegalArgumentException("De geselecteerde periode mag niet null zijn");
         }
 
         return historischeToewijzingen.stream()
@@ -165,7 +180,11 @@ public class InMemoryToewijzingRepository implements ToewijzingRepository {
                 .filter(toewijzing -> toewijzing.getIngerichtTalent()
                         .getTalentenPeriode()
                         .getSchooljaar()
-                        .equals(schooljaar))
+                        .equals(geselecteerdePeriode.getSchooljaar()))
+                .filter(toewijzing -> toewijzing.getIngerichtTalent()
+                        .getTalentenPeriode()
+                        .getEindDatum()
+                        .isBefore(geselecteerdePeriode.getStartDatum()))
                 .toList();
     }
 

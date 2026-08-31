@@ -36,9 +36,8 @@ public class LeerlingDetailsService {
                 .zoekVoorLeerlingEnPeriode(leerling, periode);
 
         List<Toewijzing> historischeToewijzingen = toewijzingRepository
-                .zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(leerling, periode.getSchooljaar())
+                .zoekHistorischeToewijzingenVoorLeerlingEnPeriode(leerling, periode)
                 .stream()
-                .filter(toewijzing -> !toewijzing.getIngerichtTalent().getTalentenPeriode().equals(periode))
                 .sorted(Comparator.comparing(
                         (Toewijzing toewijzing) -> toewijzing
                                 .getIngerichtTalent()

@@ -2094,6 +2094,45 @@ class AutomatischeVerdelingServiceTest {
         );
     }
 
+    @Test
+    void voorkeurenDekkingTeltAlleenActieveLeerlingenMetDrieVoorkeuren() {
+        LocalDate start = LocalDate.of(2099, 9, 1);
+        LocalDate einde = LocalDate.of(2099, 10, 31);
+        Schooljaar schooljaar = TestDataFactory.schooljaarVoorPeriode(start, einde);
+        TalentenPeriode periode = new TalentenPeriode("Herfst", start, einde, schooljaar);
+        Klas klas = maakObservatieKlas(schooljaar);
+        Leerling volledig = new Leerling("Volledig", "Ingevuld", klas);
+        Leerling onvolledig = new Leerling("Onvolledig", "Ingevuld", klas);
+        Leerling inactief = new Leerling("Niet", "Actief", klas);
+        inactief.deactiveer();
+        IngerichtTalent eerste = richtTalentIn(new Talent("Eerste", "Eerste talent"), periode, 10, OBSERVATIE);
+        IngerichtTalent tweede = richtTalentIn(new Talent("Tweede", "Tweede talent"), periode, 10, OBSERVATIE);
+        IngerichtTalent derde = richtTalentIn(new Talent("Derde", "Derde talent"), periode, 10, OBSERVATIE);
+        List<Voorkeur> voorkeuren = List.of(
+                new Voorkeur(volledig, periode, eerste, 1),
+                new Voorkeur(volledig, periode, tweede, 2),
+                new Voorkeur(volledig, periode, derde, 3),
+                new Voorkeur(onvolledig, periode, eerste, 1),
+                new Voorkeur(onvolledig, periode, tweede, 2),
+                new Voorkeur(inactief, periode, eerste, 1),
+                new Voorkeur(inactief, periode, tweede, 2),
+                new Voorkeur(inactief, periode, derde, 3)
+        );
+        AutomatischeVerdelingService service = maakService(
+                new InMemoryVoorkeurRepository(new ArrayList<>(voorkeuren)),
+                new InMemoryToewijzingRepository(new ArrayList<>()),
+                new InMemoryLeerlingRepository(List.of(volledig, onvolledig, inactief)),
+                new InMemoryVoorkeurImportProbleemRepository(new ArrayList<>())
+        );
+
+        AutomatischeVerdelingService.VoorkeurenDekking dekking =
+                service.bepaalVoorkeurenDekking(periode, OBSERVATIE);
+
+        assertEquals(1, dekking.leerlingenMetVolledigeVoorkeuren());
+        assertEquals(2, dekking.totaalLeerlingen());
+        assertEquals(1, dekking.leerlingenZonderVolledigeVoorkeuren());
+    }
+
     private AutomatischeVerdelingService maakService(
             InMemoryVoorkeurRepository voorkeurRepository,
             InMemoryToewijzingRepository toewijzingRepository,

@@ -4,6 +4,7 @@ import be.kdg.talenten.repository.*;
 import be.kdg.talenten.repository.postgres.*;
 import be.kdg.talenten.service.beheer.*;
 import be.kdg.talenten.service.leerling.LeerlingDetailsService;
+import be.kdg.talenten.service.leerling.LeerlingHistoriekService;
 import be.kdg.talenten.service.leerling.LeerlingenPlakService;
 import be.kdg.talenten.service.overzicht.OverzichtService;
 import be.kdg.talenten.service.verdeling.AutomatischeVerdelingService;
@@ -35,6 +36,7 @@ public final class ApplicationConfig {
     private final TalentenPeriodeService talentenPeriodeService;
     private final KlasService klasService;
     private final LeerlingDetailsService leerlingDetailsService;
+    private final LeerlingHistoriekService leerlingHistoriekService;
     private final LeerlingenPlakService leerlingenPlakService;
 
     private final VoorkeurenExcelService voorkeurenExcelService;
@@ -67,6 +69,7 @@ public final class ApplicationConfig {
         talentenPeriodeService = new TalentenPeriodeService(talentenPeriodeRepository);
         klasService = new KlasService(klasRepository);
         leerlingDetailsService = new LeerlingDetailsService(voorkeurRepository, toewijzingRepository);
+        leerlingHistoriekService = new LeerlingHistoriekService(toewijzingRepository);
 
         voorkeurenExcelService = new VoorkeurenExcelService(leerlingRepository, ingerichtTalentRepository);
         voorkeurenImportService = new VoorkeurenImportService(leerlingRepository, ingerichtTalentRepository, voorkeurRepository, voorkeurImportProbleemRepository);
@@ -116,6 +119,10 @@ public final class ApplicationConfig {
 
     public LeerlingDetailsService getLeerlingDetailsService() {
         return leerlingDetailsService;
+    }
+
+    public LeerlingHistoriekService getLeerlingHistoriekService() {
+        return leerlingHistoriekService;
     }
 
     public VoorkeurenExcelService getVoorkeurenExcelService() {

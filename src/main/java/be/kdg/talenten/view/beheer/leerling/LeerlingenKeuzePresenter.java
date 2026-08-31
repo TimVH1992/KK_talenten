@@ -2,6 +2,9 @@ package be.kdg.talenten.view.beheer.leerling;
 
 import be.kdg.talenten.service.beheer.*;
 import be.kdg.talenten.service.leerling.LeerlingenPlakService;
+import be.kdg.talenten.service.leerling.LeerlingHistoriekService;
+import be.kdg.talenten.view.beheer.leerling.historiek.LeerlingHistoriekPresenter;
+import be.kdg.talenten.view.beheer.leerling.historiek.LeerlingHistoriekView;
 import be.kdg.talenten.view.SceneManager;
 import be.kdg.talenten.view.beheer.BeheerView;
 import be.kdg.talenten.view.beheer.leerling.bulk.LeerlingenBulkPresenter;
@@ -19,13 +22,16 @@ public class LeerlingenKeuzePresenter {
     private final LeerlingService leerlingService;
     private final KlasService klasService;
     private final LeerlingenPlakService plakService;
+    private final LeerlingHistoriekService historiekService;
 
     public LeerlingenKeuzePresenter(LeerlingenKeuzeView view, BeheerView beheerView,
                                     SceneManager sceneManager, ThemeManager themeManager, Scene scene,
                                     SchooljaarService schooljaarService, LeerlingService leerlingService,
-                                    KlasService klasService, LeerlingenPlakService plakService) {
+                                    KlasService klasService, LeerlingenPlakService plakService,
+                                    LeerlingHistoriekService historiekService) {
         if (view == null || beheerView == null || sceneManager == null || themeManager == null || scene == null
-                || schooljaarService == null || leerlingService == null || klasService == null || plakService == null) {
+                || schooljaarService == null || leerlingService == null || klasService == null || plakService == null
+                || historiekService == null) {
             throw new IllegalArgumentException("LeerlingenKeuzePresenter kreeg een null-afhankelijkheid");
         }
         this.view = view;
@@ -37,6 +43,7 @@ public class LeerlingenKeuzePresenter {
         this.leerlingService = leerlingService;
         this.klasService = klasService;
         this.plakService = plakService;
+        this.historiekService = historiekService;
         configureer();
     }
 
@@ -46,6 +53,7 @@ public class LeerlingenKeuzePresenter {
         view.getThemeButton().setOnAction(event -> toggleTheme());
         view.getBulkButton().setOnAction(event -> toonBulk());
         view.getIndividueelButton().setOnAction(event -> toonIndividueel());
+        view.getHistoriekButton().setOnAction(event -> toonHistoriek());
     }
 
     private void toonBulk() {
@@ -67,6 +75,13 @@ public class LeerlingenKeuzePresenter {
             view.updateThemeIcon(dark);
         });
         sceneManager.toon(leerlingView);
+    }
+
+    private void toonHistoriek() {
+        LeerlingHistoriekView historiekView = new LeerlingHistoriekView();
+        new LeerlingHistoriekPresenter(historiekView, view, sceneManager, themeManager, scene,
+                schooljaarService, leerlingService, historiekService);
+        sceneManager.toon(historiekView);
     }
 
     private void toggleTheme() {

@@ -16,6 +16,8 @@ import be.kdg.talenten.verdeling.VerdelingsResultaat;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class AutomatischeVerdelingService {
 
@@ -88,6 +90,43 @@ public class AutomatischeVerdelingService {
                                         .getDoelgroep()
                                         == doelgroep
                 );
+    }
+
+    public VoorkeurenDekking bepaalVoorkeurenDekking(
+            TalentenPeriode talentenPeriode,
+            Doelgroep doelgroep
+    ) {
+        valideerContext(talentenPeriode, doelgroep);
+
+        List<Leerling> leerlingen = leerlingRepository
+                .zoekVoorSchooljaar(talentenPeriode.getSchooljaar())
+                .stream()
+                .filter(Leerling::isActief)
+                .filter(leerling -> leerling.getKlas().getDoelgroep() == doelgroep)
+                .toList();
+
+        List<Voorkeur> voorkeuren = voorkeurRepository
+                .zoekVoorPeriode(talentenPeriode)
+                .stream()
+                .filter(voorkeur -> bevatLeerling(leerlingen, voorkeur.getLeerling()))
+                .toList();
+
+        int volledig = 0;
+        for (Leerling leerling : leerlingen) {
+            Set<Integer> nummers = voorkeuren.stream()
+                    .filter(voorkeur -> zelfdeLeerling(voorkeur.getLeerling(), leerling))
+                    .map(Voorkeur::getVoorkeurNummer)
+                    .collect(Collectors.toSet());
+            if (nummers.equals(Set.of(1, 2, 3))) volledig++;
+        }
+
+        return new VoorkeurenDekking(volledig, leerlingen.size());
+    }
+
+    public record VoorkeurenDekking(int leerlingenMetVolledigeVoorkeuren, int totaalLeerlingen) {
+        public int leerlingenZonderVolledigeVoorkeuren() {
+            return totaalLeerlingen - leerlingenMetVolledigeVoorkeuren;
+        }
     }
 
     public VerdelingsResultaat voerAutomatischeVerdelingUit(

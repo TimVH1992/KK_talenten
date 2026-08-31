@@ -7,6 +7,7 @@ import be.kdg.talenten.repository.LeerlingRepository;
 import be.kdg.talenten.repository.ToewijzingRepository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -688,9 +689,9 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
     }
 
     @Override
-    public List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnSchooljaar(
+    public List<Toewijzing> zoekHistorischeToewijzingenVoorLeerlingEnPeriode(
             Leerling leerling,
-            Schooljaar schooljaar
+            TalentenPeriode geselecteerdePeriode
     ) {
         if (leerling == null) {
             throw new IllegalArgumentException(
@@ -704,7 +705,8 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             );
         }
 
-        valideerOpgeslagenSchooljaar(schooljaar);
+        valideerOpgeslagenPeriode(geselecteerdePeriode);
+        Schooljaar schooljaar = geselecteerdePeriode.getSchooljaar();
 
         String sql = """
                 SELECT
@@ -738,7 +740,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     ON t.talent_id = it.talent_id
                 WHERE tw.leerling_id = ?
                   AND tp.schooljaar_id = ?
-                  AND tp.einddatum < CURRENT_DATE
+                  AND tp.einddatum < ?
                 ORDER BY tp.einddatum DESC
                 """;
 
@@ -746,9 +748,10 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                      DatabaseConnectionFactory.maakVerbinding()) {
 
             Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent =
-                    zoekLeerkrachtenVoorSchooljaar(
+                    zoekLeerkrachtenVoorSchooljaarTotPeriode(
                             connection,
-                            schooljaar.getId()
+                            schooljaar.getId(),
+                            geselecteerdePeriode.getStartDatum()
                     );
 
             try (PreparedStatement statement =
@@ -756,6 +759,7 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
 
                 statement.setLong(1, leerling.getId());
                 statement.setLong(2, schooljaar.getId());
+                statement.setObject(3, geselecteerdePeriode.getStartDatum());
 
                 try (ResultSet resultSet =
                              statement.executeQuery()) {
@@ -783,6 +787,44 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
                     "De historische toewijzingen van de leerling konden niet opgehaald worden",
                     e
             );
+        }
+    }
+
+    @Override
+    public List<Toewijzing> zoekAlleVoorLeerling(Leerling leerling) {
+        if (leerling == null) throw new IllegalArgumentException("De leerling mag niet null zijn");
+        if (leerling.getId() == null) throw new IllegalArgumentException("De leerling moet eerst opgeslagen zijn");
+
+        String sql = """
+                SELECT toewijzing_id, toewijzings_type, voorkeur_nummer,
+                       toegewezen_op, gewijzigd_op, ingericht_talent_id
+                FROM toewijzingen
+                WHERE leerling_id = ?
+                ORDER BY toegewezen_op DESC, toewijzing_id DESC
+                """;
+        try (Connection connection = DatabaseConnectionFactory.maakVerbinding();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, leerling.getId());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Toewijzing> toewijzingen = new ArrayList<>();
+                while (resultSet.next()) {
+                    IngerichtTalent ingerichtTalent = ingerichtTalentRepository
+                            .zoekOpId(resultSet.getLong("ingericht_talent_id"));
+                    int voorkeurWaarde = resultSet.getInt("voorkeur_nummer");
+                    Integer voorkeurNummer = resultSet.wasNull() ? null : voorkeurWaarde;
+                    Timestamp gewijzigdOp = resultSet.getTimestamp("gewijzigd_op");
+                    toewijzingen.add(new Toewijzing(
+                            resultSet.getLong("toewijzing_id"), leerling, ingerichtTalent,
+                            ToewijzingsType.valueOf(resultSet.getString("toewijzings_type")),
+                            resultSet.getTimestamp("toegewezen_op").toLocalDateTime(),
+                            gewijzigdOp == null ? null : gewijzigdOp.toLocalDateTime(),
+                            voorkeurNummer
+                    ));
+                }
+                return toewijzingen;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("De toewijzingshistoriek van de leerling kon niet opgehaald worden", e);
         }
     }
 
@@ -896,6 +938,45 @@ public class PostgresToewijzingRepository implements ToewijzingRepository {
             }
         }
 
+        return leerkrachtenPerIngerichtTalent;
+    }
+
+    private Map<Long, List<Leerkracht>> zoekLeerkrachtenVoorSchooljaarTotPeriode(
+            Connection connection,
+            long schooljaarId,
+            LocalDate geselecteerdePeriodeStart
+    ) throws SQLException {
+        String sql = """
+                SELECT
+                    itl.ingericht_talent_id,
+                    l.leerkracht_id,
+                    l.voornaam,
+                    l.achternaam
+                FROM ingericht_talent_leerkrachten itl
+                JOIN ingerichte_talenten it
+                    ON it.ingericht_talent_id = itl.ingericht_talent_id
+                JOIN talenten_periodes tp
+                    ON tp.talenten_periode_id = it.talenten_periode_id
+                JOIN leerkrachten l
+                    ON l.leerkracht_id = itl.leerkracht_id
+                WHERE tp.schooljaar_id = ?
+                  AND tp.einddatum < ?
+                ORDER BY itl.ingericht_talent_id, l.leerkracht_id
+                """;
+
+        Map<Long, List<Leerkracht>> leerkrachtenPerIngerichtTalent = new HashMap<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, schooljaarId);
+            statement.setObject(2, geselecteerdePeriodeStart);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    long ingerichtTalentId = resultSet.getLong("ingericht_talent_id");
+                    leerkrachtenPerIngerichtTalent
+                            .computeIfAbsent(ingerichtTalentId, id -> new ArrayList<>())
+                            .add(maakLeerkracht(resultSet));
+                }
+            }
+        }
         return leerkrachtenPerIngerichtTalent;
     }
 

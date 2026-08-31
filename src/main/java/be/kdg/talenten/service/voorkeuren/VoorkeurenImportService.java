@@ -45,6 +45,7 @@ public class VoorkeurenImportService {
 
     public VoorkeurenImportResultaat importeer(Path ingevuldBestand, TalentenPeriode periode, Doelgroep doelgroep) {
         List<VoorkeurImportProbleem> problemen = new ArrayList<>();
+        List<NietGekoppeldeLeerlingImportProbleem> nietGekoppeldeLeerlingen = new ArrayList<>();
         try {
             List<IngerichtTalent> ingerichteTalenten = ingerichtTalentRepository.zoekActieveVoorPeriodeEnDoelgroep(periode, doelgroep);
             if (ingerichteTalenten.isEmpty()) {
@@ -82,6 +83,16 @@ public class VoorkeurenImportService {
 
 
                         Leerling huidigeLeerling = zoekLeerling(leerlingen, voornaam, achternaam, klasNaam);
+                        if (huidigeLeerling == null) {
+                            nietGekoppeldeLeerlingen.add(new NietGekoppeldeLeerlingImportProbleem(
+                                    voornaam,
+                                    achternaam,
+                                    klasNaam,
+                                    List.of(keuze1, keuze2, keuze3),
+                                    "Leerling werd niet gevonden in de databank"
+                            ));
+                            continue;
+                        }
                         voorkeurRepository.verwijderVoorLeerlingEnPeriode(huidigeLeerling, periode);
                         voorkeurImportProbleemRepository.verwijderVoorLeerlingEnPeriode(huidigeLeerling, periode);
 
@@ -118,7 +129,7 @@ public class VoorkeurenImportService {
         } catch (IOException e) {
             throw new IllegalStateException("Het voorkeurenbestand kon niet gelezen worden.", e);
         }
-        return new VoorkeurenImportResultaat(problemen);
+        return new VoorkeurenImportResultaat(problemen, nietGekoppeldeLeerlingen);
     }
 
     private Leerling zoekLeerling(List<Leerling> leerlingen, String voornaam, String achternaam, String klasNaam) {
@@ -130,9 +141,7 @@ public class VoorkeurenImportService {
             }
         }
 
-        throw new IllegalStateException(
-                "Leerling " + voornaam + " " + achternaam + " uit klas " + klasNaam + " werd niet gevonden"
-        );
+        return null;
     }
 
     private IngerichtTalent zoekIngerichtTalentOpNaam(List<IngerichtTalent> ingerichteTalenten, String naam) {

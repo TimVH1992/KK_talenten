@@ -118,7 +118,8 @@ public class BeheerPresenter {
                 config.getSchooljaarService(),
                 config.getLeerlingService(),
                 config.getKlasService(),
-                config.getLeerlingenPlakService()
+                config.getLeerlingenPlakService(),
+                config.getLeerlingHistoriekService()
         );
         sceneManager.toon(keuzeView);
     }

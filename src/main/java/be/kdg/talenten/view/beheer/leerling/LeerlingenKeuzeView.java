@@ -12,6 +12,8 @@ public class LeerlingenKeuzeView extends BorderPane {
             "Selecteer een klas en plak meerdere leerlingen rechtstreeks vanuit Excel");
     private final Button individueelButton = maakKnop("Individuele leerling wijzigen",
             "Zoek een leerling en wijzig naam, klas of actieve status");
+    private final Button historiekButton = maakKnop("Historiek",
+            "Zoek een leerling en bekijk alle opgeslagen toewijzingen");
 
     public LeerlingenKeuzeView() {
         getStyleClass().add("app-root");
@@ -40,10 +42,11 @@ public class LeerlingenKeuzeView extends BorderPane {
         inhoud.setAlignment(Pos.TOP_CENTER);
         Label uitleg = new Label("Kies hoe u de leerlinggegevens wilt beheren.");
         uitleg.getStyleClass().add("welcome-subtitle");
-        VBox keuzes = new VBox(14, bulkButton, individueelButton);
+        VBox keuzes = new VBox(14, bulkButton, individueelButton, historiekButton);
         keuzes.setMaxWidth(760);
         bulkButton.setMaxWidth(Double.MAX_VALUE);
         individueelButton.setMaxWidth(Double.MAX_VALUE);
+        historiekButton.setMaxWidth(Double.MAX_VALUE);
         inhoud.getChildren().addAll(uitleg, keuzes);
         return inhoud;
     }
@@ -71,5 +74,6 @@ public class LeerlingenKeuzeView extends BorderPane {
     public Button getThemeButton() { return themeButton; }
     public Button getBulkButton() { return bulkButton; }
     public Button getIndividueelButton() { return individueelButton; }
+    public Button getHistoriekButton() { return historiekButton; }
     public void updateThemeIcon(boolean darkMode) { themeButton.setText(darkMode ? "☀" : "☾"); }
 }

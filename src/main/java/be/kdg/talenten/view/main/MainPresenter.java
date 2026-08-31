@@ -69,7 +69,7 @@ public class MainPresenter {
                 verdelingView, view, sceneManager, themeManager, scene,
                 config.getSchooljaarService(), config.getTalentenPeriodeService(), config.getKlasService(),
                 config.getAutomatischeVerdelingService(), config.getManueleToewijzingService(),
-                config.getVerdelingBekijkenService()
+                config.getVerdelingBekijkenService(), config.getLeerlingDetailsService()
         );
         sceneManager.toon(verdelingView);
     }
@@ -86,7 +86,7 @@ public class MainPresenter {
         KeuzelijstView keuzelijstView = new KeuzelijstView();
         new KeuzelijstPresenter(keuzelijstView, view, sceneManager, themeManager, scene,
                 config.getSchooljaarService(), config.getTalentenPeriodeService(),
-                config.getVoorkeurenExcelService());
+                config.getVoorkeurenExcelService(), config.getVoorkeurenImportService());
         sceneManager.toon(keuzelijstView);
     }
 
